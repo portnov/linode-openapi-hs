@@ -1,3 +1,8 @@
 stack.yaml.lock
 *.swp
 .stack-work/
+*.log
+*.hi
+*.o
+test
+apiKey
