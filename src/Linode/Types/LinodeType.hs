@@ -133,9 +133,9 @@ mkLinodeTypeAddons'Backups' = LinodeTypeAddons'Backups'{linodeTypeAddons'Backups
 -- Cost of enabling Backups for this Linode Type.
 data LinodeTypeAddons'Backups'Price' = LinodeTypeAddons'Backups'Price' {
   -- | hourly: The cost (in US dollars) per hour to add Backups service.
-  linodeTypeAddons'Backups'Price'Hourly :: (GHC.Maybe.Maybe GHC.Types.Int)
+  linodeTypeAddons'Backups'Price'Hourly :: (GHC.Maybe.Maybe GHC.Types.Double)
   -- | monthly: The cost (in US dollars) per month to add Backups service.
-  , linodeTypeAddons'Backups'Price'Monthly :: (GHC.Maybe.Maybe GHC.Types.Int)
+  , linodeTypeAddons'Backups'Price'Monthly :: (GHC.Maybe.Maybe GHC.Types.Double)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
 instance Data.Aeson.Types.ToJSON.ToJSON LinodeTypeAddons'Backups'Price'
@@ -195,9 +195,9 @@ instance Data.Aeson.Types.FromJSON.FromJSON LinodeTypeClass'
 -- Cost in US dollars, broken down into hourly and monthly charges.
 data LinodeTypePrice' = LinodeTypePrice' {
   -- | hourly: Cost (in US dollars) per hour.
-  linodeTypePrice'Hourly :: (GHC.Maybe.Maybe GHC.Types.Int)
+  linodeTypePrice'Hourly :: (GHC.Maybe.Maybe GHC.Types.Double)
   -- | monthly: Cost (in US dollars) per month.
-  , linodeTypePrice'Monthly :: (GHC.Maybe.Maybe GHC.Types.Int)
+  , linodeTypePrice'Monthly :: (GHC.Maybe.Maybe GHC.Types.Double)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
 instance Data.Aeson.Types.ToJSON.ToJSON LinodeTypePrice'
