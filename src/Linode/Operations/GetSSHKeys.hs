@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getSSHKeys
 module Linode.Operations.GetSSHKeys where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,96 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /profile/sshkeys
 -- 
 -- Returns a collection of SSH Keys you\'ve added to your Profile.
-getSSHKeys :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetSSHKeysResponse)) -- ^ Monad containing the result of the operation
-getSSHKeys config
-           page
-           page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetSSHKeysResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeysResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                     GetSSHKeysResponseBody200)
-                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeysResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                       GetSSHKeysResponseBodyDefault)
-                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/sshkeys") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                       Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /profile/sshkeys
+getSSHKeys :: forall m . Linode.Common.MonadHTTP m => GetSSHKeysParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetSSHKeysResponse) -- ^ Monadic computation which returns the result of the operation
+getSSHKeys parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetSSHKeysResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeysResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                       GetSSHKeysResponseBody200)
+                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeysResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                         GetSSHKeysResponseBodyDefault)
+                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/sshkeys") [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getSSHKeysParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                 Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getSSHKeysParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/profile\/sshkeys.GET.parameters@ in the specification.
 -- 
--- The same as 'getSSHKeys' but returns the raw 'Data.ByteString.Char8.ByteString'
-getSSHKeysRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Linode.Common.Configuration s ->
-                 GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                 GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                 m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getSSHKeysRaw config
-              page
-              page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/sshkeys") ((Data.Text.pack "page",
-                                                                                                                                                                               Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /profile/sshkeys
 -- 
--- Monadic version of 'getSSHKeys' (use with 'Linode.Common.runWithConfiguration')
-getSSHKeysM :: forall m s . (Linode.Common.MonadHTTP m,
-                             Linode.Common.SecurityScheme s) =>
-               GHC.Base.Maybe GHC.Integer.Type.Integer ->
-               GHC.Base.Maybe GHC.Integer.Type.Integer ->
-               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                  m
-                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                      (Network.HTTP.Client.Types.Response GetSSHKeysResponse))
-getSSHKeysM page
-            page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetSSHKeysResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeysResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                      GetSSHKeysResponseBody200)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeysResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                        GetSSHKeysResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/sshkeys") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                  Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                           Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /profile/sshkeys
--- 
--- Monadic version of 'getSSHKeysRaw' (use with 'Linode.Common.runWithConfiguration')
-getSSHKeysRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                  GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getSSHKeysRawM page
-               page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/sshkeys") ((Data.Text.pack "page",
-                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                   Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetSSHKeysParameters = GetSSHKeysParameters {
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  getSSHKeysParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getSSHKeysParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetSSHKeysParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("queryPage" Data.Aeson.Types.ToJSON..= getSSHKeysParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getSSHKeysParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("queryPage" Data.Aeson.Types.ToJSON..= getSSHKeysParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getSSHKeysParametersQueryPageSize obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetSSHKeysParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetSSHKeysParameters" (\obj -> (GHC.Base.pure GetSSHKeysParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetSSHKeysParameters' with all required fields.
+mkGetSSHKeysParameters :: GetSSHKeysParameters
+mkGetSSHKeysParameters = GetSSHKeysParameters{getSSHKeysParametersQueryPage = GHC.Maybe.Nothing,
+                                              getSSHKeysParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getSSHKeys'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetSSHKeysResponseError' is used.
-data GetSSHKeysResponse =                                    
-   GetSSHKeysResponseError GHC.Base.String                   -- ^ Means either no matching case available or a parse error
-  | GetSSHKeysResponse200 GetSSHKeysResponseBody200          -- ^ Returns a paginated list of SSH Key objects.
-  | GetSSHKeysResponseDefault GetSSHKeysResponseBodyDefault  -- ^ Error
+data GetSSHKeysResponse =
+   GetSSHKeysResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetSSHKeysResponse200 GetSSHKeysResponseBody200 -- ^ Returns a paginated list of SSH Key objects.
+  | GetSSHKeysResponseDefault GetSSHKeysResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetSSHKeysResponseBody200
+-- | Defines the object schema located at @paths.\/profile\/sshkeys.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetSSHKeysResponseBody200 = GetSSHKeysResponseBody200 {
   -- | data
-  getSSHKeysResponseBody200Data :: (GHC.Base.Maybe ([] SSHKey))
-  -- | page
-  , getSSHKeysResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getSSHKeysResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getSSHKeysResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getSSHKeysResponseBody200Data :: (GHC.Maybe.Maybe ([SSHKey]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getSSHKeysResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getSSHKeysResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getSSHKeysResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetSSHKeysResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getSSHKeysResponseBody200Data obj) : (Data.Aeson..=) "page" (getSSHKeysResponseBody200Page obj) : (Data.Aeson..=) "pages" (getSSHKeysResponseBody200Pages obj) : (Data.Aeson..=) "results" (getSSHKeysResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getSSHKeysResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getSSHKeysResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getSSHKeysResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getSSHKeysResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetSSHKeysResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetSSHKeysResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetSSHKeysResponseBody200" (\obj -> (((GHC.Base.pure GetSSHKeysResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetSSHKeysResponseBodyDefault
+-- | Create a new 'GetSSHKeysResponseBody200' with all required fields.
+mkGetSSHKeysResponseBody200 :: GetSSHKeysResponseBody200
+mkGetSSHKeysResponseBody200 = GetSSHKeysResponseBody200{getSSHKeysResponseBody200Data = GHC.Maybe.Nothing,
+                                                        getSSHKeysResponseBody200Page = GHC.Maybe.Nothing,
+                                                        getSSHKeysResponseBody200Pages = GHC.Maybe.Nothing,
+                                                        getSSHKeysResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetSSHKeysResponseBodyDefault = GetSSHKeysResponseBodyDefault {
   -- | errors
-  getSSHKeysResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getSSHKeysResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetSSHKeysResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getSSHKeysResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getSSHKeysResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetSSHKeysResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getSSHKeysResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetSSHKeysResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetSSHKeysResponseBodyDefault" (\obj -> GHC.Base.pure GetSSHKeysResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetSSHKeysResponseBodyDefault' with all required fields.
+mkGetSSHKeysResponseBodyDefault :: GetSSHKeysResponseBodyDefault
+mkGetSSHKeysResponseBodyDefault = GetSSHKeysResponseBodyDefault{getSSHKeysResponseBodyDefaultErrors = GHC.Maybe.Nothing}

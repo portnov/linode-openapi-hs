@@ -1,0 +1,48 @@
+module Linode.Types.Linode where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data Linode
+instance Show Linode
+instance Eq Linode
+instance FromJSON Linode
+instance ToJSON Linode
+data LinodeAlerts'
+instance Show LinodeAlerts'
+instance Eq LinodeAlerts'
+instance FromJSON LinodeAlerts'
+instance ToJSON LinodeAlerts'
+data LinodeBackups'
+instance Show LinodeBackups'
+instance Eq LinodeBackups'
+instance FromJSON LinodeBackups'
+instance ToJSON LinodeBackups'
+data LinodeBackups'Schedule'
+instance Show LinodeBackups'Schedule'
+instance Eq LinodeBackups'Schedule'
+instance FromJSON LinodeBackups'Schedule'
+instance ToJSON LinodeBackups'Schedule'
+data LinodeBackups'Schedule'Day'
+instance Show LinodeBackups'Schedule'Day'
+instance Eq LinodeBackups'Schedule'Day'
+instance FromJSON LinodeBackups'Schedule'Day'
+instance ToJSON LinodeBackups'Schedule'Day'
+data LinodeBackups'Schedule'Window'
+instance Show LinodeBackups'Schedule'Window'
+instance Eq LinodeBackups'Schedule'Window'
+instance FromJSON LinodeBackups'Schedule'Window'
+instance ToJSON LinodeBackups'Schedule'Window'
+data LinodeHypervisor'
+instance Show LinodeHypervisor'
+instance Eq LinodeHypervisor'
+instance FromJSON LinodeHypervisor'
+instance ToJSON LinodeHypervisor'
+data LinodeSpecs'
+instance Show LinodeSpecs'
+instance Eq LinodeSpecs'
+instance FromJSON LinodeSpecs'
+instance ToJSON LinodeSpecs'
+data LinodeStatus'
+instance Show LinodeStatus'
+instance Eq LinodeStatus'
+instance FromJSON LinodeStatus'
+instance ToJSON LinodeStatus'

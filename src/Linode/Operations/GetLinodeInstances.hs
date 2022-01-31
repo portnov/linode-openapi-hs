@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getLinodeInstances
 module Linode.Operations.GetLinodeInstances where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,96 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /linode/instances
 -- 
 -- Returns a paginated list of Linodes you have permission to view.
-getLinodeInstances :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                        -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                        -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetLinodeInstancesResponse)) -- ^ Monad containing the result of the operation
-getLinodeInstances config
-                   page
-                   page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLinodeInstancesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeInstancesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                             GetLinodeInstancesResponseBody200)
-                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeInstancesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                               GetLinodeInstancesResponseBodyDefault)
-                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /linode/instances
+getLinodeInstances :: forall m . Linode.Common.MonadHTTP m => GetLinodeInstancesParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetLinodeInstancesResponse) -- ^ Monadic computation which returns the result of the operation
+getLinodeInstances parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLinodeInstancesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeInstancesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                               GetLinodeInstancesResponseBody200)
+                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeInstancesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                 GetLinodeInstancesResponseBodyDefault)
+                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances") [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getLinodeInstancesParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                  Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getLinodeInstancesParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/linode\/instances.GET.parameters@ in the specification.
 -- 
--- The same as 'getLinodeInstances' but returns the raw 'Data.ByteString.Char8.ByteString'
-getLinodeInstancesRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                         GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLinodeInstancesRaw config
-                      page
-                      page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances") ((Data.Text.pack "page",
-                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /linode/instances
 -- 
--- Monadic version of 'getLinodeInstances' (use with 'Linode.Common.runWithConfiguration')
-getLinodeInstancesM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response GetLinodeInstancesResponse))
-getLinodeInstancesM page
-                    page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetLinodeInstancesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeInstancesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                              GetLinodeInstancesResponseBody200)
-                                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeInstancesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                GetLinodeInstancesResponseBodyDefault)
-                                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                   Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /linode/instances
--- 
--- Monadic version of 'getLinodeInstancesRaw' (use with 'Linode.Common.runWithConfiguration')
-getLinodeInstancesRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                          GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLinodeInstancesRawM page
-                       page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances") ((Data.Text.pack "page",
-                                                                                                                                                                                   Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetLinodeInstancesParameters = GetLinodeInstancesParameters {
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  getLinodeInstancesParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getLinodeInstancesParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeInstancesParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("queryPage" Data.Aeson.Types.ToJSON..= getLinodeInstancesParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getLinodeInstancesParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("queryPage" Data.Aeson.Types.ToJSON..= getLinodeInstancesParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getLinodeInstancesParametersQueryPageSize obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeInstancesParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeInstancesParameters" (\obj -> (GHC.Base.pure GetLinodeInstancesParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetLinodeInstancesParameters' with all required fields.
+mkGetLinodeInstancesParameters :: GetLinodeInstancesParameters
+mkGetLinodeInstancesParameters = GetLinodeInstancesParameters{getLinodeInstancesParametersQueryPage = GHC.Maybe.Nothing,
+                                                              getLinodeInstancesParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getLinodeInstances'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetLinodeInstancesResponseError' is used.
-data GetLinodeInstancesResponse =                                            
-   GetLinodeInstancesResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | GetLinodeInstancesResponse200 GetLinodeInstancesResponseBody200          -- ^ Returns an array of all Linodes on your Account.
-  | GetLinodeInstancesResponseDefault GetLinodeInstancesResponseBodyDefault  -- ^ Error
+data GetLinodeInstancesResponse =
+   GetLinodeInstancesResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetLinodeInstancesResponse200 GetLinodeInstancesResponseBody200 -- ^ Returns an array of all Linodes on your Account.
+  | GetLinodeInstancesResponseDefault GetLinodeInstancesResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetLinodeInstancesResponseBody200
+-- | Defines the object schema located at @paths.\/linode\/instances.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLinodeInstancesResponseBody200 = GetLinodeInstancesResponseBody200 {
   -- | data
-  getLinodeInstancesResponseBody200Data :: (GHC.Base.Maybe ([] Linode))
-  -- | page
-  , getLinodeInstancesResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getLinodeInstancesResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getLinodeInstancesResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getLinodeInstancesResponseBody200Data :: (GHC.Maybe.Maybe ([Linode]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getLinodeInstancesResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getLinodeInstancesResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getLinodeInstancesResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeInstancesResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getLinodeInstancesResponseBody200Data obj) : (Data.Aeson..=) "page" (getLinodeInstancesResponseBody200Page obj) : (Data.Aeson..=) "pages" (getLinodeInstancesResponseBody200Pages obj) : (Data.Aeson..=) "results" (getLinodeInstancesResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getLinodeInstancesResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getLinodeInstancesResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getLinodeInstancesResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getLinodeInstancesResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeInstancesResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeInstancesResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeInstancesResponseBody200" (\obj -> (((GHC.Base.pure GetLinodeInstancesResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetLinodeInstancesResponseBodyDefault
+-- | Create a new 'GetLinodeInstancesResponseBody200' with all required fields.
+mkGetLinodeInstancesResponseBody200 :: GetLinodeInstancesResponseBody200
+mkGetLinodeInstancesResponseBody200 = GetLinodeInstancesResponseBody200{getLinodeInstancesResponseBody200Data = GHC.Maybe.Nothing,
+                                                                        getLinodeInstancesResponseBody200Page = GHC.Maybe.Nothing,
+                                                                        getLinodeInstancesResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                        getLinodeInstancesResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLinodeInstancesResponseBodyDefault = GetLinodeInstancesResponseBodyDefault {
   -- | errors
-  getLinodeInstancesResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getLinodeInstancesResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeInstancesResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getLinodeInstancesResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getLinodeInstancesResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeInstancesResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getLinodeInstancesResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeInstancesResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeInstancesResponseBodyDefault" (\obj -> GHC.Base.pure GetLinodeInstancesResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetLinodeInstancesResponseBodyDefault' with all required fields.
+mkGetLinodeInstancesResponseBodyDefault :: GetLinodeInstancesResponseBodyDefault
+mkGetLinodeInstancesResponseBodyDefault = GetLinodeInstancesResponseBodyDefault{getLinodeInstancesResponseBodyDefaultErrors = GHC.Maybe.Nothing}

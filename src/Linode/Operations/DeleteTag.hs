@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation deleteTag
 module Linode.Operations.DeleteTag where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -47,76 +47,34 @@ import Linode.Types
 -- Remove a Tag from all objects and delete it.
 -- 
 -- **Important**: You must be an unrestricted User in order to add or modify Tags.
-deleteTag :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response DeleteTagResponse)) -- ^ Monad containing the result of the operation
-deleteTag config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteTagResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteTagResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                               DeleteTagResponseBody200)
-                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteTagResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                 DeleteTagResponseBodyDefault)
-                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/tags/{label}") [])
--- | > DELETE /tags/{label}
--- 
--- The same as 'deleteTag' but returns the raw 'Data.ByteString.Char8.ByteString'
-deleteTagRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                Linode.Common.Configuration s ->
-                m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteTagRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/tags/{label}") [])
--- | > DELETE /tags/{label}
--- 
--- Monadic version of 'deleteTag' (use with 'Linode.Common.runWithConfiguration')
-deleteTagM :: forall m s . (Linode.Common.MonadHTTP m,
-                            Linode.Common.SecurityScheme s) =>
-              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                 m
-                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                     (Network.HTTP.Client.Types.Response DeleteTagResponse))
-deleteTagM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either DeleteTagResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteTagResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                         DeleteTagResponseBody200)
-                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteTagResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                           DeleteTagResponseBodyDefault)
-                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/tags/{label}") [])
--- | > DELETE /tags/{label}
--- 
--- Monadic version of 'deleteTagRaw' (use with 'Linode.Common.runWithConfiguration')
-deleteTagRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteTagRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/tags/{label}") [])
+deleteTag :: forall m . Linode.Common.MonadHTTP m => Data.Text.Internal.Text -- ^ label
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response DeleteTagResponse) -- ^ Monadic computation which returns the result of the operation
+deleteTag label = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteTagResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteTagResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                               Data.Aeson.Types.Internal.Object)
+                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteTagResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                 DeleteTagResponseBodyDefault)
+                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack ("/tags/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel label)) GHC.Base.++ ""))) GHC.Base.mempty)
 -- | Represents a response of the operation 'deleteTag'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'DeleteTagResponseError' is used.
-data DeleteTagResponse =                                   
-   DeleteTagResponseError GHC.Base.String                  -- ^ Means either no matching case available or a parse error
-  | DeleteTagResponse200 DeleteTagResponseBody200          -- ^ Tag deleted.
-  | DeleteTagResponseDefault DeleteTagResponseBodyDefault  -- ^ Error
+data DeleteTagResponse =
+   DeleteTagResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | DeleteTagResponse200 Data.Aeson.Types.Internal.Object -- ^ Tag deleted.
+  | DeleteTagResponseDefault DeleteTagResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema DeleteTagResponseBody200
--- 
--- 
-data DeleteTagResponseBody200 = DeleteTagResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteTagResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON DeleteTagResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteTagResponseBody200" (\obj -> GHC.Base.pure DeleteTagResponseBody200)
--- | Defines the data type for the schema DeleteTagResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data DeleteTagResponseBodyDefault = DeleteTagResponseBodyDefault {
   -- | errors
-  deleteTagResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  deleteTagResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteTagResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (deleteTagResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (deleteTagResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON DeleteTagResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= deleteTagResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= deleteTagResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON DeleteTagResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteTagResponseBodyDefault" (\obj -> GHC.Base.pure DeleteTagResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'DeleteTagResponseBodyDefault' with all required fields.
+mkDeleteTagResponseBodyDefault :: DeleteTagResponseBodyDefault
+mkDeleteTagResponseBodyDefault = DeleteTagResponseBodyDefault{deleteTagResponseBodyDefaultErrors = GHC.Maybe.Nothing}

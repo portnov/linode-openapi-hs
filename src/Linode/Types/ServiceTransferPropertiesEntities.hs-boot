@@ -1,0 +1,8 @@
+module Linode.Types.ServiceTransferPropertiesEntities where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data ServiceTransferPropertiesEntities
+instance Show ServiceTransferPropertiesEntities
+instance Eq ServiceTransferPropertiesEntities
+instance FromJSON ServiceTransferPropertiesEntities
+instance ToJSON ServiceTransferPropertiesEntities

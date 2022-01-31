@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getManagedServices
 module Linode.Operations.GetManagedServices where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,88 +41,62 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /managed/services
 -- 
 -- Returns a paginated list of Managed Services on your Account. These are the services Linode Managed is monitoring and will report and attempt to resolve issues with.
-getManagedServices :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetManagedServicesResponse)) -- ^ Monad containing the result of the operation
-getManagedServices config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetManagedServicesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetManagedServicesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                          GetManagedServicesResponseBody200)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetManagedServicesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                            GetManagedServicesResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/services") [])
--- | > GET /managed/services
--- 
--- The same as 'getManagedServices' but returns the raw 'Data.ByteString.Char8.ByteString'
-getManagedServicesRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getManagedServicesRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/services") [])
--- | > GET /managed/services
--- 
--- Monadic version of 'getManagedServices' (use with 'Linode.Common.runWithConfiguration')
-getManagedServicesM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response GetManagedServicesResponse))
-getManagedServicesM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetManagedServicesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetManagedServicesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                    GetManagedServicesResponseBody200)
-                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetManagedServicesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                      GetManagedServicesResponseBodyDefault)
-                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/services") [])
--- | > GET /managed/services
--- 
--- Monadic version of 'getManagedServicesRaw' (use with 'Linode.Common.runWithConfiguration')
-getManagedServicesRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getManagedServicesRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/services") [])
+getManagedServices :: forall m . Linode.Common.MonadHTTP m => Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetManagedServicesResponse) -- ^ Monadic computation which returns the result of the operation
+getManagedServices = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetManagedServicesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetManagedServicesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                    GetManagedServicesResponseBody200)
+                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetManagedServicesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                      GetManagedServicesResponseBodyDefault)
+                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/services") GHC.Base.mempty)
 -- | Represents a response of the operation 'getManagedServices'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetManagedServicesResponseError' is used.
-data GetManagedServicesResponse =                                            
-   GetManagedServicesResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | GetManagedServicesResponse200 GetManagedServicesResponseBody200          -- ^ A paginated list of Managed Services
-  | GetManagedServicesResponseDefault GetManagedServicesResponseBodyDefault  -- ^ Error
+data GetManagedServicesResponse =
+   GetManagedServicesResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetManagedServicesResponse200 GetManagedServicesResponseBody200 -- ^ A paginated list of Managed Services
+  | GetManagedServicesResponseDefault GetManagedServicesResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetManagedServicesResponseBody200
+-- | Defines the object schema located at @paths.\/managed\/services.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetManagedServicesResponseBody200 = GetManagedServicesResponseBody200 {
   -- | data
-  getManagedServicesResponseBody200Data :: (GHC.Base.Maybe ([] ManagedService))
-  -- | page
-  , getManagedServicesResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getManagedServicesResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getManagedServicesResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getManagedServicesResponseBody200Data :: (GHC.Maybe.Maybe ([ManagedService]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getManagedServicesResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getManagedServicesResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getManagedServicesResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetManagedServicesResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getManagedServicesResponseBody200Data obj) : (Data.Aeson..=) "page" (getManagedServicesResponseBody200Page obj) : (Data.Aeson..=) "pages" (getManagedServicesResponseBody200Pages obj) : (Data.Aeson..=) "results" (getManagedServicesResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getManagedServicesResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getManagedServicesResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getManagedServicesResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getManagedServicesResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetManagedServicesResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetManagedServicesResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetManagedServicesResponseBody200" (\obj -> (((GHC.Base.pure GetManagedServicesResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetManagedServicesResponseBodyDefault
+-- | Create a new 'GetManagedServicesResponseBody200' with all required fields.
+mkGetManagedServicesResponseBody200 :: GetManagedServicesResponseBody200
+mkGetManagedServicesResponseBody200 = GetManagedServicesResponseBody200{getManagedServicesResponseBody200Data = GHC.Maybe.Nothing,
+                                                                        getManagedServicesResponseBody200Page = GHC.Maybe.Nothing,
+                                                                        getManagedServicesResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                        getManagedServicesResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetManagedServicesResponseBodyDefault = GetManagedServicesResponseBodyDefault {
   -- | errors
-  getManagedServicesResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getManagedServicesResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetManagedServicesResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getManagedServicesResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getManagedServicesResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetManagedServicesResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getManagedServicesResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetManagedServicesResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetManagedServicesResponseBodyDefault" (\obj -> GHC.Base.pure GetManagedServicesResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetManagedServicesResponseBodyDefault' with all required fields.
+mkGetManagedServicesResponseBodyDefault :: GetManagedServicesResponseBodyDefault
+mkGetManagedServicesResponseBodyDefault = GetManagedServicesResponseBodyDefault{getManagedServicesResponseBodyDefaultErrors = GHC.Maybe.Nothing}

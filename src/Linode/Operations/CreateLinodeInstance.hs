@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createLinodeInstance
 module Linode.Operations.CreateLinodeInstance where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,7 +41,6 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > POST /linode/instances
 -- 
@@ -101,60 +100,22 @@ import Linode.ManualTypes
 -- 
 -- **Important**: You must be an unrestricted User in order to add or modify
 -- tags on Linodes.
-createLinodeInstance :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CreateLinodeInstanceRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateLinodeInstanceResponse)) -- ^ Monad containing the result of the operation
-createLinodeInstance config
-                     body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                              Linode)
-                                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                CreateLinodeInstanceResponseBodyDefault)
-                                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances
--- 
--- The same as 'createLinodeInstance' but returns the raw 'Data.ByteString.Char8.ByteString'
-createLinodeInstanceRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           Linode.Common.Configuration s ->
-                           CreateLinodeInstanceRequestBody ->
-                           m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createLinodeInstanceRaw config
-                        body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances
--- 
--- Monadic version of 'createLinodeInstance' (use with 'Linode.Common.runWithConfiguration')
-createLinodeInstanceM :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         CreateLinodeInstanceRequestBody ->
-                         Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                            m
-                                                            (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                (Network.HTTP.Client.Types.Response CreateLinodeInstanceResponse))
-createLinodeInstanceM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                               Linode)
-                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                 CreateLinodeInstanceResponseBodyDefault)
-                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances
--- 
--- Monadic version of 'createLinodeInstanceRaw' (use with 'Linode.Common.runWithConfiguration')
-createLinodeInstanceRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                          Linode.Common.SecurityScheme s) =>
-                            CreateLinodeInstanceRequestBody ->
-                            Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                               m
-                                                               (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                   (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createLinodeInstanceRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createLinodeInstanceRequestBody
+createLinodeInstance :: forall m . Linode.Common.MonadHTTP m => CreateLinodeInstanceRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateLinodeInstanceResponse) -- ^ Monadic computation which returns the result of the operation
+createLinodeInstance body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                               Linode)
+                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                 CreateLinodeInstanceResponseBodyDefault)
+                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/linode\/instances.POST.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data CreateLinodeInstanceRequestBody = CreateLinodeInstanceRequestBody {
-  -- | authorized_keys
-  createLinodeInstanceRequestBodyAuthorized_keys :: (GHC.Base.Maybe DiskRequest_properties_authorized_keys)
-  -- | authorized_users
-  , createLinodeInstanceRequestBodyAuthorized_users :: (GHC.Base.Maybe DiskRequest_properties_authorized_users)
+  -- | authorized_keys: A list of public SSH keys that will be automatically appended
+  -- to the root user\'s \`~\/.ssh\/authorized_keys\` file when deploying from an Image.
+  createLinodeInstanceRequestBodyAuthorizedKeys :: (GHC.Maybe.Maybe DiskRequestPropertiesAuthorizedKeys)
+  -- | authorized_users: A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the root users \`~\/.ssh\/authorized_keys\` file automatically when deploying from an Image.
+  , createLinodeInstanceRequestBodyAuthorizedUsers :: (GHC.Maybe.Maybe DiskRequestPropertiesAuthorizedUsers)
   -- | backup_id: A Backup ID from another Linode\'s available backups. Your User must have
   -- \`read_write\` access to that Linode, the Backup must have a \`status\` of
   -- \`successful\`, and the Linode must be deployed to the same \`region\` as the Backup.
@@ -162,7 +123,7 @@ data CreateLinodeInstanceRequestBody = CreateLinodeInstanceRequestBody {
   -- for a Linode\'s available backups.
   -- 
   -- This field and the \`image\` field are mutually exclusive.
-  , createLinodeInstanceRequestBodyBackup_id :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createLinodeInstanceRequestBodyBackupId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | backups_enabled: If this field is set to \`true\`, the created Linode will automatically be
   -- enrolled in the Linode Backup service. This will incur an additional charge.
   -- The cost for the Backup service is dependent on the Type of Linode deployed.
@@ -172,14 +133,20 @@ data CreateLinodeInstanceRequestBody = CreateLinodeInstanceRequestBody {
   -- for more information.
   -- 
   -- Backup pricing is included in the response from [\/linodes\/types](\/docs\/api\/linode-types\/\#types-list)
-  , createLinodeInstanceRequestBodyBackups_enabled :: (GHC.Base.Maybe GHC.Types.Bool)
+  , createLinodeInstanceRequestBodyBackupsEnabled :: (GHC.Maybe.Maybe GHC.Types.Bool)
   -- | booted: This field defaults to \`true\` if the Linode is created with an Image or from a Backup.
   -- If it is deployed from an Image or a Backup and you wish it to remain \`offline\` after deployment, set this to \`false\`.
-  , createLinodeInstanceRequestBodyBooted :: (GHC.Base.Maybe GHC.Types.Bool)
-  -- | group
-  , createLinodeInstanceRequestBodyGroup :: (GHC.Base.Maybe Linode_properties_group)
-  -- | image
-  , createLinodeInstanceRequestBodyImage :: (GHC.Base.Maybe DiskRequest_properties_image)
+  , createLinodeInstanceRequestBodyBooted :: (GHC.Maybe.Maybe GHC.Types.Bool)
+  -- | group: A deprecated property denoting a group label for this Linode.
+  , createLinodeInstanceRequestBodyGroup :: (GHC.Maybe.Maybe LinodePropertiesGroup)
+  -- | image: An Image ID to deploy the Linode Disk from.
+  -- 
+  -- Access the Images List ([GET \/images](\/docs\/api\/images\/\#images-list)) endpoint with authentication to view
+  -- all available Images. Official Linode Images start with \`linode\/\`, while your Account\'s Images start with \`private\/\`. Creating
+  -- a disk from a Private Image requires \`read_only\` or \`read_write\` permissions for that Image. Access the User\'s
+  -- Grant Update ([PUT \/account\/users\/{username}\/grants](\/docs\/api\/account\/\#users-grants-update)) endpoint to
+  -- adjust permissions for an Account Image.
+  , createLinodeInstanceRequestBodyImage :: (GHC.Maybe.Maybe DiskRequestPropertiesImage)
   -- | interfaces: An array of Network Interfaces to add to this Linode\'s Configuration Profile.
   -- 
   -- Up to three interface objects can be entered in this array. The position in the array determines the interface to which the settings apply:
@@ -200,50 +167,104 @@ data CreateLinodeInstanceRequestBody = CreateLinodeInstanceRequestBody {
   -- you will be prompted to select a different data center or contact support.
   -- 
   -- **Note:** See our guide on [Getting Started with VLANs](\/docs\/guides\/getting-started-with-vlans\/) to view additional [limitations](\/docs\/guides\/getting-started-with-vlans\/\#limitations).
-  , createLinodeInstanceRequestBodyInterfaces :: (GHC.Base.Maybe LinodeConfigInterfaces)
-  -- | label
-  , createLinodeInstanceRequestBodyLabel :: (GHC.Base.Maybe Linode_properties_label)
+  , createLinodeInstanceRequestBodyInterfaces :: (GHC.Maybe.Maybe LinodeConfigInterfaces)
+  -- | label: The Linode\'s label is for display purposes only. If no label is provided for a Linode,
+  -- a default will be assigned.
+  -- 
+  -- Linode labels have the following constraints:
+  -- 
+  --   * Must begin and end with an alphanumeric character.
+  --   * May only consist of alphanumeric characters, dashes (\`-\`), underscores (\`_\`) or periods (\`.\`).
+  --   * Cannot have two dashes (\`--\`), underscores (\`__\`) or periods (\`..\`) in a row.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maximum length of 64
+  -- * Minimum length of 3
+  -- * Must match pattern \'^[a-zA-Z]((?!--|__|..)[a-zA-Z0-9-_.])+\$\'
+  , createLinodeInstanceRequestBodyLabel :: (GHC.Maybe.Maybe LinodePropertiesLabel)
   -- | private_ip: If true, the created Linode will have private networking enabled and assigned a private IPv4 address.
-  , createLinodeInstanceRequestBodyPrivate_ip :: (GHC.Base.Maybe GHC.Types.Bool)
+  , createLinodeInstanceRequestBodyPrivateIp :: (GHC.Maybe.Maybe GHC.Types.Bool)
   -- | region: The [Region](\/docs\/api\/regions\/\#regions-list) where the Linode will be located.
-  , createLinodeInstanceRequestBodyRegion :: (GHC.Base.Maybe Data.Text.Internal.Text)
-  -- | root_pass
-  , createLinodeInstanceRequestBodyRoot_pass :: (GHC.Base.Maybe DiskRequest_properties_root_pass)
-  -- | stackscript_data
-  , createLinodeInstanceRequestBodyStackscript_data :: (GHC.Base.Maybe DiskRequest_properties_stackscript_data)
-  -- | stackscript_id
-  , createLinodeInstanceRequestBodyStackscript_id :: (GHC.Base.Maybe DiskRequest_properties_stackscript_id)
+  , createLinodeInstanceRequestBodyRegion :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
+  -- | root_pass: This sets the root user\'s password on a newly-created Linode Disk when deploying from an Image.
+  -- 
+  -- * **Required** when creating a Linode Disk from an Image, including when using a StackScript.
+  -- 
+  -- * Must meet a password strength score requirement that is calculated internally by the API.
+  -- If the strength requirement is not met, you will receive a \`Password does not meet strength requirement\` error.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maximum length of 128
+  -- * Minimum length of 7
+  , createLinodeInstanceRequestBodyRootPass :: (GHC.Maybe.Maybe DiskRequestPropertiesRootPass)
+  -- | stackscript_data: This field is required only if the StackScript being deployed requires input
+  -- data from the User for successful completion. See
+  -- [User Defined Fields (UDFs)](\/docs\/guides\/writing-scripts-for-use-with-linode-stackscripts-a-tutorial\/\#user-defined-fields-udfs)
+  -- for more details. This field is required to be valid JSON.
+  , createLinodeInstanceRequestBodyStackscriptData :: (GHC.Maybe.Maybe DiskRequestPropertiesStackscriptData)
+  -- | stackscript_id: A StackScript ID that will cause the referenced StackScript to be run during
+  -- deployment of this Linode. A compatible \`image\` is required to use a
+  -- StackScript. To get a list of available StackScript and their permitted Images
+  -- see [\/stackscripts](\/docs\/api\/stackscripts\/\#stackscripts-list).
+  -- This field cannot be used when deploying from a Backup or a Private Image.
+  , createLinodeInstanceRequestBodyStackscriptId :: (GHC.Maybe.Maybe DiskRequestPropertiesStackscriptId)
   -- | swap_size: When deploying from an Image, this field is optional, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.
-  , createLinodeInstanceRequestBodySwap_size :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
-  -- | tags
-  , createLinodeInstanceRequestBodyTags :: (GHC.Base.Maybe Linode_properties_tags)
+  , createLinodeInstanceRequestBodySwapSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | tags: An array of tags applied to this object.  Tags are for organizational purposes only.
+  , createLinodeInstanceRequestBodyTags :: (GHC.Maybe.Maybe LinodePropertiesTags)
   -- | type: The [Linode Type](\/docs\/api\/linode-types\/\#types-list) of the Linode you are creating.
-  , createLinodeInstanceRequestBodyType :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createLinodeInstanceRequestBodyType :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateLinodeInstanceRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "authorized_keys" (createLinodeInstanceRequestBodyAuthorized_keys obj) : (Data.Aeson..=) "authorized_users" (createLinodeInstanceRequestBodyAuthorized_users obj) : (Data.Aeson..=) "backup_id" (createLinodeInstanceRequestBodyBackup_id obj) : (Data.Aeson..=) "backups_enabled" (createLinodeInstanceRequestBodyBackups_enabled obj) : (Data.Aeson..=) "booted" (createLinodeInstanceRequestBodyBooted obj) : (Data.Aeson..=) "group" (createLinodeInstanceRequestBodyGroup obj) : (Data.Aeson..=) "image" (createLinodeInstanceRequestBodyImage obj) : (Data.Aeson..=) "interfaces" (createLinodeInstanceRequestBodyInterfaces obj) : (Data.Aeson..=) "label" (createLinodeInstanceRequestBodyLabel obj) : (Data.Aeson..=) "private_ip" (createLinodeInstanceRequestBodyPrivate_ip obj) : (Data.Aeson..=) "region" (createLinodeInstanceRequestBodyRegion obj) : (Data.Aeson..=) "root_pass" (createLinodeInstanceRequestBodyRoot_pass obj) : (Data.Aeson..=) "stackscript_data" (createLinodeInstanceRequestBodyStackscript_data obj) : (Data.Aeson..=) "stackscript_id" (createLinodeInstanceRequestBodyStackscript_id obj) : (Data.Aeson..=) "swap_size" (createLinodeInstanceRequestBodySwap_size obj) : (Data.Aeson..=) "tags" (createLinodeInstanceRequestBodyTags obj) : (Data.Aeson..=) "type" (createLinodeInstanceRequestBodyType obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "authorized_keys" (createLinodeInstanceRequestBodyAuthorized_keys obj) GHC.Base.<> ((Data.Aeson..=) "authorized_users" (createLinodeInstanceRequestBodyAuthorized_users obj) GHC.Base.<> ((Data.Aeson..=) "backup_id" (createLinodeInstanceRequestBodyBackup_id obj) GHC.Base.<> ((Data.Aeson..=) "backups_enabled" (createLinodeInstanceRequestBodyBackups_enabled obj) GHC.Base.<> ((Data.Aeson..=) "booted" (createLinodeInstanceRequestBodyBooted obj) GHC.Base.<> ((Data.Aeson..=) "group" (createLinodeInstanceRequestBodyGroup obj) GHC.Base.<> ((Data.Aeson..=) "image" (createLinodeInstanceRequestBodyImage obj) GHC.Base.<> ((Data.Aeson..=) "interfaces" (createLinodeInstanceRequestBodyInterfaces obj) GHC.Base.<> ((Data.Aeson..=) "label" (createLinodeInstanceRequestBodyLabel obj) GHC.Base.<> ((Data.Aeson..=) "private_ip" (createLinodeInstanceRequestBodyPrivate_ip obj) GHC.Base.<> ((Data.Aeson..=) "region" (createLinodeInstanceRequestBodyRegion obj) GHC.Base.<> ((Data.Aeson..=) "root_pass" (createLinodeInstanceRequestBodyRoot_pass obj) GHC.Base.<> ((Data.Aeson..=) "stackscript_data" (createLinodeInstanceRequestBodyStackscript_data obj) GHC.Base.<> ((Data.Aeson..=) "stackscript_id" (createLinodeInstanceRequestBodyStackscript_id obj) GHC.Base.<> ((Data.Aeson..=) "swap_size" (createLinodeInstanceRequestBodySwap_size obj) GHC.Base.<> ((Data.Aeson..=) "tags" (createLinodeInstanceRequestBodyTags obj) GHC.Base.<> (Data.Aeson..=) "type" (createLinodeInstanceRequestBodyType obj)))))))))))))))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateLinodeInstanceRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("authorized_keys" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyAuthorizedKeys obj : "authorized_users" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyAuthorizedUsers obj : "backup_id" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyBackupId obj : "backups_enabled" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyBackupsEnabled obj : "booted" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyBooted obj : "group" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyGroup obj : "image" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyImage obj : "interfaces" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyInterfaces obj : "label" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyLabel obj : "private_ip" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyPrivateIp obj : "region" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyRegion obj : "root_pass" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyRootPass obj : "stackscript_data" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyStackscriptData obj : "stackscript_id" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyStackscriptId obj : "swap_size" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodySwapSize obj : "tags" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyTags obj : "type" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyType obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("authorized_keys" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyAuthorizedKeys obj) GHC.Base.<> (("authorized_users" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyAuthorizedUsers obj) GHC.Base.<> (("backup_id" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyBackupId obj) GHC.Base.<> (("backups_enabled" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyBackupsEnabled obj) GHC.Base.<> (("booted" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyBooted obj) GHC.Base.<> (("group" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyGroup obj) GHC.Base.<> (("image" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyImage obj) GHC.Base.<> (("interfaces" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyInterfaces obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyLabel obj) GHC.Base.<> (("private_ip" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyPrivateIp obj) GHC.Base.<> (("region" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyRegion obj) GHC.Base.<> (("root_pass" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyRootPass obj) GHC.Base.<> (("stackscript_data" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyStackscriptData obj) GHC.Base.<> (("stackscript_id" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyStackscriptId obj) GHC.Base.<> (("swap_size" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodySwapSize obj) GHC.Base.<> (("tags" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyTags obj) GHC.Base.<> ("type" Data.Aeson.Types.ToJSON..= createLinodeInstanceRequestBodyType obj)))))))))))))))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateLinodeInstanceRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateLinodeInstanceRequestBody" (\obj -> ((((((((((((((((GHC.Base.pure CreateLinodeInstanceRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "authorized_keys")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "authorized_users")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "backup_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "backups_enabled")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "booted")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "group")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "image")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "interfaces")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "private_ip")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "region")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "root_pass")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "stackscript_data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "stackscript_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "swap_size")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "tags")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "type"))
+-- | Create a new 'CreateLinodeInstanceRequestBody' with all required fields.
+mkCreateLinodeInstanceRequestBody :: CreateLinodeInstanceRequestBody
+mkCreateLinodeInstanceRequestBody = CreateLinodeInstanceRequestBody{createLinodeInstanceRequestBodyAuthorizedKeys = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyAuthorizedUsers = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyBackupId = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyBackupsEnabled = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyBooted = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyGroup = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyImage = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyInterfaces = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyLabel = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyPrivateIp = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyRegion = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyRootPass = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyStackscriptData = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyStackscriptId = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodySwapSize = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyTags = GHC.Maybe.Nothing,
+                                                                    createLinodeInstanceRequestBodyType = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'createLinodeInstance'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateLinodeInstanceResponseError' is used.
-data CreateLinodeInstanceResponse =                                              
-   CreateLinodeInstanceResponseError GHC.Base.String                             -- ^ Means either no matching case available or a parse error
-  | CreateLinodeInstanceResponse200 Linode                                       -- ^ A new Linode is being created. 
-  | CreateLinodeInstanceResponseDefault CreateLinodeInstanceResponseBodyDefault  -- ^ Error
+data CreateLinodeInstanceResponse =
+   CreateLinodeInstanceResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateLinodeInstanceResponse200 Linode -- ^ A new Linode is being created. 
+  | CreateLinodeInstanceResponseDefault CreateLinodeInstanceResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateLinodeInstanceResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateLinodeInstanceResponseBodyDefault = CreateLinodeInstanceResponseBodyDefault {
   -- | errors
-  createLinodeInstanceResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createLinodeInstanceResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateLinodeInstanceResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createLinodeInstanceResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createLinodeInstanceResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateLinodeInstanceResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createLinodeInstanceResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createLinodeInstanceResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateLinodeInstanceResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateLinodeInstanceResponseBodyDefault" (\obj -> GHC.Base.pure CreateLinodeInstanceResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateLinodeInstanceResponseBodyDefault' with all required fields.
+mkCreateLinodeInstanceResponseBodyDefault :: CreateLinodeInstanceResponseBodyDefault
+mkCreateLinodeInstanceResponseBodyDefault = CreateLinodeInstanceResponseBodyDefault{createLinodeInstanceResponseBodyDefaultErrors = GHC.Maybe.Nothing}

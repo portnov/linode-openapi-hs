@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getFirewallRules
 module Linode.Operations.GetFirewallRules where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,69 +41,38 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /networking/firewalls/{firewallId}/rules
 -- 
 -- Returns the inbound and outbound Rules for a Firewall.
-getFirewallRules :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetFirewallRulesResponse)) -- ^ Monad containing the result of the operation
-getFirewallRules config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetFirewallRulesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallRulesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                    Firewall_properties_rules)
-                                                                                                                                                                                    | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallRulesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                      GetFirewallRulesResponseBodyDefault)
-                                                                                                                                                                                    | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/firewalls/{firewallId}/rules") [])
--- | > GET /networking/firewalls/{firewallId}/rules
--- 
--- The same as 'getFirewallRules' but returns the raw 'Data.ByteString.Char8.ByteString'
-getFirewallRulesRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Linode.Common.Configuration s ->
-                       m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getFirewallRulesRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/firewalls/{firewallId}/rules") [])
--- | > GET /networking/firewalls/{firewallId}/rules
--- 
--- Monadic version of 'getFirewallRules' (use with 'Linode.Common.runWithConfiguration')
-getFirewallRulesM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response GetFirewallRulesResponse))
-getFirewallRulesM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetFirewallRulesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallRulesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                              Firewall_properties_rules)
-                                                                                                                                                                              | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallRulesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                GetFirewallRulesResponseBodyDefault)
-                                                                                                                                                                              | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/firewalls/{firewallId}/rules") [])
--- | > GET /networking/firewalls/{firewallId}/rules
--- 
--- Monadic version of 'getFirewallRulesRaw' (use with 'Linode.Common.runWithConfiguration')
-getFirewallRulesRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                           m
-                                                           (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getFirewallRulesRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/firewalls/{firewallId}/rules") [])
+getFirewallRules :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ firewallId: ID of the Firewall to access. 
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetFirewallRulesResponse) -- ^ Monadic computation which returns the result of the operation
+getFirewallRules firewallId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetFirewallRulesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallRulesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                         FirewallPropertiesRules)
+                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallRulesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                           GetFirewallRulesResponseBodyDefault)
+                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/networking/firewalls/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel firewallId)) GHC.Base.++ "/rules"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'getFirewallRules'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetFirewallRulesResponseError' is used.
-data GetFirewallRulesResponse =                                          
-   GetFirewallRulesResponseError GHC.Base.String                         -- ^ Means either no matching case available or a parse error
-  | GetFirewallRulesResponse200 Firewall_properties_rules                -- ^ The requested Firewall Rules.
-  | GetFirewallRulesResponseDefault GetFirewallRulesResponseBodyDefault  -- ^ Error
+data GetFirewallRulesResponse =
+   GetFirewallRulesResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetFirewallRulesResponse200 FirewallPropertiesRules -- ^ The requested Firewall Rules.
+  | GetFirewallRulesResponseDefault GetFirewallRulesResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetFirewallRulesResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetFirewallRulesResponseBodyDefault = GetFirewallRulesResponseBodyDefault {
   -- | errors
-  getFirewallRulesResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getFirewallRulesResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetFirewallRulesResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getFirewallRulesResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getFirewallRulesResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetFirewallRulesResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getFirewallRulesResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getFirewallRulesResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetFirewallRulesResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetFirewallRulesResponseBodyDefault" (\obj -> GHC.Base.pure GetFirewallRulesResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetFirewallRulesResponseBodyDefault' with all required fields.
+mkGetFirewallRulesResponseBodyDefault :: GetFirewallRulesResponseBodyDefault
+mkGetFirewallRulesResponseBodyDefault = GetFirewallRulesResponseBodyDefault{getFirewallRulesResponseBodyDefaultErrors = GHC.Maybe.Nothing}

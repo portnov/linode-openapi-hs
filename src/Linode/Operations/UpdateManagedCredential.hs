@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation updateManagedCredential
 module Linode.Operations.UpdateManagedCredential where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,70 +45,36 @@ import Linode.Types
 -- | > PUT /managed/credentials/{credentialId}
 -- 
 -- Updates the label of a Managed Credential. This endpoint does not update the username and password for a Managed Credential. To do this, use the Managed Credential Username and Password Update ([POST \/managed\/credentials\/{credentialId}\/update](\/docs\/api\/managed\/\#managed-credential-username-and-password-update)) endpoint instead.
-updateManagedCredential :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> ManagedCredential                                                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response UpdateManagedCredentialResponse)) -- ^ Monad containing the result of the operation
-updateManagedCredential config
-                        body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateManagedCredentialResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateManagedCredentialResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                       ManagedCredential)
-                                                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateManagedCredentialResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                         UpdateManagedCredentialResponseBodyDefault)
-                                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/managed/credentials/{credentialId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /managed/credentials/{credentialId}
--- 
--- The same as 'updateManagedCredential' but returns the raw 'Data.ByteString.Char8.ByteString'
-updateManagedCredentialRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                            Linode.Common.SecurityScheme s) =>
-                              Linode.Common.Configuration s ->
-                              ManagedCredential ->
-                              m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                    (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateManagedCredentialRaw config
-                           body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/managed/credentials/{credentialId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /managed/credentials/{credentialId}
--- 
--- Monadic version of 'updateManagedCredential' (use with 'Linode.Common.runWithConfiguration')
-updateManagedCredentialM :: forall m s . (Linode.Common.MonadHTTP m,
-                                          Linode.Common.SecurityScheme s) =>
-                            ManagedCredential ->
-                            Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                               m
-                                                               (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                   (Network.HTTP.Client.Types.Response UpdateManagedCredentialResponse))
-updateManagedCredentialM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either UpdateManagedCredentialResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateManagedCredentialResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                        ManagedCredential)
-                                                                                                                                                                                                 | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateManagedCredentialResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                          UpdateManagedCredentialResponseBodyDefault)
-                                                                                                                                                                                                 | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/managed/credentials/{credentialId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /managed/credentials/{credentialId}
--- 
--- Monadic version of 'updateManagedCredentialRaw' (use with 'Linode.Common.runWithConfiguration')
-updateManagedCredentialRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                             Linode.Common.SecurityScheme s) =>
-                               ManagedCredential ->
-                               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                  m
-                                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateManagedCredentialRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/managed/credentials/{credentialId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
+updateManagedCredential :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ credentialId: The ID of the Credential to access.
+  -> ManagedCredential -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response UpdateManagedCredentialResponse) -- ^ Monadic computation which returns the result of the operation
+updateManagedCredential credentialId
+                        body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateManagedCredentialResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateManagedCredentialResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                        ManagedCredential)
+                                                                                                                                                                                 | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateManagedCredentialResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                          UpdateManagedCredentialResponseBodyDefault)
+                                                                                                                                                                                 | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack ("/managed/credentials/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel credentialId)) GHC.Base.++ ""))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
 -- | Represents a response of the operation 'updateManagedCredential'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'UpdateManagedCredentialResponseError' is used.
-data UpdateManagedCredentialResponse =                                                 
-   UpdateManagedCredentialResponseError GHC.Base.String                                -- ^ Means either no matching case available or a parse error
-  | UpdateManagedCredentialResponse200 ManagedCredential                               -- ^ Credential updated successfully.
-  | UpdateManagedCredentialResponseDefault UpdateManagedCredentialResponseBodyDefault  -- ^ Error
+data UpdateManagedCredentialResponse =
+   UpdateManagedCredentialResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | UpdateManagedCredentialResponse200 ManagedCredential -- ^ Credential updated successfully.
+  | UpdateManagedCredentialResponseDefault UpdateManagedCredentialResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema UpdateManagedCredentialResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data UpdateManagedCredentialResponseBodyDefault = UpdateManagedCredentialResponseBodyDefault {
   -- | errors
-  updateManagedCredentialResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  updateManagedCredentialResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateManagedCredentialResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (updateManagedCredentialResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (updateManagedCredentialResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateManagedCredentialResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= updateManagedCredentialResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= updateManagedCredentialResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON UpdateManagedCredentialResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "UpdateManagedCredentialResponseBodyDefault" (\obj -> GHC.Base.pure UpdateManagedCredentialResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'UpdateManagedCredentialResponseBodyDefault' with all required fields.
+mkUpdateManagedCredentialResponseBodyDefault :: UpdateManagedCredentialResponseBodyDefault
+mkUpdateManagedCredentialResponseBodyDefault = UpdateManagedCredentialResponseBodyDefault{updateManagedCredentialResponseBodyDefaultErrors = GHC.Maybe.Nothing}

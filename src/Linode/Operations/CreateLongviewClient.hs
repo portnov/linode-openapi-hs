@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createLongviewClient
 module Linode.Operations.CreateLongviewClient where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,70 +45,34 @@ import Linode.Types
 -- | > POST /longview/clients
 -- 
 -- Creates a Longview Client.  This Client will not begin monitoring the status of your server until you configure the Longview Client application on your Linode using the returning \`install_code\` and \`api_key\`.
-createLongviewClient :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> LongviewClient                                                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateLongviewClientResponse)) -- ^ Monad containing the result of the operation
-createLongviewClient config
-                     body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateLongviewClientResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateLongviewClientResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                              LongviewClient)
-                                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateLongviewClientResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                CreateLongviewClientResponseBodyDefault)
-                                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/longview/clients") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /longview/clients
--- 
--- The same as 'createLongviewClient' but returns the raw 'Data.ByteString.Char8.ByteString'
-createLongviewClientRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           Linode.Common.Configuration s ->
-                           LongviewClient ->
-                           m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createLongviewClientRaw config
-                        body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/longview/clients") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /longview/clients
--- 
--- Monadic version of 'createLongviewClient' (use with 'Linode.Common.runWithConfiguration')
-createLongviewClientM :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         LongviewClient ->
-                         Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                            m
-                                                            (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                (Network.HTTP.Client.Types.Response CreateLongviewClientResponse))
-createLongviewClientM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateLongviewClientResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateLongviewClientResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                               LongviewClient)
-                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateLongviewClientResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                 CreateLongviewClientResponseBodyDefault)
-                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/longview/clients") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /longview/clients
--- 
--- Monadic version of 'createLongviewClientRaw' (use with 'Linode.Common.runWithConfiguration')
-createLongviewClientRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                          Linode.Common.SecurityScheme s) =>
-                            LongviewClient ->
-                            Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                               m
-                                                               (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                   (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createLongviewClientRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/longview/clients") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
+createLongviewClient :: forall m . Linode.Common.MonadHTTP m => LongviewClient -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateLongviewClientResponse) -- ^ Monadic computation which returns the result of the operation
+createLongviewClient body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateLongviewClientResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateLongviewClientResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                               LongviewClient)
+                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateLongviewClientResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                 CreateLongviewClientResponseBodyDefault)
+                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/longview/clients") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
 -- | Represents a response of the operation 'createLongviewClient'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateLongviewClientResponseError' is used.
-data CreateLongviewClientResponse =                                              
-   CreateLongviewClientResponseError GHC.Base.String                             -- ^ Means either no matching case available or a parse error
-  | CreateLongviewClientResponse200 LongviewClient                               -- ^ Longview Client created successfully.
-  | CreateLongviewClientResponseDefault CreateLongviewClientResponseBodyDefault  -- ^ Error
+data CreateLongviewClientResponse =
+   CreateLongviewClientResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateLongviewClientResponse200 LongviewClient -- ^ Longview Client created successfully.
+  | CreateLongviewClientResponseDefault CreateLongviewClientResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateLongviewClientResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateLongviewClientResponseBodyDefault = CreateLongviewClientResponseBodyDefault {
   -- | errors
-  createLongviewClientResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createLongviewClientResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateLongviewClientResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createLongviewClientResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createLongviewClientResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateLongviewClientResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createLongviewClientResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createLongviewClientResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateLongviewClientResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateLongviewClientResponseBodyDefault" (\obj -> GHC.Base.pure CreateLongviewClientResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateLongviewClientResponseBodyDefault' with all required fields.
+mkCreateLongviewClientResponseBodyDefault :: CreateLongviewClientResponseBodyDefault
+mkCreateLongviewClientResponseBodyDefault = CreateLongviewClientResponseBodyDefault{createLongviewClientResponseBodyDefaultErrors = GHC.Maybe.Nothing}

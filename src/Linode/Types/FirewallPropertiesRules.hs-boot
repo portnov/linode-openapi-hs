@@ -1,0 +1,18 @@
+module Linode.Types.FirewallPropertiesRules where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data FirewallPropertiesRules
+instance Show FirewallPropertiesRules
+instance Eq FirewallPropertiesRules
+instance FromJSON FirewallPropertiesRules
+instance ToJSON FirewallPropertiesRules
+data FirewallPropertiesRulesInboundPolicy'
+instance Show FirewallPropertiesRulesInboundPolicy'
+instance Eq FirewallPropertiesRulesInboundPolicy'
+instance FromJSON FirewallPropertiesRulesInboundPolicy'
+instance ToJSON FirewallPropertiesRulesInboundPolicy'
+data FirewallPropertiesRulesOutboundPolicy'
+instance Show FirewallPropertiesRulesOutboundPolicy'
+instance Eq FirewallPropertiesRulesOutboundPolicy'
+instance FromJSON FirewallPropertiesRulesOutboundPolicy'
+instance ToJSON FirewallPropertiesRulesOutboundPolicy'

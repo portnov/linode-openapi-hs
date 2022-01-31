@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createVolume
 module Linode.Operations.CreateVolume where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,53 +45,14 @@ import Linode.Types
 -- | > POST /volumes
 -- 
 -- Creates a Volume on your Account. In order for this to complete successfully, your User must have the \`add_volumes\` grant. Creating a new Volume will start accruing additional charges on your account.
-createVolume :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CreateVolumeRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateVolumeResponse)) -- ^ Monad containing the result of the operation
-createVolume config
-             body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                      Volume)
-                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                        CreateVolumeResponseBodyDefault)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /volumes
--- 
--- The same as 'createVolume' but returns the raw 'Data.ByteString.Char8.ByteString'
-createVolumeRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Linode.Common.Configuration s ->
-                   CreateVolumeRequestBody ->
-                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createVolumeRaw config
-                body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /volumes
--- 
--- Monadic version of 'createVolume' (use with 'Linode.Common.runWithConfiguration')
-createVolumeM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 CreateVolumeRequestBody ->
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response CreateVolumeResponse))
-createVolumeM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                       Volume)
-                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                         CreateVolumeResponseBodyDefault)
-                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /volumes
--- 
--- Monadic version of 'createVolumeRaw' (use with 'Linode.Common.runWithConfiguration')
-createVolumeRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    CreateVolumeRequestBody ->
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createVolumeRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createVolumeRequestBody
+createVolume :: forall m . Linode.Common.MonadHTTP m => CreateVolumeRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateVolumeResponse) -- ^ Monadic computation which returns the result of the operation
+createVolume body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                       Volume)
+                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                         CreateVolumeResponseBodyDefault)
+                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/volumes.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateVolumeRequestBody = CreateVolumeRequestBody {
@@ -101,7 +62,7 @@ data CreateVolumeRequestBody = CreateVolumeRequestBody {
   --   * to the Linode\'s last used config, if possible.
   -- 
   -- If no config can be selected for attachment, an error will be returned.
-  createVolumeRequestBodyConfig_id :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  createVolumeRequestBodyConfigId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | label: The Volume\'s label, which is also used in the \`filesystem_path\` of the resulting volume.
   -- 
   -- 
@@ -112,38 +73,50 @@ data CreateVolumeRequestBody = CreateVolumeRequestBody {
   -- * Must match pattern \'^[a-zA-Z]((?!--|__)[a-zA-Z0-9-_])+\$\'
   , createVolumeRequestBodyLabel :: Data.Text.Internal.Text
   -- | linode_id: The Linode this volume should be attached to upon creation. If not given, the volume will be created without an attachment.
-  , createVolumeRequestBodyLinode_id :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createVolumeRequestBodyLinodeId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | region: The Region to deploy this Volume in. This is only required if a linode_id is not given.
-  , createVolumeRequestBodyRegion :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createVolumeRequestBodyRegion :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | size: The initial size of this volume, in GB.  Be aware that volumes may only be resized up after creation.
-  , createVolumeRequestBodySize :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createVolumeRequestBodySize :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | tags: An array of Tags applied to this object.  Tags are for organizational purposes only.
-  , createVolumeRequestBodyTags :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  , createVolumeRequestBodyTags :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateVolumeRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "config_id" (createVolumeRequestBodyConfig_id obj) : (Data.Aeson..=) "label" (createVolumeRequestBodyLabel obj) : (Data.Aeson..=) "linode_id" (createVolumeRequestBodyLinode_id obj) : (Data.Aeson..=) "region" (createVolumeRequestBodyRegion obj) : (Data.Aeson..=) "size" (createVolumeRequestBodySize obj) : (Data.Aeson..=) "tags" (createVolumeRequestBodyTags obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "config_id" (createVolumeRequestBodyConfig_id obj) GHC.Base.<> ((Data.Aeson..=) "label" (createVolumeRequestBodyLabel obj) GHC.Base.<> ((Data.Aeson..=) "linode_id" (createVolumeRequestBodyLinode_id obj) GHC.Base.<> ((Data.Aeson..=) "region" (createVolumeRequestBodyRegion obj) GHC.Base.<> ((Data.Aeson..=) "size" (createVolumeRequestBodySize obj) GHC.Base.<> (Data.Aeson..=) "tags" (createVolumeRequestBodyTags obj))))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateVolumeRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("config_id" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyConfigId obj : "label" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyLabel obj : "linode_id" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyLinodeId obj : "region" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyRegion obj : "size" Data.Aeson.Types.ToJSON..= createVolumeRequestBodySize obj : "tags" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyTags obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("config_id" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyConfigId obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyLabel obj) GHC.Base.<> (("linode_id" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyLinodeId obj) GHC.Base.<> (("region" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyRegion obj) GHC.Base.<> (("size" Data.Aeson.Types.ToJSON..= createVolumeRequestBodySize obj) GHC.Base.<> ("tags" Data.Aeson.Types.ToJSON..= createVolumeRequestBodyTags obj))))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateVolumeRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateVolumeRequestBody" (\obj -> (((((GHC.Base.pure CreateVolumeRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "config_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "linode_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "region")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "size")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "tags"))
+-- | Create a new 'CreateVolumeRequestBody' with all required fields.
+mkCreateVolumeRequestBody :: Data.Text.Internal.Text -- ^ 'createVolumeRequestBodyLabel'
+  -> CreateVolumeRequestBody
+mkCreateVolumeRequestBody createVolumeRequestBodyLabel = CreateVolumeRequestBody{createVolumeRequestBodyConfigId = GHC.Maybe.Nothing,
+                                                                                 createVolumeRequestBodyLabel = createVolumeRequestBodyLabel,
+                                                                                 createVolumeRequestBodyLinodeId = GHC.Maybe.Nothing,
+                                                                                 createVolumeRequestBodyRegion = GHC.Maybe.Nothing,
+                                                                                 createVolumeRequestBodySize = GHC.Maybe.Nothing,
+                                                                                 createVolumeRequestBodyTags = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'createVolume'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateVolumeResponseError' is used.
-data CreateVolumeResponse =                                      
-   CreateVolumeResponseError GHC.Base.String                     -- ^ Means either no matching case available or a parse error
-  | CreateVolumeResponse200 Volume                               -- ^ Creating Volume. 
-  | CreateVolumeResponseDefault CreateVolumeResponseBodyDefault  -- ^ Error
+data CreateVolumeResponse =
+   CreateVolumeResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateVolumeResponse200 Volume -- ^ Creating Volume. 
+  | CreateVolumeResponseDefault CreateVolumeResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateVolumeResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateVolumeResponseBodyDefault = CreateVolumeResponseBodyDefault {
   -- | errors
-  createVolumeResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createVolumeResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateVolumeResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createVolumeResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createVolumeResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateVolumeResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createVolumeResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createVolumeResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateVolumeResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateVolumeResponseBodyDefault" (\obj -> GHC.Base.pure CreateVolumeResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateVolumeResponseBodyDefault' with all required fields.
+mkCreateVolumeResponseBodyDefault :: CreateVolumeResponseBodyDefault
+mkCreateVolumeResponseBodyDefault = CreateVolumeResponseBodyDefault{createVolumeResponseBodyDefaultErrors = GHC.Maybe.Nothing}

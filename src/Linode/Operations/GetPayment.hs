@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getPayment
 module Linode.Operations.GetPayment where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,64 +45,34 @@ import Linode.Types
 -- | > GET /account/payments/{paymentId}
 -- 
 -- Returns information about a specific Payment.
-getPayment :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetPaymentResponse)) -- ^ Monad containing the result of the operation
-getPayment config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetPaymentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                  Payment)
-                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                    GetPaymentResponseBodyDefault)
-                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/payments/{paymentId}") [])
--- | > GET /account/payments/{paymentId}
--- 
--- The same as 'getPayment' but returns the raw 'Data.ByteString.Char8.ByteString'
-getPaymentRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Linode.Common.Configuration s ->
-                 m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getPaymentRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/payments/{paymentId}") [])
--- | > GET /account/payments/{paymentId}
--- 
--- Monadic version of 'getPayment' (use with 'Linode.Common.runWithConfiguration')
-getPaymentM :: forall m s . (Linode.Common.MonadHTTP m,
-                             Linode.Common.SecurityScheme s) =>
-               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                  m
-                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                      (Network.HTTP.Client.Types.Response GetPaymentResponse))
-getPaymentM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetPaymentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                            Payment)
-                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                              GetPaymentResponseBodyDefault)
-                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/payments/{paymentId}") [])
--- | > GET /account/payments/{paymentId}
--- 
--- Monadic version of 'getPaymentRaw' (use with 'Linode.Common.runWithConfiguration')
-getPaymentRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getPaymentRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/payments/{paymentId}") [])
+getPayment :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ paymentId: The ID of the Payment to look up.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetPaymentResponse) -- ^ Monadic computation which returns the result of the operation
+getPayment paymentId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetPaymentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                      Payment)
+                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                        GetPaymentResponseBodyDefault)
+                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/account/payments/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel paymentId)) GHC.Base.++ ""))) GHC.Base.mempty)
 -- | Represents a response of the operation 'getPayment'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetPaymentResponseError' is used.
-data GetPaymentResponse =                                    
-   GetPaymentResponseError GHC.Base.String                   -- ^ Means either no matching case available or a parse error
-  | GetPaymentResponse200 Payment                            -- ^ A Payment object.
-  | GetPaymentResponseDefault GetPaymentResponseBodyDefault  -- ^ Error
+data GetPaymentResponse =
+   GetPaymentResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetPaymentResponse200 Payment -- ^ A Payment object.
+  | GetPaymentResponseDefault GetPaymentResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetPaymentResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetPaymentResponseBodyDefault = GetPaymentResponseBodyDefault {
   -- | errors
-  getPaymentResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getPaymentResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetPaymentResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getPaymentResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getPaymentResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetPaymentResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getPaymentResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getPaymentResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetPaymentResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetPaymentResponseBodyDefault" (\obj -> GHC.Base.pure GetPaymentResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetPaymentResponseBodyDefault' with all required fields.
+mkGetPaymentResponseBodyDefault :: GetPaymentResponseBodyDefault
+mkGetPaymentResponseBodyDefault = GetPaymentResponseBodyDefault{getPaymentResponseBodyDefaultErrors = GHC.Maybe.Nothing}

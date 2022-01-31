@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation resetDiskPassword
 module Linode.Operations.ResetDiskPassword where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,53 +45,41 @@ import Linode.Types
 -- | > POST /linode/instances/{linodeId}/disks/{diskId}/password
 -- 
 -- Resets the password of a Disk you have permission to \`read_write\`.
-resetDiskPassword :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> ResetDiskPasswordRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response ResetDiskPasswordResponse)) -- ^ Monad containing the result of the operation
-resetDiskPassword config
-                  body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ResetDiskPasswordResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ResetDiskPasswordResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                     ResetDiskPasswordResponseBody200)
-                                                                                                                                                                                    | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ResetDiskPasswordResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                       ResetDiskPasswordResponseBodyDefault)
-                                                                                                                                                                                    | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/password") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/disks/{diskId}/password
+resetDiskPassword :: forall m . Linode.Common.MonadHTTP m => ResetDiskPasswordParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> ResetDiskPasswordRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response ResetDiskPasswordResponse) -- ^ Monadic computation which returns the result of the operation
+resetDiskPassword parameters
+                  body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ResetDiskPasswordResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ResetDiskPasswordResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                      Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ResetDiskPasswordResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                        ResetDiskPasswordResponseBodyDefault)
+                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack (("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (resetDiskPasswordParametersPathLinodeId parameters))) GHC.Base.++ "/disks/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (resetDiskPasswordParametersPathDiskId parameters))) GHC.Base.++ "/password"))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/disks\/{diskId}\/password.POST.parameters@ in the specification.
 -- 
--- The same as 'resetDiskPassword' but returns the raw 'Data.ByteString.Char8.ByteString'
-resetDiskPasswordRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        Linode.Common.Configuration s ->
-                        ResetDiskPasswordRequestBody ->
-                        m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                              (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-resetDiskPasswordRaw config
-                     body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/password") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/disks/{diskId}/password
 -- 
--- Monadic version of 'resetDiskPassword' (use with 'Linode.Common.runWithConfiguration')
-resetDiskPasswordM :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      ResetDiskPasswordRequestBody ->
-                      Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                         m
-                                                         (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                             (Network.HTTP.Client.Types.Response ResetDiskPasswordResponse))
-resetDiskPasswordM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either ResetDiskPasswordResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ResetDiskPasswordResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                      ResetDiskPasswordResponseBody200)
-                                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ResetDiskPasswordResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                        ResetDiskPasswordResponseBodyDefault)
-                                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/password") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/disks/{diskId}/password
--- 
--- Monadic version of 'resetDiskPasswordRaw' (use with 'Linode.Common.runWithConfiguration')
-resetDiskPasswordRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         ResetDiskPasswordRequestBody ->
-                         Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                            m
-                                                            (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-resetDiskPasswordRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/password") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema resetDiskPasswordRequestBody
+data ResetDiskPasswordParameters = ResetDiskPasswordParameters {
+  -- | pathDiskId: Represents the parameter named \'diskId\'
+  -- 
+  -- ID of the Disk to look up.
+  resetDiskPasswordParametersPathDiskId :: GHC.Types.Int
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- ID of the Linode to look up.
+  , resetDiskPasswordParametersPathLinodeId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON ResetDiskPasswordParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathDiskId" Data.Aeson.Types.ToJSON..= resetDiskPasswordParametersPathDiskId obj : "pathLinodeId" Data.Aeson.Types.ToJSON..= resetDiskPasswordParametersPathLinodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathDiskId" Data.Aeson.Types.ToJSON..= resetDiskPasswordParametersPathDiskId obj) GHC.Base.<> ("pathLinodeId" Data.Aeson.Types.ToJSON..= resetDiskPasswordParametersPathLinodeId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON ResetDiskPasswordParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "ResetDiskPasswordParameters" (\obj -> (GHC.Base.pure ResetDiskPasswordParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathDiskId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId"))
+-- | Create a new 'ResetDiskPasswordParameters' with all required fields.
+mkResetDiskPasswordParameters :: GHC.Types.Int -- ^ 'resetDiskPasswordParametersPathDiskId'
+  -> GHC.Types.Int -- ^ 'resetDiskPasswordParametersPathLinodeId'
+  -> ResetDiskPasswordParameters
+mkResetDiskPasswordParameters resetDiskPasswordParametersPathDiskId resetDiskPasswordParametersPathLinodeId = ResetDiskPasswordParameters{resetDiskPasswordParametersPathDiskId = resetDiskPasswordParametersPathDiskId,
+                                                                                                                                          resetDiskPasswordParametersPathLinodeId = resetDiskPasswordParametersPathLinodeId}
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/disks\/{diskId}\/password.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ResetDiskPasswordRequestBody = ResetDiskPasswordRequestBody {
@@ -100,41 +88,36 @@ data ResetDiskPasswordRequestBody = ResetDiskPasswordRequestBody {
   resetDiskPasswordRequestBodyPassword :: Data.Text.Internal.Text
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ResetDiskPasswordRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "password" (resetDiskPasswordRequestBodyPassword obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "password" (resetDiskPasswordRequestBodyPassword obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ResetDiskPasswordRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("password" Data.Aeson.Types.ToJSON..= resetDiskPasswordRequestBodyPassword obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("password" Data.Aeson.Types.ToJSON..= resetDiskPasswordRequestBodyPassword obj)
 instance Data.Aeson.Types.FromJSON.FromJSON ResetDiskPasswordRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ResetDiskPasswordRequestBody" (\obj -> GHC.Base.pure ResetDiskPasswordRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "password"))
+-- | Create a new 'ResetDiskPasswordRequestBody' with all required fields.
+mkResetDiskPasswordRequestBody :: Data.Text.Internal.Text -- ^ 'resetDiskPasswordRequestBodyPassword'
+  -> ResetDiskPasswordRequestBody
+mkResetDiskPasswordRequestBody resetDiskPasswordRequestBodyPassword = ResetDiskPasswordRequestBody{resetDiskPasswordRequestBodyPassword = resetDiskPasswordRequestBodyPassword}
 -- | Represents a response of the operation 'resetDiskPassword'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'ResetDiskPasswordResponseError' is used.
-data ResetDiskPasswordResponse =                                           
-   ResetDiskPasswordResponseError GHC.Base.String                          -- ^ Means either no matching case available or a parse error
-  | ResetDiskPasswordResponse200 ResetDiskPasswordResponseBody200          -- ^ Returns a single Disk object.
-  | ResetDiskPasswordResponseDefault ResetDiskPasswordResponseBodyDefault  -- ^ Error
+data ResetDiskPasswordResponse =
+   ResetDiskPasswordResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | ResetDiskPasswordResponse200 Data.Aeson.Types.Internal.Object -- ^ Returns a single Disk object.
+  | ResetDiskPasswordResponseDefault ResetDiskPasswordResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema ResetDiskPasswordResponseBody200
--- 
--- 
-data ResetDiskPasswordResponseBody200 = ResetDiskPasswordResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ResetDiskPasswordResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON ResetDiskPasswordResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "ResetDiskPasswordResponseBody200" (\obj -> GHC.Base.pure ResetDiskPasswordResponseBody200)
--- | Defines the data type for the schema ResetDiskPasswordResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ResetDiskPasswordResponseBodyDefault = ResetDiskPasswordResponseBodyDefault {
   -- | errors
-  resetDiskPasswordResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  resetDiskPasswordResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ResetDiskPasswordResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (resetDiskPasswordResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (resetDiskPasswordResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ResetDiskPasswordResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= resetDiskPasswordResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= resetDiskPasswordResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON ResetDiskPasswordResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ResetDiskPasswordResponseBodyDefault" (\obj -> GHC.Base.pure ResetDiskPasswordResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'ResetDiskPasswordResponseBodyDefault' with all required fields.
+mkResetDiskPasswordResponseBodyDefault :: ResetDiskPasswordResponseBodyDefault
+mkResetDiskPasswordResponseBodyDefault = ResetDiskPasswordResponseBodyDefault{resetDiskPasswordResponseBodyDefaultErrors = GHC.Maybe.Nothing}

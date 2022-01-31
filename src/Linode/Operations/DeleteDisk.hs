@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation deleteDisk
 module Linode.Operations.DeleteDisk where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -47,76 +47,59 @@ import Linode.Types
 -- Deletes a Disk you have permission to \`read_write\`.
 -- 
 -- **Deleting a Disk is a destructive action and cannot be undone.**
-deleteDisk :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response DeleteDiskResponse)) -- ^ Monad containing the result of the operation
-deleteDisk config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                  DeleteDiskResponseBody200)
-                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                    DeleteDiskResponseBodyDefault)
-                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}") [])
--- | > DELETE /linode/instances/{linodeId}/disks/{diskId}
+deleteDisk :: forall m . Linode.Common.MonadHTTP m => DeleteDiskParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response DeleteDiskResponse) -- ^ Monadic computation which returns the result of the operation
+deleteDisk parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                       Data.Aeson.Types.Internal.Object)
+                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                         DeleteDiskResponseBodyDefault)
+                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack (("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (deleteDiskParametersPathLinodeId parameters))) GHC.Base.++ "/disks/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (deleteDiskParametersPathDiskId parameters))) GHC.Base.++ ""))) GHC.Base.mempty)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/disks\/{diskId}.DELETE.parameters@ in the specification.
 -- 
--- The same as 'deleteDisk' but returns the raw 'Data.ByteString.Char8.ByteString'
-deleteDiskRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Linode.Common.Configuration s ->
-                 m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteDiskRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}") [])
--- | > DELETE /linode/instances/{linodeId}/disks/{diskId}
 -- 
--- Monadic version of 'deleteDisk' (use with 'Linode.Common.runWithConfiguration')
-deleteDiskM :: forall m s . (Linode.Common.MonadHTTP m,
-                             Linode.Common.SecurityScheme s) =>
-               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                  m
-                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                      (Network.HTTP.Client.Types.Response DeleteDiskResponse))
-deleteDiskM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either DeleteDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                            DeleteDiskResponseBody200)
-                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                              DeleteDiskResponseBodyDefault)
-                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}") [])
--- | > DELETE /linode/instances/{linodeId}/disks/{diskId}
--- 
--- Monadic version of 'deleteDiskRaw' (use with 'Linode.Common.runWithConfiguration')
-deleteDiskRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteDiskRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}") [])
+data DeleteDiskParameters = DeleteDiskParameters {
+  -- | pathDiskId: Represents the parameter named \'diskId\'
+  -- 
+  -- ID of the Disk to look up.
+  deleteDiskParametersPathDiskId :: GHC.Types.Int
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- ID of the Linode to look up.
+  , deleteDiskParametersPathLinodeId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON DeleteDiskParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathDiskId" Data.Aeson.Types.ToJSON..= deleteDiskParametersPathDiskId obj : "pathLinodeId" Data.Aeson.Types.ToJSON..= deleteDiskParametersPathLinodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathDiskId" Data.Aeson.Types.ToJSON..= deleteDiskParametersPathDiskId obj) GHC.Base.<> ("pathLinodeId" Data.Aeson.Types.ToJSON..= deleteDiskParametersPathLinodeId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON DeleteDiskParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteDiskParameters" (\obj -> (GHC.Base.pure DeleteDiskParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathDiskId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId"))
+-- | Create a new 'DeleteDiskParameters' with all required fields.
+mkDeleteDiskParameters :: GHC.Types.Int -- ^ 'deleteDiskParametersPathDiskId'
+  -> GHC.Types.Int -- ^ 'deleteDiskParametersPathLinodeId'
+  -> DeleteDiskParameters
+mkDeleteDiskParameters deleteDiskParametersPathDiskId deleteDiskParametersPathLinodeId = DeleteDiskParameters{deleteDiskParametersPathDiskId = deleteDiskParametersPathDiskId,
+                                                                                                              deleteDiskParametersPathLinodeId = deleteDiskParametersPathLinodeId}
 -- | Represents a response of the operation 'deleteDisk'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'DeleteDiskResponseError' is used.
-data DeleteDiskResponse =                                    
-   DeleteDiskResponseError GHC.Base.String                   -- ^ Means either no matching case available or a parse error
-  | DeleteDiskResponse200 DeleteDiskResponseBody200          -- ^ Delete successful
-  | DeleteDiskResponseDefault DeleteDiskResponseBodyDefault  -- ^ Error
+data DeleteDiskResponse =
+   DeleteDiskResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | DeleteDiskResponse200 Data.Aeson.Types.Internal.Object -- ^ Delete successful
+  | DeleteDiskResponseDefault DeleteDiskResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema DeleteDiskResponseBody200
--- 
--- 
-data DeleteDiskResponseBody200 = DeleteDiskResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteDiskResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON DeleteDiskResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteDiskResponseBody200" (\obj -> GHC.Base.pure DeleteDiskResponseBody200)
--- | Defines the data type for the schema DeleteDiskResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data DeleteDiskResponseBodyDefault = DeleteDiskResponseBodyDefault {
   -- | errors
-  deleteDiskResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  deleteDiskResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteDiskResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (deleteDiskResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (deleteDiskResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON DeleteDiskResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= deleteDiskResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= deleteDiskResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON DeleteDiskResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteDiskResponseBodyDefault" (\obj -> GHC.Base.pure DeleteDiskResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'DeleteDiskResponseBodyDefault' with all required fields.
+mkDeleteDiskResponseBodyDefault :: DeleteDiskResponseBodyDefault
+mkDeleteDiskResponseBodyDefault = DeleteDiskResponseBodyDefault{deleteDiskResponseBodyDefaultErrors = GHC.Maybe.Nothing}

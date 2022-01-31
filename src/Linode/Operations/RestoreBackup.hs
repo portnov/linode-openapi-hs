@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation restoreBackup
 module Linode.Operations.RestoreBackup where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,102 +45,86 @@ import Linode.Types
 -- | > POST /linode/instances/{linodeId}/backups/{backupId}/restore
 -- 
 -- Restores a Linode\'s Backup to the specified Linode.
-restoreBackup :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> RestoreBackupRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response RestoreBackupResponse)) -- ^ Monad containing the result of the operation
-restoreBackup config
-              body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either RestoreBackupResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> RestoreBackupResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                         RestoreBackupResponseBody200)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> RestoreBackupResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                           RestoreBackupResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/backups/{backupId}/restore") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/backups/{backupId}/restore
+restoreBackup :: forall m . Linode.Common.MonadHTTP m => RestoreBackupParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> RestoreBackupRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response RestoreBackupResponse) -- ^ Monadic computation which returns the result of the operation
+restoreBackup parameters
+              body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either RestoreBackupResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> RestoreBackupResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                          Data.Aeson.Types.Internal.Object)
+                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> RestoreBackupResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                            RestoreBackupResponseBodyDefault)
+                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack (("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (restoreBackupParametersPathLinodeId parameters))) GHC.Base.++ "/backups/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (restoreBackupParametersPathBackupId parameters))) GHC.Base.++ "/restore"))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/backups\/{backupId}\/restore.POST.parameters@ in the specification.
 -- 
--- The same as 'restoreBackup' but returns the raw 'Data.ByteString.Char8.ByteString'
-restoreBackupRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Linode.Common.Configuration s ->
-                    RestoreBackupRequestBody ->
-                    m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-restoreBackupRaw config
-                 body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/backups/{backupId}/restore") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/backups/{backupId}/restore
 -- 
--- Monadic version of 'restoreBackup' (use with 'Linode.Common.runWithConfiguration')
-restoreBackupM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  RestoreBackupRequestBody ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response RestoreBackupResponse))
-restoreBackupM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either RestoreBackupResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> RestoreBackupResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                          RestoreBackupResponseBody200)
-                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> RestoreBackupResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                            RestoreBackupResponseBodyDefault)
-                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/backups/{backupId}/restore") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/backups/{backupId}/restore
--- 
--- Monadic version of 'restoreBackupRaw' (use with 'Linode.Common.runWithConfiguration')
-restoreBackupRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     RestoreBackupRequestBody ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-restoreBackupRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/backups/{backupId}/restore") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema restoreBackupRequestBody
+data RestoreBackupParameters = RestoreBackupParameters {
+  -- | pathBackupId: Represents the parameter named \'backupId\'
+  -- 
+  -- The ID of the Backup to restore.
+  restoreBackupParametersPathBackupId :: GHC.Types.Int
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- The ID of the Linode that the Backup belongs to.
+  , restoreBackupParametersPathLinodeId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON RestoreBackupParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathBackupId" Data.Aeson.Types.ToJSON..= restoreBackupParametersPathBackupId obj : "pathLinodeId" Data.Aeson.Types.ToJSON..= restoreBackupParametersPathLinodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathBackupId" Data.Aeson.Types.ToJSON..= restoreBackupParametersPathBackupId obj) GHC.Base.<> ("pathLinodeId" Data.Aeson.Types.ToJSON..= restoreBackupParametersPathLinodeId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON RestoreBackupParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "RestoreBackupParameters" (\obj -> (GHC.Base.pure RestoreBackupParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathBackupId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId"))
+-- | Create a new 'RestoreBackupParameters' with all required fields.
+mkRestoreBackupParameters :: GHC.Types.Int -- ^ 'restoreBackupParametersPathBackupId'
+  -> GHC.Types.Int -- ^ 'restoreBackupParametersPathLinodeId'
+  -> RestoreBackupParameters
+mkRestoreBackupParameters restoreBackupParametersPathBackupId restoreBackupParametersPathLinodeId = RestoreBackupParameters{restoreBackupParametersPathBackupId = restoreBackupParametersPathBackupId,
+                                                                                                                            restoreBackupParametersPathLinodeId = restoreBackupParametersPathLinodeId}
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/backups\/{backupId}\/restore.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data RestoreBackupRequestBody = RestoreBackupRequestBody {
   -- | linode_id: The ID of the Linode to restore a Backup to.
-  restoreBackupRequestBodyLinode_id :: GHC.Integer.Type.Integer
+  restoreBackupRequestBodyLinodeId :: GHC.Types.Int
   -- | overwrite: If True, deletes all Disks and Configs on the target Linode
   -- before restoring.
   -- 
   -- If False, and the Disk image size is larger than the available
   -- space on the Linode, an error message indicating insufficient
   -- space is returned.
-  , restoreBackupRequestBodyOverwrite :: (GHC.Base.Maybe GHC.Types.Bool)
+  , restoreBackupRequestBodyOverwrite :: (GHC.Maybe.Maybe GHC.Types.Bool)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON RestoreBackupRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "linode_id" (restoreBackupRequestBodyLinode_id obj) : (Data.Aeson..=) "overwrite" (restoreBackupRequestBodyOverwrite obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "linode_id" (restoreBackupRequestBodyLinode_id obj) GHC.Base.<> (Data.Aeson..=) "overwrite" (restoreBackupRequestBodyOverwrite obj))
+instance Data.Aeson.Types.ToJSON.ToJSON RestoreBackupRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("linode_id" Data.Aeson.Types.ToJSON..= restoreBackupRequestBodyLinodeId obj : "overwrite" Data.Aeson.Types.ToJSON..= restoreBackupRequestBodyOverwrite obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("linode_id" Data.Aeson.Types.ToJSON..= restoreBackupRequestBodyLinodeId obj) GHC.Base.<> ("overwrite" Data.Aeson.Types.ToJSON..= restoreBackupRequestBodyOverwrite obj))
 instance Data.Aeson.Types.FromJSON.FromJSON RestoreBackupRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "RestoreBackupRequestBody" (\obj -> (GHC.Base.pure RestoreBackupRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "linode_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "overwrite"))
+-- | Create a new 'RestoreBackupRequestBody' with all required fields.
+mkRestoreBackupRequestBody :: GHC.Types.Int -- ^ 'restoreBackupRequestBodyLinodeId'
+  -> RestoreBackupRequestBody
+mkRestoreBackupRequestBody restoreBackupRequestBodyLinodeId = RestoreBackupRequestBody{restoreBackupRequestBodyLinodeId = restoreBackupRequestBodyLinodeId,
+                                                                                       restoreBackupRequestBodyOverwrite = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'restoreBackup'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'RestoreBackupResponseError' is used.
-data RestoreBackupResponse =                                       
-   RestoreBackupResponseError GHC.Base.String                      -- ^ Means either no matching case available or a parse error
-  | RestoreBackupResponse200 RestoreBackupResponseBody200          -- ^ Restore from Backup was initiated.
-  | RestoreBackupResponseDefault RestoreBackupResponseBodyDefault  -- ^ Error
+data RestoreBackupResponse =
+   RestoreBackupResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | RestoreBackupResponse200 Data.Aeson.Types.Internal.Object -- ^ Restore from Backup was initiated.
+  | RestoreBackupResponseDefault RestoreBackupResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema RestoreBackupResponseBody200
--- 
--- 
-data RestoreBackupResponseBody200 = RestoreBackupResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON RestoreBackupResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON RestoreBackupResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "RestoreBackupResponseBody200" (\obj -> GHC.Base.pure RestoreBackupResponseBody200)
--- | Defines the data type for the schema RestoreBackupResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data RestoreBackupResponseBodyDefault = RestoreBackupResponseBodyDefault {
   -- | errors
-  restoreBackupResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  restoreBackupResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON RestoreBackupResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (restoreBackupResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (restoreBackupResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON RestoreBackupResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= restoreBackupResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= restoreBackupResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON RestoreBackupResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "RestoreBackupResponseBodyDefault" (\obj -> GHC.Base.pure RestoreBackupResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'RestoreBackupResponseBodyDefault' with all required fields.
+mkRestoreBackupResponseBodyDefault :: RestoreBackupResponseBodyDefault
+mkRestoreBackupResponseBodyDefault = RestoreBackupResponseBodyDefault{restoreBackupResponseBodyDefaultErrors = GHC.Maybe.Nothing}

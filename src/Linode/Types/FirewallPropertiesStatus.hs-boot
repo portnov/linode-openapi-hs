@@ -1,0 +1,8 @@
+module Linode.Types.FirewallPropertiesStatus where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data FirewallPropertiesStatus
+instance Show FirewallPropertiesStatus
+instance Eq FirewallPropertiesStatus
+instance FromJSON FirewallPropertiesStatus
+instance ToJSON FirewallPropertiesStatus

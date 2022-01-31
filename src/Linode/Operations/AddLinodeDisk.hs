@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation addLinodeDisk
 module Linode.Operations.AddLinodeDisk where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,7 +41,6 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > POST /linode/instances/{linodeId}/disks
 -- 
@@ -66,63 +65,32 @@ import Linode.ManualTypes
 --   * It is recommended to supply SSH keys for the root User using the \`authorized_keys\` field.
 --   * You may also supply a list of usernames via the \`authorized_users\` field.
 --     * These users must have an SSH Key associated with their Profiles first. See SSH Key Add ([POST \/profile\/sshkeys](\/docs\/api\/profile\/\#ssh-key-add)) for more information.
-addLinodeDisk :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> AddLinodeDiskRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response AddLinodeDiskResponse)) -- ^ Monad containing the result of the operation
-addLinodeDisk config
-              body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either AddLinodeDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> AddLinodeDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                         Disk)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> AddLinodeDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                           AddLinodeDiskResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/disks
--- 
--- The same as 'addLinodeDisk' but returns the raw 'Data.ByteString.Char8.ByteString'
-addLinodeDiskRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Linode.Common.Configuration s ->
-                    AddLinodeDiskRequestBody ->
-                    m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-addLinodeDiskRaw config
-                 body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/disks
--- 
--- Monadic version of 'addLinodeDisk' (use with 'Linode.Common.runWithConfiguration')
-addLinodeDiskM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  AddLinodeDiskRequestBody ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response AddLinodeDiskResponse))
-addLinodeDiskM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either AddLinodeDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> AddLinodeDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                          Disk)
-                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> AddLinodeDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                            AddLinodeDiskResponseBodyDefault)
-                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/disks
--- 
--- Monadic version of 'addLinodeDiskRaw' (use with 'Linode.Common.runWithConfiguration')
-addLinodeDiskRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     AddLinodeDiskRequestBody ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-addLinodeDiskRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema addLinodeDiskRequestBody
+addLinodeDisk :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ linodeId: ID of the Linode to look up.
+  -> AddLinodeDiskRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response AddLinodeDiskResponse) -- ^ Monadic computation which returns the result of the operation
+addLinodeDisk linodeId
+              body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either AddLinodeDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> AddLinodeDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                          Disk)
+                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> AddLinodeDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                            AddLinodeDiskResponseBodyDefault)
+                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel linodeId)) GHC.Base.++ "/disks"))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/disks.POST.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data AddLinodeDiskRequestBody = AddLinodeDiskRequestBody {
   -- | authorized_keys: A list of public SSH keys that will be automatically appended
   -- to the root user\'s \`~\/.ssh\/authorized_keys\` file when deploying from an Image.
-  addLinodeDiskRequestBodyAuthorized_keys :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  addLinodeDiskRequestBodyAuthorizedKeys :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   -- | authorized_users: A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the root users \`~\/.ssh\/authorized_keys\` file automatically when deploying from an Image.
-  , addLinodeDiskRequestBodyAuthorized_users :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
-  -- | filesystem
-  , addLinodeDiskRequestBodyFilesystem :: (GHC.Base.Maybe Disk_properties_filesystem)
+  , addLinodeDiskRequestBodyAuthorizedUsers :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
+  -- | filesystem: The Disk filesystem can be one of:
+  -- 
+  --   * raw - No filesystem, just a raw binary stream.
+  --   * swap - Linux swap area.
+  --   * ext3 - The ext3 journaling filesystem for Linux.
+  --   * ext4 - The ext4 journaling filesystem for Linux.
+  --   * initrd - initrd (uncompressed initrd, ext2, max 32 MB).
+  , addLinodeDiskRequestBodyFilesystem :: (GHC.Maybe.Maybe DiskPropertiesFilesystem)
   -- | image: An Image ID to deploy the Linode Disk from.
   -- 
   -- Access the Images List ([GET \/images](\/docs\/api\/images\/\#images-list)) endpoint with authentication to view
@@ -130,9 +98,15 @@ data AddLinodeDiskRequestBody = AddLinodeDiskRequestBody {
   -- a disk from a Private Image requires \`read_only\` or \`read_write\` permissions for that Image. Access the User\'s
   -- Grant Update ([PUT \/account\/users\/{username}\/grants](\/docs\/api\/account\/\#users-grants-update)) endpoint to
   -- adjust permissions for an Account Image.
-  , addLinodeDiskRequestBodyImage :: (GHC.Base.Maybe Data.Text.Internal.Text)
-  -- | label
-  , addLinodeDiskRequestBodyLabel :: (GHC.Base.Maybe Disk_properties_label)
+  , addLinodeDiskRequestBodyImage :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
+  -- | label: The Disk\'s label is for display purposes only.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maximum length of 48
+  -- * Minimum length of 1
+  , addLinodeDiskRequestBodyLabel :: (GHC.Maybe.Maybe DiskPropertiesLabel)
   -- | root_pass: This sets the root user\'s password on a newly-created Linode Disk when deploying from an Image.
   -- 
   -- * **Required** when creating a Linode Disk from an Image, including when using a StackScript.
@@ -145,62 +119,61 @@ data AddLinodeDiskRequestBody = AddLinodeDiskRequestBody {
   -- 
   -- * Maximum length of 128
   -- * Minimum length of 7
-  , addLinodeDiskRequestBodyRoot_pass :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , addLinodeDiskRequestBodyRootPass :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | size: The size of the Disk in MB.
   -- 
   -- Images require a minimum size. Access the Image View ([GET \/images\/{imageID}](\/docs\/api\/images\/\#image-view)) endpoint to view its size.
-  , addLinodeDiskRequestBodySize :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , addLinodeDiskRequestBodySize :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | stackscript_data: This field is required only if the StackScript being deployed requires input
   -- data from the User for successful completion. See
   -- [User Defined Fields (UDFs)](\/docs\/guides\/writing-scripts-for-use-with-linode-stackscripts-a-tutorial\/\#user-defined-fields-udfs)
   -- for more details. This field is required to be valid JSON.
-  , addLinodeDiskRequestBodyStackscript_data :: (GHC.Base.Maybe AddLinodeDiskRequestBodyStackscript_data)
+  , addLinodeDiskRequestBodyStackscriptData :: (GHC.Maybe.Maybe Data.Aeson.Types.Internal.Object)
   -- | stackscript_id: A StackScript ID that will cause the referenced StackScript to be run during
   -- deployment of this Linode. A compatible \`image\` is required to use a
   -- StackScript. To get a list of available StackScript and their permitted Images
   -- see [\/stackscripts](\/docs\/api\/stackscripts\/\#stackscripts-list).
   -- This field cannot be used when deploying from a Backup or a Private Image.
-  , addLinodeDiskRequestBodyStackscript_id :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , addLinodeDiskRequestBodyStackscriptId :: (GHC.Maybe.Maybe GHC.Types.Int)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON AddLinodeDiskRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "authorized_keys" (addLinodeDiskRequestBodyAuthorized_keys obj) : (Data.Aeson..=) "authorized_users" (addLinodeDiskRequestBodyAuthorized_users obj) : (Data.Aeson..=) "filesystem" (addLinodeDiskRequestBodyFilesystem obj) : (Data.Aeson..=) "image" (addLinodeDiskRequestBodyImage obj) : (Data.Aeson..=) "label" (addLinodeDiskRequestBodyLabel obj) : (Data.Aeson..=) "root_pass" (addLinodeDiskRequestBodyRoot_pass obj) : (Data.Aeson..=) "size" (addLinodeDiskRequestBodySize obj) : (Data.Aeson..=) "stackscript_data" (addLinodeDiskRequestBodyStackscript_data obj) : (Data.Aeson..=) "stackscript_id" (addLinodeDiskRequestBodyStackscript_id obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "authorized_keys" (addLinodeDiskRequestBodyAuthorized_keys obj) GHC.Base.<> ((Data.Aeson..=) "authorized_users" (addLinodeDiskRequestBodyAuthorized_users obj) GHC.Base.<> ((Data.Aeson..=) "filesystem" (addLinodeDiskRequestBodyFilesystem obj) GHC.Base.<> ((Data.Aeson..=) "image" (addLinodeDiskRequestBodyImage obj) GHC.Base.<> ((Data.Aeson..=) "label" (addLinodeDiskRequestBodyLabel obj) GHC.Base.<> ((Data.Aeson..=) "root_pass" (addLinodeDiskRequestBodyRoot_pass obj) GHC.Base.<> ((Data.Aeson..=) "size" (addLinodeDiskRequestBodySize obj) GHC.Base.<> ((Data.Aeson..=) "stackscript_data" (addLinodeDiskRequestBodyStackscript_data obj) GHC.Base.<> (Data.Aeson..=) "stackscript_id" (addLinodeDiskRequestBodyStackscript_id obj)))))))))
+instance Data.Aeson.Types.ToJSON.ToJSON AddLinodeDiskRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("authorized_keys" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyAuthorizedKeys obj : "authorized_users" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyAuthorizedUsers obj : "filesystem" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyFilesystem obj : "image" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyImage obj : "label" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyLabel obj : "root_pass" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyRootPass obj : "size" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodySize obj : "stackscript_data" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyStackscriptData obj : "stackscript_id" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyStackscriptId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("authorized_keys" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyAuthorizedKeys obj) GHC.Base.<> (("authorized_users" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyAuthorizedUsers obj) GHC.Base.<> (("filesystem" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyFilesystem obj) GHC.Base.<> (("image" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyImage obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyLabel obj) GHC.Base.<> (("root_pass" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyRootPass obj) GHC.Base.<> (("size" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodySize obj) GHC.Base.<> (("stackscript_data" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyStackscriptData obj) GHC.Base.<> ("stackscript_id" Data.Aeson.Types.ToJSON..= addLinodeDiskRequestBodyStackscriptId obj)))))))))
 instance Data.Aeson.Types.FromJSON.FromJSON AddLinodeDiskRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "AddLinodeDiskRequestBody" (\obj -> ((((((((GHC.Base.pure AddLinodeDiskRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "authorized_keys")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "authorized_users")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "filesystem")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "image")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "root_pass")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "size")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "stackscript_data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "stackscript_id"))
--- | Defines the data type for the schema addLinodeDiskRequestBodyStackscript_data
--- 
--- This field is required only if the StackScript being deployed requires input
--- data from the User for successful completion. See
--- [User Defined Fields (UDFs)](\/docs\/guides\/writing-scripts-for-use-with-linode-stackscripts-a-tutorial\/\#user-defined-fields-udfs)
--- for more details. This field is required to be valid JSON.
-data AddLinodeDiskRequestBodyStackscript_data = AddLinodeDiskRequestBodyStackscript_data {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON AddLinodeDiskRequestBodyStackscript_data
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON AddLinodeDiskRequestBodyStackscript_data
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "AddLinodeDiskRequestBodyStackscript_data" (\obj -> GHC.Base.pure AddLinodeDiskRequestBodyStackscript_data)
+-- | Create a new 'AddLinodeDiskRequestBody' with all required fields.
+mkAddLinodeDiskRequestBody :: AddLinodeDiskRequestBody
+mkAddLinodeDiskRequestBody = AddLinodeDiskRequestBody{addLinodeDiskRequestBodyAuthorizedKeys = GHC.Maybe.Nothing,
+                                                      addLinodeDiskRequestBodyAuthorizedUsers = GHC.Maybe.Nothing,
+                                                      addLinodeDiskRequestBodyFilesystem = GHC.Maybe.Nothing,
+                                                      addLinodeDiskRequestBodyImage = GHC.Maybe.Nothing,
+                                                      addLinodeDiskRequestBodyLabel = GHC.Maybe.Nothing,
+                                                      addLinodeDiskRequestBodyRootPass = GHC.Maybe.Nothing,
+                                                      addLinodeDiskRequestBodySize = GHC.Maybe.Nothing,
+                                                      addLinodeDiskRequestBodyStackscriptData = GHC.Maybe.Nothing,
+                                                      addLinodeDiskRequestBodyStackscriptId = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'addLinodeDisk'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'AddLinodeDiskResponseError' is used.
-data AddLinodeDiskResponse =                                       
-   AddLinodeDiskResponseError GHC.Base.String                      -- ^ Means either no matching case available or a parse error
-  | AddLinodeDiskResponse200 Disk                                  -- ^ Disk created.
-  | AddLinodeDiskResponseDefault AddLinodeDiskResponseBodyDefault  -- ^ Error
+data AddLinodeDiskResponse =
+   AddLinodeDiskResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | AddLinodeDiskResponse200 Disk -- ^ Disk created.
+  | AddLinodeDiskResponseDefault AddLinodeDiskResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema AddLinodeDiskResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data AddLinodeDiskResponseBodyDefault = AddLinodeDiskResponseBodyDefault {
   -- | errors
-  addLinodeDiskResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  addLinodeDiskResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON AddLinodeDiskResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (addLinodeDiskResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (addLinodeDiskResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON AddLinodeDiskResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= addLinodeDiskResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= addLinodeDiskResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON AddLinodeDiskResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "AddLinodeDiskResponseBodyDefault" (\obj -> GHC.Base.pure AddLinodeDiskResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'AddLinodeDiskResponseBodyDefault' with all required fields.
+mkAddLinodeDiskResponseBodyDefault :: AddLinodeDiskResponseBodyDefault
+mkAddLinodeDiskResponseBodyDefault = AddLinodeDiskResponseBodyDefault{addLinodeDiskResponseBodyDefaultErrors = GHC.Maybe.Nothing}

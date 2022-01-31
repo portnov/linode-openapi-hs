@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createObjectStorageObjectURL
 module Linode.Operations.CreateObjectStorageObjectURL where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -52,58 +52,46 @@ import Linode.Types
 -- This endpoint is available for convenience. It is recommended that instead you
 -- use the more [fully-featured S3 API](https:\/\/docs.ceph.com\/en\/latest\/radosgw\/s3\/)
 -- directly.
-createObjectStorageObjectURL :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe CreateObjectStorageObjectURLRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateObjectStorageObjectURLResponse)) -- ^ Monad containing the result of the operation
-createObjectStorageObjectURL config
-                             body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateObjectStorageObjectURLResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageObjectURLResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                      CreateObjectStorageObjectURLResponseBody200)
-                                                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageObjectURLResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                        CreateObjectStorageObjectURLResponseBodyDefault)
-                                                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-url") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /object-storage/buckets/{clusterId}/{bucket}/object-url
+createObjectStorageObjectURL :: forall m . Linode.Common.MonadHTTP m => CreateObjectStorageObjectURLParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> GHC.Maybe.Maybe CreateObjectStorageObjectURLRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateObjectStorageObjectURLResponse) -- ^ Monadic computation which returns the result of the operation
+createObjectStorageObjectURL parameters
+                             body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateObjectStorageObjectURLResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageObjectURLResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                                       CreateObjectStorageObjectURLResponseBody200)
+                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageObjectURLResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                         CreateObjectStorageObjectURLResponseBodyDefault)
+                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack (("/object-storage/buckets/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (createObjectStorageObjectURLParametersPathClusterId parameters))) GHC.Base.++ "/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (createObjectStorageObjectURLParametersPathBucket parameters))) GHC.Base.++ "/object-url"))) GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/object-url.POST.parameters@ in the specification.
 -- 
--- The same as 'createObjectStorageObjectURL' but returns the raw 'Data.ByteString.Char8.ByteString'
-createObjectStorageObjectURLRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                                 Linode.Common.SecurityScheme s) =>
-                                   Linode.Common.Configuration s ->
-                                   GHC.Base.Maybe CreateObjectStorageObjectURLRequestBody ->
-                                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createObjectStorageObjectURLRaw config
-                                body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-url") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /object-storage/buckets/{clusterId}/{bucket}/object-url
 -- 
--- Monadic version of 'createObjectStorageObjectURL' (use with 'Linode.Common.runWithConfiguration')
-createObjectStorageObjectURLM :: forall m s . (Linode.Common.MonadHTTP m,
-                                               Linode.Common.SecurityScheme s) =>
-                                 GHC.Base.Maybe CreateObjectStorageObjectURLRequestBody ->
-                                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                    m
-                                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                        (Network.HTTP.Client.Types.Response CreateObjectStorageObjectURLResponse))
-createObjectStorageObjectURLM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateObjectStorageObjectURLResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageObjectURLResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                       CreateObjectStorageObjectURLResponseBody200)
-                                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageObjectURLResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                         CreateObjectStorageObjectURLResponseBodyDefault)
-                                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-url") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /object-storage/buckets/{clusterId}/{bucket}/object-url
--- 
--- Monadic version of 'createObjectStorageObjectURLRaw' (use with 'Linode.Common.runWithConfiguration')
-createObjectStorageObjectURLRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                                  Linode.Common.SecurityScheme s) =>
-                                    GHC.Base.Maybe CreateObjectStorageObjectURLRequestBody ->
-                                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                       m
-                                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createObjectStorageObjectURLRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-url") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createObjectStorageObjectURLRequestBody
+data CreateObjectStorageObjectURLParameters = CreateObjectStorageObjectURLParameters {
+  -- | pathBucket: Represents the parameter named \'bucket\'
+  -- 
+  -- The bucket name.
+  createObjectStorageObjectURLParametersPathBucket :: Data.Text.Internal.Text
+  -- | pathClusterId: Represents the parameter named \'clusterId\'
+  -- 
+  -- The ID of the cluster this bucket exists in.
+  , createObjectStorageObjectURLParametersPathClusterId :: Data.Text.Internal.Text
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateObjectStorageObjectURLParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathBucket" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLParametersPathBucket obj : "pathClusterId" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLParametersPathClusterId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathBucket" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLParametersPathBucket obj) GHC.Base.<> ("pathClusterId" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLParametersPathClusterId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON CreateObjectStorageObjectURLParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateObjectStorageObjectURLParameters" (\obj -> (GHC.Base.pure CreateObjectStorageObjectURLParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathBucket")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathClusterId"))
+-- | Create a new 'CreateObjectStorageObjectURLParameters' with all required fields.
+mkCreateObjectStorageObjectURLParameters :: Data.Text.Internal.Text -- ^ 'createObjectStorageObjectURLParametersPathBucket'
+  -> Data.Text.Internal.Text -- ^ 'createObjectStorageObjectURLParametersPathClusterId'
+  -> CreateObjectStorageObjectURLParameters
+mkCreateObjectStorageObjectURLParameters createObjectStorageObjectURLParametersPathBucket createObjectStorageObjectURLParametersPathClusterId = CreateObjectStorageObjectURLParameters{createObjectStorageObjectURLParametersPathBucket = createObjectStorageObjectURLParametersPathBucket,
+                                                                                                                                                                                       createObjectStorageObjectURLParametersPathClusterId = createObjectStorageObjectURLParametersPathClusterId}
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/object-url.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateObjectStorageObjectURLRequestBody = CreateObjectStorageObjectURLRequestBody {
   -- | content_type: The expected \`Content-type\` header of the request this signed URL will be valid for.  If provided, the \`Content-type\` header _must_ be sent with the request when this URL is used, and _must_ be the same as it was when the signed URL was created. Required for all methods *except* \"GET\" or \"DELETE\".
-  createObjectStorageObjectURLRequestBodyContent_type :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  createObjectStorageObjectURLRequestBodyContentType :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | expires_in: How long this signed URL will be valid for, in seconds.  If omitted, the URL will be valid for 3600 seconds (1 hour).
   -- 
   -- 
@@ -111,49 +99,63 @@ data CreateObjectStorageObjectURLRequestBody = CreateObjectStorageObjectURLReque
   -- 
   -- * Maxium  of 68400.0
   -- * Minimum  of 360.0
-  , createObjectStorageObjectURLRequestBodyExpires_in :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createObjectStorageObjectURLRequestBodyExpiresIn :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | method: The HTTP method allowed to be used with the pre-signed URL.
   , createObjectStorageObjectURLRequestBodyMethod :: Data.Text.Internal.Text
   -- | name: The name of the object that will be accessed with the pre-signed URL. This object need not exist, and no error will be returned if it doesn\'t. This behavior is useful for generating pre-signed URLs to upload new objects to by setting the \`method\` to \"PUT\".
   , createObjectStorageObjectURLRequestBodyName :: Data.Text.Internal.Text
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateObjectStorageObjectURLRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "content_type" (createObjectStorageObjectURLRequestBodyContent_type obj) : (Data.Aeson..=) "expires_in" (createObjectStorageObjectURLRequestBodyExpires_in obj) : (Data.Aeson..=) "method" (createObjectStorageObjectURLRequestBodyMethod obj) : (Data.Aeson..=) "name" (createObjectStorageObjectURLRequestBodyName obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "content_type" (createObjectStorageObjectURLRequestBodyContent_type obj) GHC.Base.<> ((Data.Aeson..=) "expires_in" (createObjectStorageObjectURLRequestBodyExpires_in obj) GHC.Base.<> ((Data.Aeson..=) "method" (createObjectStorageObjectURLRequestBodyMethod obj) GHC.Base.<> (Data.Aeson..=) "name" (createObjectStorageObjectURLRequestBodyName obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateObjectStorageObjectURLRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("content_type" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLRequestBodyContentType obj : "expires_in" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLRequestBodyExpiresIn obj : "method" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLRequestBodyMethod obj : "name" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLRequestBodyName obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("content_type" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLRequestBodyContentType obj) GHC.Base.<> (("expires_in" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLRequestBodyExpiresIn obj) GHC.Base.<> (("method" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLRequestBodyMethod obj) GHC.Base.<> ("name" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLRequestBodyName obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateObjectStorageObjectURLRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateObjectStorageObjectURLRequestBody" (\obj -> (((GHC.Base.pure CreateObjectStorageObjectURLRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "content_type")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "expires_in")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "method")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "name"))
+-- | Create a new 'CreateObjectStorageObjectURLRequestBody' with all required fields.
+mkCreateObjectStorageObjectURLRequestBody :: Data.Text.Internal.Text -- ^ 'createObjectStorageObjectURLRequestBodyMethod'
+  -> Data.Text.Internal.Text -- ^ 'createObjectStorageObjectURLRequestBodyName'
+  -> CreateObjectStorageObjectURLRequestBody
+mkCreateObjectStorageObjectURLRequestBody createObjectStorageObjectURLRequestBodyMethod createObjectStorageObjectURLRequestBodyName = CreateObjectStorageObjectURLRequestBody{createObjectStorageObjectURLRequestBodyContentType = GHC.Maybe.Nothing,
+                                                                                                                                                                              createObjectStorageObjectURLRequestBodyExpiresIn = GHC.Maybe.Nothing,
+                                                                                                                                                                              createObjectStorageObjectURLRequestBodyMethod = createObjectStorageObjectURLRequestBodyMethod,
+                                                                                                                                                                              createObjectStorageObjectURLRequestBodyName = createObjectStorageObjectURLRequestBodyName}
 -- | Represents a response of the operation 'createObjectStorageObjectURL'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateObjectStorageObjectURLResponseError' is used.
-data CreateObjectStorageObjectURLResponse =                                                      
-   CreateObjectStorageObjectURLResponseError GHC.Base.String                                     -- ^ Means either no matching case available or a parse error
-  | CreateObjectStorageObjectURLResponse200 CreateObjectStorageObjectURLResponseBody200          -- ^ The URL with which to access your object.
-  | CreateObjectStorageObjectURLResponseDefault CreateObjectStorageObjectURLResponseBodyDefault  -- ^ Error
+data CreateObjectStorageObjectURLResponse =
+   CreateObjectStorageObjectURLResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateObjectStorageObjectURLResponse200 CreateObjectStorageObjectURLResponseBody200 -- ^ The URL with which to access your object.
+  | CreateObjectStorageObjectURLResponseDefault CreateObjectStorageObjectURLResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateObjectStorageObjectURLResponseBody200
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/object-url.POST.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateObjectStorageObjectURLResponseBody200 = CreateObjectStorageObjectURLResponseBody200 {
   -- | url: The signed URL to perform the request at.
-  createObjectStorageObjectURLResponseBody200Url :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  createObjectStorageObjectURLResponseBody200Url :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateObjectStorageObjectURLResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "url" (createObjectStorageObjectURLResponseBody200Url obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "url" (createObjectStorageObjectURLResponseBody200Url obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateObjectStorageObjectURLResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("url" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLResponseBody200Url obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("url" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLResponseBody200Url obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateObjectStorageObjectURLResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateObjectStorageObjectURLResponseBody200" (\obj -> GHC.Base.pure CreateObjectStorageObjectURLResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "url"))
--- | Defines the data type for the schema CreateObjectStorageObjectURLResponseBodyDefault
+-- | Create a new 'CreateObjectStorageObjectURLResponseBody200' with all required fields.
+mkCreateObjectStorageObjectURLResponseBody200 :: CreateObjectStorageObjectURLResponseBody200
+mkCreateObjectStorageObjectURLResponseBody200 = CreateObjectStorageObjectURLResponseBody200{createObjectStorageObjectURLResponseBody200Url = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateObjectStorageObjectURLResponseBodyDefault = CreateObjectStorageObjectURLResponseBodyDefault {
   -- | errors
-  createObjectStorageObjectURLResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createObjectStorageObjectURLResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateObjectStorageObjectURLResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createObjectStorageObjectURLResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createObjectStorageObjectURLResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateObjectStorageObjectURLResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createObjectStorageObjectURLResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateObjectStorageObjectURLResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateObjectStorageObjectURLResponseBodyDefault" (\obj -> GHC.Base.pure CreateObjectStorageObjectURLResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateObjectStorageObjectURLResponseBodyDefault' with all required fields.
+mkCreateObjectStorageObjectURLResponseBodyDefault :: CreateObjectStorageObjectURLResponseBodyDefault
+mkCreateObjectStorageObjectURLResponseBodyDefault = CreateObjectStorageObjectURLResponseBodyDefault{createObjectStorageObjectURLResponseBodyDefaultErrors = GHC.Maybe.Nothing}

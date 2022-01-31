@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation modifyObjectStorageBucketAccess
 module Linode.Operations.ModifyObjectStorageBucketAccess where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -49,129 +49,107 @@ import Linode.Types
 -- 
 -- 
 -- For more fine-grained control of both systems, please use the more [fully-featured S3 API](https:\/\/docs.ceph.com\/en\/latest\/radosgw\/s3\/bucketops\/\#put-bucket-acl) directly.
-modifyObjectStorageBucketAccess :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe ModifyObjectStorageBucketAccessRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response ModifyObjectStorageBucketAccessResponse)) -- ^ Monad containing the result of the operation
-modifyObjectStorageBucketAccess config
-                                body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ModifyObjectStorageBucketAccessResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ModifyObjectStorageBucketAccessResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ModifyObjectStorageBucketAccessResponseBody200)
-                                                                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ModifyObjectStorageBucketAccessResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                 ModifyObjectStorageBucketAccessResponseBodyDefault)
-                                                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/access") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /object-storage/buckets/{clusterId}/{bucket}/access
+modifyObjectStorageBucketAccess :: forall m . Linode.Common.MonadHTTP m => ModifyObjectStorageBucketAccessParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> GHC.Maybe.Maybe ModifyObjectStorageBucketAccessRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response ModifyObjectStorageBucketAccessResponse) -- ^ Monadic computation which returns the result of the operation
+modifyObjectStorageBucketAccess parameters
+                                body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ModifyObjectStorageBucketAccessResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ModifyObjectStorageBucketAccessResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                                                 | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ModifyObjectStorageBucketAccessResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                  ModifyObjectStorageBucketAccessResponseBodyDefault)
+                                                                                                                                                                                                 | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack (("/object-storage/buckets/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (modifyObjectStorageBucketAccessParametersPathClusterId parameters))) GHC.Base.++ "/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (modifyObjectStorageBucketAccessParametersPathBucket parameters))) GHC.Base.++ "/access"))) GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/access.POST.parameters@ in the specification.
 -- 
--- The same as 'modifyObjectStorageBucketAccess' but returns the raw 'Data.ByteString.Char8.ByteString'
-modifyObjectStorageBucketAccessRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                                    Linode.Common.SecurityScheme s) =>
-                                      Linode.Common.Configuration s ->
-                                      GHC.Base.Maybe ModifyObjectStorageBucketAccessRequestBody ->
-                                      m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-modifyObjectStorageBucketAccessRaw config
-                                   body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/access") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /object-storage/buckets/{clusterId}/{bucket}/access
 -- 
--- Monadic version of 'modifyObjectStorageBucketAccess' (use with 'Linode.Common.runWithConfiguration')
-modifyObjectStorageBucketAccessM :: forall m s . (Linode.Common.MonadHTTP m,
-                                                  Linode.Common.SecurityScheme s) =>
-                                    GHC.Base.Maybe ModifyObjectStorageBucketAccessRequestBody ->
-                                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                       m
-                                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                           (Network.HTTP.Client.Types.Response ModifyObjectStorageBucketAccessResponse))
-modifyObjectStorageBucketAccessM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either ModifyObjectStorageBucketAccessResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ModifyObjectStorageBucketAccessResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ModifyObjectStorageBucketAccessResponseBody200)
-                                                                                                                                                                                                                 | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ModifyObjectStorageBucketAccessResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                  ModifyObjectStorageBucketAccessResponseBodyDefault)
-                                                                                                                                                                                                                 | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/access") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /object-storage/buckets/{clusterId}/{bucket}/access
--- 
--- Monadic version of 'modifyObjectStorageBucketAccessRaw' (use with 'Linode.Common.runWithConfiguration')
-modifyObjectStorageBucketAccessRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                                     Linode.Common.SecurityScheme s) =>
-                                       GHC.Base.Maybe ModifyObjectStorageBucketAccessRequestBody ->
-                                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                          m
-                                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                              (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-modifyObjectStorageBucketAccessRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/access") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema modifyObjectStorageBucketAccessRequestBody
+data ModifyObjectStorageBucketAccessParameters = ModifyObjectStorageBucketAccessParameters {
+  -- | pathBucket: Represents the parameter named \'bucket\'
+  -- 
+  -- The bucket name.
+  modifyObjectStorageBucketAccessParametersPathBucket :: Data.Text.Internal.Text
+  -- | pathClusterId: Represents the parameter named \'clusterId\'
+  -- 
+  -- The ID of the cluster this bucket exists in.
+  , modifyObjectStorageBucketAccessParametersPathClusterId :: Data.Text.Internal.Text
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON ModifyObjectStorageBucketAccessParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathBucket" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessParametersPathBucket obj : "pathClusterId" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessParametersPathClusterId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathBucket" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessParametersPathBucket obj) GHC.Base.<> ("pathClusterId" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessParametersPathClusterId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON ModifyObjectStorageBucketAccessParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "ModifyObjectStorageBucketAccessParameters" (\obj -> (GHC.Base.pure ModifyObjectStorageBucketAccessParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathBucket")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathClusterId"))
+-- | Create a new 'ModifyObjectStorageBucketAccessParameters' with all required fields.
+mkModifyObjectStorageBucketAccessParameters :: Data.Text.Internal.Text -- ^ 'modifyObjectStorageBucketAccessParametersPathBucket'
+  -> Data.Text.Internal.Text -- ^ 'modifyObjectStorageBucketAccessParametersPathClusterId'
+  -> ModifyObjectStorageBucketAccessParameters
+mkModifyObjectStorageBucketAccessParameters modifyObjectStorageBucketAccessParametersPathBucket modifyObjectStorageBucketAccessParametersPathClusterId = ModifyObjectStorageBucketAccessParameters{modifyObjectStorageBucketAccessParametersPathBucket = modifyObjectStorageBucketAccessParametersPathBucket,
+                                                                                                                                                                                                   modifyObjectStorageBucketAccessParametersPathClusterId = modifyObjectStorageBucketAccessParametersPathClusterId}
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/access.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ModifyObjectStorageBucketAccessRequestBody = ModifyObjectStorageBucketAccessRequestBody {
   -- | acl: The Access Control Level of the bucket, as a canned ACL string. For more fine-grained control of ACLs, use the S3 API directly.
-  modifyObjectStorageBucketAccessRequestBodyAcl :: (GHC.Base.Maybe ModifyObjectStorageBucketAccessRequestBodyAcl)
+  modifyObjectStorageBucketAccessRequestBodyAcl :: (GHC.Maybe.Maybe ModifyObjectStorageBucketAccessRequestBodyAcl')
   -- | cors_enabled: If true, the bucket will be created with CORS enabled for all origins. For more fine-grained controls of CORS, use the S3 API directly.
-  , modifyObjectStorageBucketAccessRequestBodyCors_enabled :: (GHC.Base.Maybe GHC.Types.Bool)
+  , modifyObjectStorageBucketAccessRequestBodyCorsEnabled :: (GHC.Maybe.Maybe GHC.Types.Bool)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ModifyObjectStorageBucketAccessRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "acl" (modifyObjectStorageBucketAccessRequestBodyAcl obj) : (Data.Aeson..=) "cors_enabled" (modifyObjectStorageBucketAccessRequestBodyCors_enabled obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "acl" (modifyObjectStorageBucketAccessRequestBodyAcl obj) GHC.Base.<> (Data.Aeson..=) "cors_enabled" (modifyObjectStorageBucketAccessRequestBodyCors_enabled obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ModifyObjectStorageBucketAccessRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("acl" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessRequestBodyAcl obj : "cors_enabled" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessRequestBodyCorsEnabled obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("acl" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessRequestBodyAcl obj) GHC.Base.<> ("cors_enabled" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessRequestBodyCorsEnabled obj))
 instance Data.Aeson.Types.FromJSON.FromJSON ModifyObjectStorageBucketAccessRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ModifyObjectStorageBucketAccessRequestBody" (\obj -> (GHC.Base.pure ModifyObjectStorageBucketAccessRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "acl")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "cors_enabled"))
--- | Defines the enum schema modifyObjectStorageBucketAccessRequestBodyAcl
+-- | Create a new 'ModifyObjectStorageBucketAccessRequestBody' with all required fields.
+mkModifyObjectStorageBucketAccessRequestBody :: ModifyObjectStorageBucketAccessRequestBody
+mkModifyObjectStorageBucketAccessRequestBody = ModifyObjectStorageBucketAccessRequestBody{modifyObjectStorageBucketAccessRequestBodyAcl = GHC.Maybe.Nothing,
+                                                                                          modifyObjectStorageBucketAccessRequestBodyCorsEnabled = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/access.POST.requestBody.content.application\/json.schema.properties.acl@ in the specification.
 -- 
 -- The Access Control Level of the bucket, as a canned ACL string. For more fine-grained control of ACLs, use the S3 API directly.
-data ModifyObjectStorageBucketAccessRequestBodyAcl
-    = ModifyObjectStorageBucketAccessRequestBodyAclEnumOther Data.Aeson.Types.Internal.Value
-    | ModifyObjectStorageBucketAccessRequestBodyAclEnumTyped Data.Text.Internal.Text
-    | ModifyObjectStorageBucketAccessRequestBodyAclEnumString_authenticated_read
-    | ModifyObjectStorageBucketAccessRequestBodyAclEnumString_custom
-    | ModifyObjectStorageBucketAccessRequestBodyAclEnumString_private
-    | ModifyObjectStorageBucketAccessRequestBodyAclEnumString_public_read
-    | ModifyObjectStorageBucketAccessRequestBodyAclEnumString_public_read_write
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ModifyObjectStorageBucketAccessRequestBodyAcl
-    where toJSON (ModifyObjectStorageBucketAccessRequestBodyAclEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (ModifyObjectStorageBucketAccessRequestBodyAclEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (ModifyObjectStorageBucketAccessRequestBodyAclEnumString_authenticated_read) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "authenticated-read"
-          toJSON (ModifyObjectStorageBucketAccessRequestBodyAclEnumString_custom) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "custom"
-          toJSON (ModifyObjectStorageBucketAccessRequestBodyAclEnumString_private) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "private"
-          toJSON (ModifyObjectStorageBucketAccessRequestBodyAclEnumString_public_read) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "public-read"
-          toJSON (ModifyObjectStorageBucketAccessRequestBodyAclEnumString_public_read_write) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "public-read-write"
-instance Data.Aeson.FromJSON ModifyObjectStorageBucketAccessRequestBodyAcl
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "authenticated-read")
-                                          then ModifyObjectStorageBucketAccessRequestBodyAclEnumString_authenticated_read
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "custom")
-                                                then ModifyObjectStorageBucketAccessRequestBodyAclEnumString_custom
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "private")
-                                                      then ModifyObjectStorageBucketAccessRequestBodyAclEnumString_private
-                                                      else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "public-read")
-                                                            then ModifyObjectStorageBucketAccessRequestBodyAclEnumString_public_read
-                                                            else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "public-read-write")
-                                                                  then ModifyObjectStorageBucketAccessRequestBodyAclEnumString_public_read_write
-                                                                  else ModifyObjectStorageBucketAccessRequestBodyAclEnumOther val)
+data ModifyObjectStorageBucketAccessRequestBodyAcl' =
+   ModifyObjectStorageBucketAccessRequestBodyAcl'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | ModifyObjectStorageBucketAccessRequestBodyAcl'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | ModifyObjectStorageBucketAccessRequestBodyAcl'EnumPrivate -- ^ Represents the JSON value @"private"@
+  | ModifyObjectStorageBucketAccessRequestBodyAcl'EnumPublicRead -- ^ Represents the JSON value @"public-read"@
+  | ModifyObjectStorageBucketAccessRequestBodyAcl'EnumAuthenticatedRead -- ^ Represents the JSON value @"authenticated-read"@
+  | ModifyObjectStorageBucketAccessRequestBodyAcl'EnumPublicReadWrite -- ^ Represents the JSON value @"public-read-write"@
+  | ModifyObjectStorageBucketAccessRequestBodyAcl'EnumCustom -- ^ Represents the JSON value @"custom"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON ModifyObjectStorageBucketAccessRequestBodyAcl'
+    where toJSON (ModifyObjectStorageBucketAccessRequestBodyAcl'Other val) = val
+          toJSON (ModifyObjectStorageBucketAccessRequestBodyAcl'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (ModifyObjectStorageBucketAccessRequestBodyAcl'EnumPrivate) = "private"
+          toJSON (ModifyObjectStorageBucketAccessRequestBodyAcl'EnumPublicRead) = "public-read"
+          toJSON (ModifyObjectStorageBucketAccessRequestBodyAcl'EnumAuthenticatedRead) = "authenticated-read"
+          toJSON (ModifyObjectStorageBucketAccessRequestBodyAcl'EnumPublicReadWrite) = "public-read-write"
+          toJSON (ModifyObjectStorageBucketAccessRequestBodyAcl'EnumCustom) = "custom"
+instance Data.Aeson.Types.FromJSON.FromJSON ModifyObjectStorageBucketAccessRequestBodyAcl'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "private" -> ModifyObjectStorageBucketAccessRequestBodyAcl'EnumPrivate
+                                            | val GHC.Classes.== "public-read" -> ModifyObjectStorageBucketAccessRequestBodyAcl'EnumPublicRead
+                                            | val GHC.Classes.== "authenticated-read" -> ModifyObjectStorageBucketAccessRequestBodyAcl'EnumAuthenticatedRead
+                                            | val GHC.Classes.== "public-read-write" -> ModifyObjectStorageBucketAccessRequestBodyAcl'EnumPublicReadWrite
+                                            | val GHC.Classes.== "custom" -> ModifyObjectStorageBucketAccessRequestBodyAcl'EnumCustom
+                                            | GHC.Base.otherwise -> ModifyObjectStorageBucketAccessRequestBodyAcl'Other val)
 -- | Represents a response of the operation 'modifyObjectStorageBucketAccess'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'ModifyObjectStorageBucketAccessResponseError' is used.
-data ModifyObjectStorageBucketAccessResponse =                                                         
-   ModifyObjectStorageBucketAccessResponseError GHC.Base.String                                        -- ^ Means either no matching case available or a parse error
-  | ModifyObjectStorageBucketAccessResponse200 ModifyObjectStorageBucketAccessResponseBody200          -- ^ Access controls updated.
-  | ModifyObjectStorageBucketAccessResponseDefault ModifyObjectStorageBucketAccessResponseBodyDefault  -- ^ Error
+data ModifyObjectStorageBucketAccessResponse =
+   ModifyObjectStorageBucketAccessResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | ModifyObjectStorageBucketAccessResponse200 Data.Aeson.Types.Internal.Object -- ^ Access controls updated.
+  | ModifyObjectStorageBucketAccessResponseDefault ModifyObjectStorageBucketAccessResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema ModifyObjectStorageBucketAccessResponseBody200
--- 
--- 
-data ModifyObjectStorageBucketAccessResponseBody200 = ModifyObjectStorageBucketAccessResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ModifyObjectStorageBucketAccessResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON ModifyObjectStorageBucketAccessResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "ModifyObjectStorageBucketAccessResponseBody200" (\obj -> GHC.Base.pure ModifyObjectStorageBucketAccessResponseBody200)
--- | Defines the data type for the schema ModifyObjectStorageBucketAccessResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ModifyObjectStorageBucketAccessResponseBodyDefault = ModifyObjectStorageBucketAccessResponseBodyDefault {
   -- | errors
-  modifyObjectStorageBucketAccessResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  modifyObjectStorageBucketAccessResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ModifyObjectStorageBucketAccessResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (modifyObjectStorageBucketAccessResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (modifyObjectStorageBucketAccessResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ModifyObjectStorageBucketAccessResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= modifyObjectStorageBucketAccessResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON ModifyObjectStorageBucketAccessResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ModifyObjectStorageBucketAccessResponseBodyDefault" (\obj -> GHC.Base.pure ModifyObjectStorageBucketAccessResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'ModifyObjectStorageBucketAccessResponseBodyDefault' with all required fields.
+mkModifyObjectStorageBucketAccessResponseBodyDefault :: ModifyObjectStorageBucketAccessResponseBodyDefault
+mkModifyObjectStorageBucketAccessResponseBodyDefault = ModifyObjectStorageBucketAccessResponseBodyDefault{modifyObjectStorageBucketAccessResponseBodyDefaultErrors = GHC.Maybe.Nothing}

@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createPersonalAccessToken
 module Linode.Operations.CreatePersonalAccessToken where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,92 +41,66 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > POST /profile/tokens
 -- 
 -- Creates a Personal Access Token for your User. The raw token will be returned in the response, but will never be returned again afterward so be sure to take note of it. You may create a token with _at most_ the scopes of your current token. The created token will be able to access your Account until the given expiry, or until it is revoked.
-createPersonalAccessToken :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CreatePersonalAccessTokenRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreatePersonalAccessTokenResponse)) -- ^ Monad containing the result of the operation
-createPersonalAccessToken config
-                          body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePersonalAccessTokenResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePersonalAccessTokenResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                             PersonalAccessToken)
-                                                                                                                                                                                                    | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePersonalAccessTokenResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                               CreatePersonalAccessTokenResponseBodyDefault)
-                                                                                                                                                                                                    | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/tokens") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /profile/tokens
--- 
--- The same as 'createPersonalAccessToken' but returns the raw 'Data.ByteString.Char8.ByteString'
-createPersonalAccessTokenRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                              Linode.Common.SecurityScheme s) =>
-                                Linode.Common.Configuration s ->
-                                CreatePersonalAccessTokenRequestBody ->
-                                m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPersonalAccessTokenRaw config
-                             body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/tokens") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /profile/tokens
--- 
--- Monadic version of 'createPersonalAccessToken' (use with 'Linode.Common.runWithConfiguration')
-createPersonalAccessTokenM :: forall m s . (Linode.Common.MonadHTTP m,
-                                            Linode.Common.SecurityScheme s) =>
-                              CreatePersonalAccessTokenRequestBody ->
-                              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                 m
-                                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                     (Network.HTTP.Client.Types.Response CreatePersonalAccessTokenResponse))
-createPersonalAccessTokenM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreatePersonalAccessTokenResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePersonalAccessTokenResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                              PersonalAccessToken)
-                                                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePersonalAccessTokenResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                CreatePersonalAccessTokenResponseBodyDefault)
-                                                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/tokens") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /profile/tokens
--- 
--- Monadic version of 'createPersonalAccessTokenRaw' (use with 'Linode.Common.runWithConfiguration')
-createPersonalAccessTokenRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                               Linode.Common.SecurityScheme s) =>
-                                 CreatePersonalAccessTokenRequestBody ->
-                                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                    m
-                                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPersonalAccessTokenRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/tokens") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createPersonalAccessTokenRequestBody
+createPersonalAccessToken :: forall m . Linode.Common.MonadHTTP m => CreatePersonalAccessTokenRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreatePersonalAccessTokenResponse) -- ^ Monadic computation which returns the result of the operation
+createPersonalAccessToken body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePersonalAccessTokenResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePersonalAccessTokenResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                              PersonalAccessToken)
+                                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePersonalAccessTokenResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                CreatePersonalAccessTokenResponseBodyDefault)
+                                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/tokens") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/profile\/tokens.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePersonalAccessTokenRequestBody = CreatePersonalAccessTokenRequestBody {
   -- | expiry: When this token should be valid until.  If omitted, the new token will be valid until it is manually revoked.
-  createPersonalAccessTokenRequestBodyExpiry :: (GHC.Base.Maybe Data.Text.Internal.Text)
-  -- | label
-  , createPersonalAccessTokenRequestBodyLabel :: (GHC.Base.Maybe PersonalAccessToken_properties_label)
+  createPersonalAccessTokenRequestBodyExpiry :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
+  -- | label: This token\'s label.  This is for display purposes only, but can be used to more easily track what you\'re using each token for.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maximum length of 100
+  -- * Minimum length of 1
+  , createPersonalAccessTokenRequestBodyLabel :: (GHC.Maybe.Maybe PersonalAccessTokenPropertiesLabel)
   -- | scopes: The scopes to create the token with.  These cannot be changed after creation, and may not exceed the scopes of the acting token. If omitted, the new token will have the same scopes as the acting token.
-  , createPersonalAccessTokenRequestBodyScopes :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createPersonalAccessTokenRequestBodyScopes :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePersonalAccessTokenRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "expiry" (createPersonalAccessTokenRequestBodyExpiry obj) : (Data.Aeson..=) "label" (createPersonalAccessTokenRequestBodyLabel obj) : (Data.Aeson..=) "scopes" (createPersonalAccessTokenRequestBodyScopes obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "expiry" (createPersonalAccessTokenRequestBodyExpiry obj) GHC.Base.<> ((Data.Aeson..=) "label" (createPersonalAccessTokenRequestBodyLabel obj) GHC.Base.<> (Data.Aeson..=) "scopes" (createPersonalAccessTokenRequestBodyScopes obj)))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePersonalAccessTokenRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("expiry" Data.Aeson.Types.ToJSON..= createPersonalAccessTokenRequestBodyExpiry obj : "label" Data.Aeson.Types.ToJSON..= createPersonalAccessTokenRequestBodyLabel obj : "scopes" Data.Aeson.Types.ToJSON..= createPersonalAccessTokenRequestBodyScopes obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("expiry" Data.Aeson.Types.ToJSON..= createPersonalAccessTokenRequestBodyExpiry obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= createPersonalAccessTokenRequestBodyLabel obj) GHC.Base.<> ("scopes" Data.Aeson.Types.ToJSON..= createPersonalAccessTokenRequestBodyScopes obj)))
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePersonalAccessTokenRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePersonalAccessTokenRequestBody" (\obj -> ((GHC.Base.pure CreatePersonalAccessTokenRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "expiry")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "scopes"))
+-- | Create a new 'CreatePersonalAccessTokenRequestBody' with all required fields.
+mkCreatePersonalAccessTokenRequestBody :: CreatePersonalAccessTokenRequestBody
+mkCreatePersonalAccessTokenRequestBody = CreatePersonalAccessTokenRequestBody{createPersonalAccessTokenRequestBodyExpiry = GHC.Maybe.Nothing,
+                                                                              createPersonalAccessTokenRequestBodyLabel = GHC.Maybe.Nothing,
+                                                                              createPersonalAccessTokenRequestBodyScopes = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'createPersonalAccessToken'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreatePersonalAccessTokenResponseError' is used.
-data CreatePersonalAccessTokenResponse =                                                   
-   CreatePersonalAccessTokenResponseError GHC.Base.String                                  -- ^ Means either no matching case available or a parse error
-  | CreatePersonalAccessTokenResponse200 PersonalAccessToken                               -- ^ Token created successfully.
-  | CreatePersonalAccessTokenResponseDefault CreatePersonalAccessTokenResponseBodyDefault  -- ^ Error
+data CreatePersonalAccessTokenResponse =
+   CreatePersonalAccessTokenResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreatePersonalAccessTokenResponse200 PersonalAccessToken -- ^ Token created successfully.
+  | CreatePersonalAccessTokenResponseDefault CreatePersonalAccessTokenResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreatePersonalAccessTokenResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePersonalAccessTokenResponseBodyDefault = CreatePersonalAccessTokenResponseBodyDefault {
   -- | errors
-  createPersonalAccessTokenResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createPersonalAccessTokenResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePersonalAccessTokenResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createPersonalAccessTokenResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createPersonalAccessTokenResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePersonalAccessTokenResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createPersonalAccessTokenResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createPersonalAccessTokenResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePersonalAccessTokenResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePersonalAccessTokenResponseBodyDefault" (\obj -> GHC.Base.pure CreatePersonalAccessTokenResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreatePersonalAccessTokenResponseBodyDefault' with all required fields.
+mkCreatePersonalAccessTokenResponseBodyDefault :: CreatePersonalAccessTokenResponseBodyDefault
+mkCreatePersonalAccessTokenResponseBodyDefault = CreatePersonalAccessTokenResponseBodyDefault{createPersonalAccessTokenResponseBodyDefaultErrors = GHC.Maybe.Nothing}

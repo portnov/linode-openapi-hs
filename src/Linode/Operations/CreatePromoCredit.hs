@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createPromoCredit
 module Linode.Operations.CreatePromoCredit where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -53,53 +53,14 @@ import Linode.Types
 -- * The requesting User must be unrestricted. Use the User Update
 --   ([PUT \/account\/users\/{username}](\/docs\/api\/account\/\#user-update)) to change a User\'s restricted status.
 -- * The \`promo_code\` must be valid and unexpired.
-createPromoCredit :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe CreatePromoCreditRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreatePromoCreditResponse)) -- ^ Monad containing the result of the operation
-createPromoCredit config
-                  body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePromoCreditResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePromoCreditResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                     Promotion)
-                                                                                                                                                                                    | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePromoCreditResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                       CreatePromoCreditResponseBodyDefault)
-                                                                                                                                                                                    | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/promo-codes") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/promo-codes
--- 
--- The same as 'createPromoCredit' but returns the raw 'Data.ByteString.Char8.ByteString'
-createPromoCreditRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        Linode.Common.Configuration s ->
-                        GHC.Base.Maybe CreatePromoCreditRequestBody ->
-                        m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                              (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPromoCreditRaw config
-                     body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/promo-codes") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/promo-codes
--- 
--- Monadic version of 'createPromoCredit' (use with 'Linode.Common.runWithConfiguration')
-createPromoCreditM :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      GHC.Base.Maybe CreatePromoCreditRequestBody ->
-                      Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                         m
-                                                         (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                             (Network.HTTP.Client.Types.Response CreatePromoCreditResponse))
-createPromoCreditM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreatePromoCreditResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePromoCreditResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                      Promotion)
-                                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePromoCreditResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                        CreatePromoCreditResponseBodyDefault)
-                                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/promo-codes") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/promo-codes
--- 
--- Monadic version of 'createPromoCreditRaw' (use with 'Linode.Common.runWithConfiguration')
-createPromoCreditRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         GHC.Base.Maybe CreatePromoCreditRequestBody ->
-                         Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                            m
-                                                            (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPromoCreditRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/promo-codes") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createPromoCreditRequestBody
+createPromoCredit :: forall m . Linode.Common.MonadHTTP m => GHC.Maybe.Maybe CreatePromoCreditRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreatePromoCreditResponse) -- ^ Monadic computation which returns the result of the operation
+createPromoCredit body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePromoCreditResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePromoCreditResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                      Promotion)
+                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePromoCreditResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                        CreatePromoCreditResponseBodyDefault)
+                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/promo-codes") GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/account\/promo-codes.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePromoCreditRequestBody = CreatePromoCreditRequestBody {
@@ -110,32 +71,39 @@ data CreatePromoCreditRequestBody = CreatePromoCreditRequestBody {
   -- 
   -- * Maximum length of 32
   -- * Minimum length of 1
-  createPromoCreditRequestBodyPromo_code :: Data.Text.Internal.Text
+  createPromoCreditRequestBodyPromoCode :: Data.Text.Internal.Text
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePromoCreditRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "promo_code" (createPromoCreditRequestBodyPromo_code obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "promo_code" (createPromoCreditRequestBodyPromo_code obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePromoCreditRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("promo_code" Data.Aeson.Types.ToJSON..= createPromoCreditRequestBodyPromoCode obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("promo_code" Data.Aeson.Types.ToJSON..= createPromoCreditRequestBodyPromoCode obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePromoCreditRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePromoCreditRequestBody" (\obj -> GHC.Base.pure CreatePromoCreditRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "promo_code"))
+-- | Create a new 'CreatePromoCreditRequestBody' with all required fields.
+mkCreatePromoCreditRequestBody :: Data.Text.Internal.Text -- ^ 'createPromoCreditRequestBodyPromoCode'
+  -> CreatePromoCreditRequestBody
+mkCreatePromoCreditRequestBody createPromoCreditRequestBodyPromoCode = CreatePromoCreditRequestBody{createPromoCreditRequestBodyPromoCode = createPromoCreditRequestBodyPromoCode}
 -- | Represents a response of the operation 'createPromoCredit'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreatePromoCreditResponseError' is used.
-data CreatePromoCreditResponse =                                           
-   CreatePromoCreditResponseError GHC.Base.String                          -- ^ Means either no matching case available or a parse error
-  | CreatePromoCreditResponse200 Promotion                                 -- ^ Promo Credit successfully added. 
-  | CreatePromoCreditResponseDefault CreatePromoCreditResponseBodyDefault  -- ^ Error
+data CreatePromoCreditResponse =
+   CreatePromoCreditResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreatePromoCreditResponse200 Promotion -- ^ Promo Credit successfully added. 
+  | CreatePromoCreditResponseDefault CreatePromoCreditResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreatePromoCreditResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePromoCreditResponseBodyDefault = CreatePromoCreditResponseBodyDefault {
   -- | errors
-  createPromoCreditResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createPromoCreditResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePromoCreditResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createPromoCreditResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createPromoCreditResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePromoCreditResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createPromoCreditResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createPromoCreditResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePromoCreditResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePromoCreditResponseBodyDefault" (\obj -> GHC.Base.pure CreatePromoCreditResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreatePromoCreditResponseBodyDefault' with all required fields.
+mkCreatePromoCreditResponseBodyDefault :: CreatePromoCreditResponseBodyDefault
+mkCreatePromoCreditResponseBodyDefault = CreatePromoCreditResponseBodyDefault{createPromoCreditResponseBodyDefaultErrors = GHC.Maybe.Nothing}

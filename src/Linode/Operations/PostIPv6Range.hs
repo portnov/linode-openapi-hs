@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation postIPv6Range
 module Linode.Operations.PostIPv6Range where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -55,53 +55,14 @@ import Linode.Types
 --   * A Linode can only have one IPv6 range targeting its SLAAC address.
 --   * An account can only have one IPv6 range in each [Region](\/docs\/api\/regions\/\#regions-list).
 --   * [Open a Support Ticket](\/docs\/api\/support\/\#support-ticket-open) to request expansion of these restrictions.
-postIPv6Range :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> PostIPv6RangeRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response PostIPv6RangeResponse)) -- ^ Monad containing the result of the operation
-postIPv6Range config
-              body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either PostIPv6RangeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> PostIPv6RangeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                         PostIPv6RangeResponseBody200)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> PostIPv6RangeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                           PostIPv6RangeResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ipv6/ranges") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/ipv6/ranges
--- 
--- The same as 'postIPv6Range' but returns the raw 'Data.ByteString.Char8.ByteString'
-postIPv6RangeRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Linode.Common.Configuration s ->
-                    PostIPv6RangeRequestBody ->
-                    m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-postIPv6RangeRaw config
-                 body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ipv6/ranges") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/ipv6/ranges
--- 
--- Monadic version of 'postIPv6Range' (use with 'Linode.Common.runWithConfiguration')
-postIPv6RangeM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  PostIPv6RangeRequestBody ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response PostIPv6RangeResponse))
-postIPv6RangeM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either PostIPv6RangeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> PostIPv6RangeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                          PostIPv6RangeResponseBody200)
-                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> PostIPv6RangeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                            PostIPv6RangeResponseBodyDefault)
-                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ipv6/ranges") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/ipv6/ranges
--- 
--- Monadic version of 'postIPv6RangeRaw' (use with 'Linode.Common.runWithConfiguration')
-postIPv6RangeRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     PostIPv6RangeRequestBody ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-postIPv6RangeRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ipv6/ranges") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema postIPv6RangeRequestBody
+postIPv6Range :: forall m . Linode.Common.MonadHTTP m => PostIPv6RangeRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response PostIPv6RangeResponse) -- ^ Monadic computation which returns the result of the operation
+postIPv6Range body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either PostIPv6RangeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> PostIPv6RangeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                          PostIPv6RangeResponseBody200)
+                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> PostIPv6RangeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                            PostIPv6RangeResponseBodyDefault)
+                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ipv6/ranges") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/networking\/ipv6\/ranges.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data PostIPv6RangeRequestBody = PostIPv6RangeRequestBody {
@@ -110,9 +71,9 @@ data PostIPv6RangeRequestBody = PostIPv6RangeRequestBody {
   -- * **Required** if \`route_target\` is omitted from the request.
   -- 
   -- * Mutually exclusive with \`route_target\`. Submitting values for both properties in a request results in an error.
-  postIPv6RangeRequestBodyLinode_id :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  postIPv6RangeRequestBodyLinodeId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | prefix_length: The prefix length of the IPv6 range.
-  , postIPv6RangeRequestBodyPrefix_length :: PostIPv6RangeRequestBodyPrefix_length
+  , postIPv6RangeRequestBodyPrefixLength :: PostIPv6RangeRequestBodyPrefixLength'
   -- | route_target: The IPv6 SLAAC address to assign this range to.
   -- 
   -- * **Required** if \`linode_id\` is omitted from the request.
@@ -120,67 +81,78 @@ data PostIPv6RangeRequestBody = PostIPv6RangeRequestBody {
   -- * Mutually exclusive with \`linode_id\`. Submitting values for both properties in a request results in an error.
   -- 
   -- * **Note**: Omit the \`\/128\` prefix length of the SLAAC address when using this property.
-  , postIPv6RangeRequestBodyRoute_target :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , postIPv6RangeRequestBodyRouteTarget :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON PostIPv6RangeRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "linode_id" (postIPv6RangeRequestBodyLinode_id obj) : (Data.Aeson..=) "prefix_length" (postIPv6RangeRequestBodyPrefix_length obj) : (Data.Aeson..=) "route_target" (postIPv6RangeRequestBodyRoute_target obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "linode_id" (postIPv6RangeRequestBodyLinode_id obj) GHC.Base.<> ((Data.Aeson..=) "prefix_length" (postIPv6RangeRequestBodyPrefix_length obj) GHC.Base.<> (Data.Aeson..=) "route_target" (postIPv6RangeRequestBodyRoute_target obj)))
+instance Data.Aeson.Types.ToJSON.ToJSON PostIPv6RangeRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("linode_id" Data.Aeson.Types.ToJSON..= postIPv6RangeRequestBodyLinodeId obj : "prefix_length" Data.Aeson.Types.ToJSON..= postIPv6RangeRequestBodyPrefixLength obj : "route_target" Data.Aeson.Types.ToJSON..= postIPv6RangeRequestBodyRouteTarget obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("linode_id" Data.Aeson.Types.ToJSON..= postIPv6RangeRequestBodyLinodeId obj) GHC.Base.<> (("prefix_length" Data.Aeson.Types.ToJSON..= postIPv6RangeRequestBodyPrefixLength obj) GHC.Base.<> ("route_target" Data.Aeson.Types.ToJSON..= postIPv6RangeRequestBodyRouteTarget obj)))
 instance Data.Aeson.Types.FromJSON.FromJSON PostIPv6RangeRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "PostIPv6RangeRequestBody" (\obj -> ((GHC.Base.pure PostIPv6RangeRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "linode_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "prefix_length")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "route_target"))
--- | Defines the enum schema postIPv6RangeRequestBodyPrefix_length
+-- | Create a new 'PostIPv6RangeRequestBody' with all required fields.
+mkPostIPv6RangeRequestBody :: PostIPv6RangeRequestBodyPrefixLength' -- ^ 'postIPv6RangeRequestBodyPrefixLength'
+  -> PostIPv6RangeRequestBody
+mkPostIPv6RangeRequestBody postIPv6RangeRequestBodyPrefixLength = PostIPv6RangeRequestBody{postIPv6RangeRequestBodyLinodeId = GHC.Maybe.Nothing,
+                                                                                           postIPv6RangeRequestBodyPrefixLength = postIPv6RangeRequestBodyPrefixLength,
+                                                                                           postIPv6RangeRequestBodyRouteTarget = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/networking\/ipv6\/ranges.POST.requestBody.content.application\/json.schema.properties.prefix_length@ in the specification.
 -- 
 -- The prefix length of the IPv6 range.
-data PostIPv6RangeRequestBodyPrefix_length
-    = PostIPv6RangeRequestBodyPrefix_lengthEnumOther Data.Aeson.Types.Internal.Value
-    | PostIPv6RangeRequestBodyPrefix_lengthEnumTyped GHC.Integer.Type.Integer
-    | PostIPv6RangeRequestBodyPrefix_lengthEnumNumber_56'0
-    | PostIPv6RangeRequestBodyPrefix_lengthEnumNumber_64'0
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON PostIPv6RangeRequestBodyPrefix_length
-    where toJSON (PostIPv6RangeRequestBodyPrefix_lengthEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (PostIPv6RangeRequestBodyPrefix_lengthEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (PostIPv6RangeRequestBodyPrefix_lengthEnumNumber_56'0) = Data.Aeson.Types.Internal.Number (Data.Scientific.scientific 56 0)
-          toJSON (PostIPv6RangeRequestBodyPrefix_lengthEnumNumber_64'0) = Data.Aeson.Types.Internal.Number (Data.Scientific.scientific 64 0)
-instance Data.Aeson.FromJSON PostIPv6RangeRequestBodyPrefix_length
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== Data.Aeson.Types.Internal.Number (Data.Scientific.scientific 56 0)
-                                          then PostIPv6RangeRequestBodyPrefix_lengthEnumNumber_56'0
-                                          else if val GHC.Classes.== Data.Aeson.Types.Internal.Number (Data.Scientific.scientific 64 0)
-                                                then PostIPv6RangeRequestBodyPrefix_lengthEnumNumber_64'0
-                                                else PostIPv6RangeRequestBodyPrefix_lengthEnumOther val)
+data PostIPv6RangeRequestBodyPrefixLength' =
+   PostIPv6RangeRequestBodyPrefixLength'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | PostIPv6RangeRequestBodyPrefixLength'Typed GHC.Types.Int -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | PostIPv6RangeRequestBodyPrefixLength'Enum56 -- ^ Represents the JSON value @56@
+  | PostIPv6RangeRequestBodyPrefixLength'Enum64 -- ^ Represents the JSON value @64@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON PostIPv6RangeRequestBodyPrefixLength'
+    where toJSON (PostIPv6RangeRequestBodyPrefixLength'Other val) = val
+          toJSON (PostIPv6RangeRequestBodyPrefixLength'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (PostIPv6RangeRequestBodyPrefixLength'Enum56) = Data.Aeson.Types.Internal.Number (Data.Scientific.scientific 56 0)
+          toJSON (PostIPv6RangeRequestBodyPrefixLength'Enum64) = Data.Aeson.Types.Internal.Number (Data.Scientific.scientific 64 0)
+instance Data.Aeson.Types.FromJSON.FromJSON PostIPv6RangeRequestBodyPrefixLength'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== Data.Aeson.Types.Internal.Number (Data.Scientific.scientific 56 0) -> PostIPv6RangeRequestBodyPrefixLength'Enum56
+                                            | val GHC.Classes.== Data.Aeson.Types.Internal.Number (Data.Scientific.scientific 64 0) -> PostIPv6RangeRequestBodyPrefixLength'Enum64
+                                            | GHC.Base.otherwise -> PostIPv6RangeRequestBodyPrefixLength'Other val)
 -- | Represents a response of the operation 'postIPv6Range'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'PostIPv6RangeResponseError' is used.
-data PostIPv6RangeResponse =                                       
-   PostIPv6RangeResponseError GHC.Base.String                      -- ^ Means either no matching case available or a parse error
-  | PostIPv6RangeResponse200 PostIPv6RangeResponseBody200          -- ^ IPv6 range created successfully.
-  | PostIPv6RangeResponseDefault PostIPv6RangeResponseBodyDefault  -- ^ Error
+data PostIPv6RangeResponse =
+   PostIPv6RangeResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | PostIPv6RangeResponse200 PostIPv6RangeResponseBody200 -- ^ IPv6 range created successfully.
+  | PostIPv6RangeResponseDefault PostIPv6RangeResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema PostIPv6RangeResponseBody200
+-- | Defines the object schema located at @paths.\/networking\/ipv6\/ranges.POST.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data PostIPv6RangeResponseBody200 = PostIPv6RangeResponseBody200 {
   -- | range: The IPv6 network range, including subnet and prefix length.
-  postIPv6RangeResponseBody200Range :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  postIPv6RangeResponseBody200Range :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | route_target: The route target IPV6 SLAAC address for this range. Does not include the prefix length.
-  , postIPv6RangeResponseBody200Route_target :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , postIPv6RangeResponseBody200RouteTarget :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON PostIPv6RangeResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "range" (postIPv6RangeResponseBody200Range obj) : (Data.Aeson..=) "route_target" (postIPv6RangeResponseBody200Route_target obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "range" (postIPv6RangeResponseBody200Range obj) GHC.Base.<> (Data.Aeson..=) "route_target" (postIPv6RangeResponseBody200Route_target obj))
+instance Data.Aeson.Types.ToJSON.ToJSON PostIPv6RangeResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("range" Data.Aeson.Types.ToJSON..= postIPv6RangeResponseBody200Range obj : "route_target" Data.Aeson.Types.ToJSON..= postIPv6RangeResponseBody200RouteTarget obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("range" Data.Aeson.Types.ToJSON..= postIPv6RangeResponseBody200Range obj) GHC.Base.<> ("route_target" Data.Aeson.Types.ToJSON..= postIPv6RangeResponseBody200RouteTarget obj))
 instance Data.Aeson.Types.FromJSON.FromJSON PostIPv6RangeResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "PostIPv6RangeResponseBody200" (\obj -> (GHC.Base.pure PostIPv6RangeResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "range")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "route_target"))
--- | Defines the data type for the schema PostIPv6RangeResponseBodyDefault
+-- | Create a new 'PostIPv6RangeResponseBody200' with all required fields.
+mkPostIPv6RangeResponseBody200 :: PostIPv6RangeResponseBody200
+mkPostIPv6RangeResponseBody200 = PostIPv6RangeResponseBody200{postIPv6RangeResponseBody200Range = GHC.Maybe.Nothing,
+                                                              postIPv6RangeResponseBody200RouteTarget = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data PostIPv6RangeResponseBodyDefault = PostIPv6RangeResponseBodyDefault {
   -- | errors
-  postIPv6RangeResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  postIPv6RangeResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON PostIPv6RangeResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (postIPv6RangeResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (postIPv6RangeResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON PostIPv6RangeResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= postIPv6RangeResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= postIPv6RangeResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON PostIPv6RangeResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "PostIPv6RangeResponseBodyDefault" (\obj -> GHC.Base.pure PostIPv6RangeResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'PostIPv6RangeResponseBodyDefault' with all required fields.
+mkPostIPv6RangeResponseBodyDefault :: PostIPv6RangeResponseBodyDefault
+mkPostIPv6RangeResponseBodyDefault = PostIPv6RangeResponseBodyDefault{postIPv6RangeResponseBodyDefaultErrors = GHC.Maybe.Nothing}

@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createClient
 module Linode.Operations.CreateClient where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,58 +45,19 @@ import Linode.Types
 -- | > POST /account/oauth-clients
 -- 
 -- Creates an OAuth Client, which can be used to allow users (using their Linode account) to log in to your own application, and optionally grant your application some amount of access to their Linodes or other entities.
-createClient :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe CreateClientRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateClientResponse)) -- ^ Monad containing the result of the operation
-createClient config
-             body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateClientResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateClientResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                      OAuthClient)
-                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateClientResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                        CreateClientResponseBodyDefault)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/oauth-clients") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/oauth-clients
--- 
--- The same as 'createClient' but returns the raw 'Data.ByteString.Char8.ByteString'
-createClientRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Linode.Common.Configuration s ->
-                   GHC.Base.Maybe CreateClientRequestBody ->
-                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createClientRaw config
-                body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/oauth-clients") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/oauth-clients
--- 
--- Monadic version of 'createClient' (use with 'Linode.Common.runWithConfiguration')
-createClientM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 GHC.Base.Maybe CreateClientRequestBody ->
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response CreateClientResponse))
-createClientM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateClientResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateClientResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                       OAuthClient)
-                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateClientResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                         CreateClientResponseBodyDefault)
-                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/oauth-clients") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/oauth-clients
--- 
--- Monadic version of 'createClientRaw' (use with 'Linode.Common.runWithConfiguration')
-createClientRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    GHC.Base.Maybe CreateClientRequestBody ->
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createClientRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/oauth-clients") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createClientRequestBody
+createClient :: forall m . Linode.Common.MonadHTTP m => GHC.Maybe.Maybe CreateClientRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateClientResponse) -- ^ Monadic computation which returns the result of the operation
+createClient body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateClientResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateClientResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                       OAuthClient)
+                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateClientResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                         CreateClientResponseBodyDefault)
+                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/oauth-clients") GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/account\/oauth-clients.POST.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data CreateClientRequestBody = CreateClientRequestBody {
   -- | id: The OAuth Client ID.  This is used to identify the client, and is a publicly-known value (it is not a secret).
-  createClientRequestBodyId :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  createClientRequestBodyId :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | label: The name of this application.  This will be presented to users when they are asked to grant it access to their Account.
   -- 
   -- 
@@ -104,66 +65,75 @@ data CreateClientRequestBody = CreateClientRequestBody {
   -- 
   -- * Maximum length of 512
   -- * Minimum length of 1
-  , createClientRequestBodyLabel :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createClientRequestBodyLabel :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | public: If this is a public or private OAuth Client.  Public clients have a slightly different authentication workflow than private clients.  See the \<a target=\"_top\" href=\"https:\/\/oauth.net\/2\/\">OAuth spec\<\/a> for more details.
-  , createClientRequestBodyPublic :: (GHC.Base.Maybe GHC.Types.Bool)
+  , createClientRequestBodyPublic :: (GHC.Maybe.Maybe GHC.Types.Bool)
   -- | redirect_uri: The location a successful log in from \<a target=\"_top\" href=\"https:\/\/login.linode.com\">https:\/\/login.linode.com\<\/a> should be redirected to for this client.  The receiver of this redirect should be ready to accept an OAuth exchange code and finish the OAuth exchange.
-  , createClientRequestBodyRedirect_uri :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createClientRequestBodyRedirectUri :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | secret: The OAuth Client secret, used in the OAuth exchange.  This is returned as \`\<REDACTED>\` except when an OAuth Client is created or its secret is reset.  This is a secret, and should not be shared or disclosed publicly.
-  , createClientRequestBodySecret :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createClientRequestBodySecret :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | status: The status of this application.  \`active\` by default.
-  , createClientRequestBodyStatus :: (GHC.Base.Maybe CreateClientRequestBodyStatus)
+  , createClientRequestBodyStatus :: (GHC.Maybe.Maybe CreateClientRequestBodyStatus')
   -- | thumbnail_url: The URL where this client\'s thumbnail may be viewed, or \`null\` if this client does not have a thumbnail set.
-  , createClientRequestBodyThumbnail_url :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createClientRequestBodyThumbnailUrl :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateClientRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "id" (createClientRequestBodyId obj) : (Data.Aeson..=) "label" (createClientRequestBodyLabel obj) : (Data.Aeson..=) "public" (createClientRequestBodyPublic obj) : (Data.Aeson..=) "redirect_uri" (createClientRequestBodyRedirect_uri obj) : (Data.Aeson..=) "secret" (createClientRequestBodySecret obj) : (Data.Aeson..=) "status" (createClientRequestBodyStatus obj) : (Data.Aeson..=) "thumbnail_url" (createClientRequestBodyThumbnail_url obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "id" (createClientRequestBodyId obj) GHC.Base.<> ((Data.Aeson..=) "label" (createClientRequestBodyLabel obj) GHC.Base.<> ((Data.Aeson..=) "public" (createClientRequestBodyPublic obj) GHC.Base.<> ((Data.Aeson..=) "redirect_uri" (createClientRequestBodyRedirect_uri obj) GHC.Base.<> ((Data.Aeson..=) "secret" (createClientRequestBodySecret obj) GHC.Base.<> ((Data.Aeson..=) "status" (createClientRequestBodyStatus obj) GHC.Base.<> (Data.Aeson..=) "thumbnail_url" (createClientRequestBodyThumbnail_url obj)))))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateClientRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("id" Data.Aeson.Types.ToJSON..= createClientRequestBodyId obj : "label" Data.Aeson.Types.ToJSON..= createClientRequestBodyLabel obj : "public" Data.Aeson.Types.ToJSON..= createClientRequestBodyPublic obj : "redirect_uri" Data.Aeson.Types.ToJSON..= createClientRequestBodyRedirectUri obj : "secret" Data.Aeson.Types.ToJSON..= createClientRequestBodySecret obj : "status" Data.Aeson.Types.ToJSON..= createClientRequestBodyStatus obj : "thumbnail_url" Data.Aeson.Types.ToJSON..= createClientRequestBodyThumbnailUrl obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("id" Data.Aeson.Types.ToJSON..= createClientRequestBodyId obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= createClientRequestBodyLabel obj) GHC.Base.<> (("public" Data.Aeson.Types.ToJSON..= createClientRequestBodyPublic obj) GHC.Base.<> (("redirect_uri" Data.Aeson.Types.ToJSON..= createClientRequestBodyRedirectUri obj) GHC.Base.<> (("secret" Data.Aeson.Types.ToJSON..= createClientRequestBodySecret obj) GHC.Base.<> (("status" Data.Aeson.Types.ToJSON..= createClientRequestBodyStatus obj) GHC.Base.<> ("thumbnail_url" Data.Aeson.Types.ToJSON..= createClientRequestBodyThumbnailUrl obj)))))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateClientRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateClientRequestBody" (\obj -> ((((((GHC.Base.pure CreateClientRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "public")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "redirect_uri")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "secret")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "status")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "thumbnail_url"))
--- | Defines the enum schema createClientRequestBodyStatus
+-- | Create a new 'CreateClientRequestBody' with all required fields.
+mkCreateClientRequestBody :: CreateClientRequestBody
+mkCreateClientRequestBody = CreateClientRequestBody{createClientRequestBodyId = GHC.Maybe.Nothing,
+                                                    createClientRequestBodyLabel = GHC.Maybe.Nothing,
+                                                    createClientRequestBodyPublic = GHC.Maybe.Nothing,
+                                                    createClientRequestBodyRedirectUri = GHC.Maybe.Nothing,
+                                                    createClientRequestBodySecret = GHC.Maybe.Nothing,
+                                                    createClientRequestBodyStatus = GHC.Maybe.Nothing,
+                                                    createClientRequestBodyThumbnailUrl = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/account\/oauth-clients.POST.requestBody.content.application\/json.schema.allOf.properties.status@ in the specification.
 -- 
 -- The status of this application.  \`active\` by default.
-data CreateClientRequestBodyStatus
-    = CreateClientRequestBodyStatusEnumOther Data.Aeson.Types.Internal.Value
-    | CreateClientRequestBodyStatusEnumTyped Data.Text.Internal.Text
-    | CreateClientRequestBodyStatusEnumString_active
-    | CreateClientRequestBodyStatusEnumString_disabled
-    | CreateClientRequestBodyStatusEnumString_suspended
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateClientRequestBodyStatus
-    where toJSON (CreateClientRequestBodyStatusEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateClientRequestBodyStatusEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateClientRequestBodyStatusEnumString_active) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "active"
-          toJSON (CreateClientRequestBodyStatusEnumString_disabled) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "disabled"
-          toJSON (CreateClientRequestBodyStatusEnumString_suspended) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "suspended"
-instance Data.Aeson.FromJSON CreateClientRequestBodyStatus
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "active")
-                                          then CreateClientRequestBodyStatusEnumString_active
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "disabled")
-                                                then CreateClientRequestBodyStatusEnumString_disabled
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "suspended")
-                                                      then CreateClientRequestBodyStatusEnumString_suspended
-                                                      else CreateClientRequestBodyStatusEnumOther val)
+data CreateClientRequestBodyStatus' =
+   CreateClientRequestBodyStatus'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateClientRequestBodyStatus'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateClientRequestBodyStatus'EnumActive -- ^ Represents the JSON value @"active"@
+  | CreateClientRequestBodyStatus'EnumDisabled -- ^ Represents the JSON value @"disabled"@
+  | CreateClientRequestBodyStatus'EnumSuspended -- ^ Represents the JSON value @"suspended"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateClientRequestBodyStatus'
+    where toJSON (CreateClientRequestBodyStatus'Other val) = val
+          toJSON (CreateClientRequestBodyStatus'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateClientRequestBodyStatus'EnumActive) = "active"
+          toJSON (CreateClientRequestBodyStatus'EnumDisabled) = "disabled"
+          toJSON (CreateClientRequestBodyStatus'EnumSuspended) = "suspended"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateClientRequestBodyStatus'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "active" -> CreateClientRequestBodyStatus'EnumActive
+                                            | val GHC.Classes.== "disabled" -> CreateClientRequestBodyStatus'EnumDisabled
+                                            | val GHC.Classes.== "suspended" -> CreateClientRequestBodyStatus'EnumSuspended
+                                            | GHC.Base.otherwise -> CreateClientRequestBodyStatus'Other val)
 -- | Represents a response of the operation 'createClient'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateClientResponseError' is used.
-data CreateClientResponse =                                      
-   CreateClientResponseError GHC.Base.String                     -- ^ Means either no matching case available or a parse error
-  | CreateClientResponse200 OAuthClient                          -- ^ Client created successfully.
-  | CreateClientResponseDefault CreateClientResponseBodyDefault  -- ^ Error
+data CreateClientResponse =
+   CreateClientResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateClientResponse200 OAuthClient -- ^ Client created successfully.
+  | CreateClientResponseDefault CreateClientResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateClientResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateClientResponseBodyDefault = CreateClientResponseBodyDefault {
   -- | errors
-  createClientResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createClientResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateClientResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createClientResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createClientResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateClientResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createClientResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createClientResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateClientResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateClientResponseBodyDefault" (\obj -> GHC.Base.pure CreateClientResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateClientResponseBodyDefault' with all required fields.
+mkCreateClientResponseBodyDefault :: CreateClientResponseBodyDefault
+mkCreateClientResponseBodyDefault = CreateClientResponseBodyDefault{createClientResponseBodyDefaultErrors = GHC.Maybe.Nothing}

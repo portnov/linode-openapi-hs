@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation updateUser
 module Linode.Operations.UpdateUser where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,70 +45,36 @@ import Linode.Types
 -- | > PUT /account/users/{username}
 -- 
 -- Update information about a User on your Account. This can be used to change the restricted status of a User. When making a User restricted, no grants will be configured by default and you must then set up grants in order for the User to access anything on the Account.
-updateUser :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe User                                                                                                    -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response UpdateUserResponse)) -- ^ Monad containing the result of the operation
-updateUser config
-           body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateUserResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateUserResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                User)
-                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateUserResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                  UpdateUserResponseBodyDefault)
-                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/account/users/{username}") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /account/users/{username}
--- 
--- The same as 'updateUser' but returns the raw 'Data.ByteString.Char8.ByteString'
-updateUserRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Linode.Common.Configuration s ->
-                 GHC.Base.Maybe User ->
-                 m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateUserRaw config
-              body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/account/users/{username}") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /account/users/{username}
--- 
--- Monadic version of 'updateUser' (use with 'Linode.Common.runWithConfiguration')
-updateUserM :: forall m s . (Linode.Common.MonadHTTP m,
-                             Linode.Common.SecurityScheme s) =>
-               GHC.Base.Maybe User ->
-               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                  m
-                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                      (Network.HTTP.Client.Types.Response UpdateUserResponse))
-updateUserM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either UpdateUserResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateUserResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                 User)
-                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateUserResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                   UpdateUserResponseBodyDefault)
-                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/account/users/{username}") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /account/users/{username}
--- 
--- Monadic version of 'updateUserRaw' (use with 'Linode.Common.runWithConfiguration')
-updateUserRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  GHC.Base.Maybe User ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateUserRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/account/users/{username}") [] body Linode.Common.RequestBodyEncodingJSON)
+updateUser :: forall m . Linode.Common.MonadHTTP m => Data.Text.Internal.Text -- ^ username: The username to look up.
+  -> GHC.Maybe.Maybe User -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response UpdateUserResponse) -- ^ Monadic computation which returns the result of the operation
+updateUser username
+           body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateUserResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateUserResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                 User)
+                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateUserResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                   UpdateUserResponseBodyDefault)
+                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack ("/account/users/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel username)) GHC.Base.++ ""))) GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
 -- | Represents a response of the operation 'updateUser'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'UpdateUserResponseError' is used.
-data UpdateUserResponse =                                    
-   UpdateUserResponseError GHC.Base.String                   -- ^ Means either no matching case available or a parse error
-  | UpdateUserResponse200 User                               -- ^ User updated successfully.
-  | UpdateUserResponseDefault UpdateUserResponseBodyDefault  -- ^ Error
+data UpdateUserResponse =
+   UpdateUserResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | UpdateUserResponse200 User -- ^ User updated successfully.
+  | UpdateUserResponseDefault UpdateUserResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema UpdateUserResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data UpdateUserResponseBodyDefault = UpdateUserResponseBodyDefault {
   -- | errors
-  updateUserResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  updateUserResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateUserResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (updateUserResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (updateUserResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateUserResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= updateUserResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= updateUserResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON UpdateUserResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "UpdateUserResponseBodyDefault" (\obj -> GHC.Base.pure UpdateUserResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'UpdateUserResponseBodyDefault' with all required fields.
+mkUpdateUserResponseBodyDefault :: UpdateUserResponseBodyDefault
+mkUpdateUserResponseBodyDefault = UpdateUserResponseBodyDefault{updateUserResponseBodyDefaultErrors = GHC.Maybe.Nothing}

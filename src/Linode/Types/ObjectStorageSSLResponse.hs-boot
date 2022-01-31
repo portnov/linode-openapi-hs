@@ -1,0 +1,8 @@
+module Linode.Types.ObjectStorageSSLResponse where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data ObjectStorageSSLResponse
+instance Show ObjectStorageSSLResponse
+instance Eq ObjectStorageSSLResponse
+instance FromJSON ObjectStorageSSLResponse
+instance ToJSON ObjectStorageSSLResponse

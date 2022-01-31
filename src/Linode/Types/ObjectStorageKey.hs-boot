@@ -1,0 +1,18 @@
+module Linode.Types.ObjectStorageKey where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data ObjectStorageKey
+instance Show ObjectStorageKey
+instance Eq ObjectStorageKey
+instance FromJSON ObjectStorageKey
+instance ToJSON ObjectStorageKey
+data ObjectStorageKeyBucketAccess'
+instance Show ObjectStorageKeyBucketAccess'
+instance Eq ObjectStorageKeyBucketAccess'
+instance FromJSON ObjectStorageKeyBucketAccess'
+instance ToJSON ObjectStorageKeyBucketAccess'
+data ObjectStorageKeyBucketAccess'Permissions'
+instance Show ObjectStorageKeyBucketAccess'Permissions'
+instance Eq ObjectStorageKeyBucketAccess'Permissions'
+instance FromJSON ObjectStorageKeyBucketAccess'Permissions'
+instance ToJSON ObjectStorageKeyBucketAccess'Permissions'

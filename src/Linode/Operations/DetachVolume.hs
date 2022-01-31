@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation detachVolume
 module Linode.Operations.DetachVolume where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,76 +45,34 @@ import Linode.Types
 -- | > POST /volumes/{volumeId}/detach
 -- 
 -- Detaches a Volume on your Account from a Linode on your Account. In order for this request to complete successfully, your User must have \`read_write\` access to the Volume and \`read_write\` access to the Linode.
-detachVolume :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response DetachVolumeResponse)) -- ^ Monad containing the result of the operation
-detachVolume config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DetachVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DetachVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                        DetachVolumeResponseBody200)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DetachVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                          DetachVolumeResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/detach") [])
--- | > POST /volumes/{volumeId}/detach
--- 
--- The same as 'detachVolume' but returns the raw 'Data.ByteString.Char8.ByteString'
-detachVolumeRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Linode.Common.Configuration s ->
-                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-detachVolumeRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/detach") [])
--- | > POST /volumes/{volumeId}/detach
--- 
--- Monadic version of 'detachVolume' (use with 'Linode.Common.runWithConfiguration')
-detachVolumeM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response DetachVolumeResponse))
-detachVolumeM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either DetachVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DetachVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                  DetachVolumeResponseBody200)
-                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DetachVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                    DetachVolumeResponseBodyDefault)
-                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/detach") [])
--- | > POST /volumes/{volumeId}/detach
--- 
--- Monadic version of 'detachVolumeRaw' (use with 'Linode.Common.runWithConfiguration')
-detachVolumeRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-detachVolumeRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/detach") [])
+detachVolume :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ volumeId: ID of the Volume to detach.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response DetachVolumeResponse) -- ^ Monadic computation which returns the result of the operation
+detachVolume volumeId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DetachVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DetachVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                           Data.Aeson.Types.Internal.Object)
+                                                                                                                                                               | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DetachVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                             DetachVolumeResponseBodyDefault)
+                                                                                                                                                               | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/volumes/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel volumeId)) GHC.Base.++ "/detach"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'detachVolume'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'DetachVolumeResponseError' is used.
-data DetachVolumeResponse =                                      
-   DetachVolumeResponseError GHC.Base.String                     -- ^ Means either no matching case available or a parse error
-  | DetachVolumeResponse200 DetachVolumeResponseBody200          -- ^ Volume was detached from a Linode.
-  | DetachVolumeResponseDefault DetachVolumeResponseBodyDefault  -- ^ Error
+data DetachVolumeResponse =
+   DetachVolumeResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | DetachVolumeResponse200 Data.Aeson.Types.Internal.Object -- ^ Volume was detached from a Linode.
+  | DetachVolumeResponseDefault DetachVolumeResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema DetachVolumeResponseBody200
--- 
--- 
-data DetachVolumeResponseBody200 = DetachVolumeResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DetachVolumeResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON DetachVolumeResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DetachVolumeResponseBody200" (\obj -> GHC.Base.pure DetachVolumeResponseBody200)
--- | Defines the data type for the schema DetachVolumeResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data DetachVolumeResponseBodyDefault = DetachVolumeResponseBodyDefault {
   -- | errors
-  detachVolumeResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  detachVolumeResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DetachVolumeResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (detachVolumeResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (detachVolumeResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON DetachVolumeResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= detachVolumeResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= detachVolumeResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON DetachVolumeResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "DetachVolumeResponseBodyDefault" (\obj -> GHC.Base.pure DetachVolumeResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'DetachVolumeResponseBodyDefault' with all required fields.
+mkDetachVolumeResponseBodyDefault :: DetachVolumeResponseBodyDefault
+mkDetachVolumeResponseBodyDefault = DetachVolumeResponseBodyDefault{detachVolumeResponseBodyDefaultErrors = GHC.Maybe.Nothing}

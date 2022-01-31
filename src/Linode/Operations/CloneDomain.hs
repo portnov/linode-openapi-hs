@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation cloneDomain
 module Linode.Operations.CloneDomain where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,53 +45,16 @@ import Linode.Types
 -- | > POST /domains/{domainId}/clone
 -- 
 -- Clones a Domain and all associated DNS records from a Domain that is registered in Linode\'s DNS manager.
-cloneDomain :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CloneDomainRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CloneDomainResponse)) -- ^ Monad containing the result of the operation
-cloneDomain config
-            body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CloneDomainResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CloneDomainResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                   Domain)
-                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CloneDomainResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                     CloneDomainResponseBodyDefault)
-                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains/{domainId}/clone") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /domains/{domainId}/clone
--- 
--- The same as 'cloneDomain' but returns the raw 'Data.ByteString.Char8.ByteString'
-cloneDomainRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  Linode.Common.Configuration s ->
-                  CloneDomainRequestBody ->
-                  m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-cloneDomainRaw config
-               body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains/{domainId}/clone") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /domains/{domainId}/clone
--- 
--- Monadic version of 'cloneDomain' (use with 'Linode.Common.runWithConfiguration')
-cloneDomainM :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                CloneDomainRequestBody ->
-                Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                   m
-                                                   (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                       (Network.HTTP.Client.Types.Response CloneDomainResponse))
-cloneDomainM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CloneDomainResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CloneDomainResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                    Domain)
-                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CloneDomainResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                      CloneDomainResponseBodyDefault)
-                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains/{domainId}/clone") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /domains/{domainId}/clone
--- 
--- Monadic version of 'cloneDomainRaw' (use with 'Linode.Common.runWithConfiguration')
-cloneDomainRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   CloneDomainRequestBody ->
-                   Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                      m
-                                                      (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-cloneDomainRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains/{domainId}/clone") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema cloneDomainRequestBody
+cloneDomain :: forall m . Linode.Common.MonadHTTP m => Data.Text.Internal.Text -- ^ domainId: ID of the Domain to clone.
+  -> CloneDomainRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CloneDomainResponse) -- ^ Monadic computation which returns the result of the operation
+cloneDomain domainId
+            body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CloneDomainResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CloneDomainResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                    Domain)
+                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CloneDomainResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                      CloneDomainResponseBodyDefault)
+                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/domains/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel domainId)) GHC.Base.++ "/clone"))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/domains\/{domainId}\/clone.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CloneDomainRequestBody = CloneDomainRequestBody {
@@ -106,29 +69,36 @@ data CloneDomainRequestBody = CloneDomainRequestBody {
   cloneDomainRequestBodyDomain :: Data.Text.Internal.Text
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CloneDomainRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "domain" (cloneDomainRequestBodyDomain obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "domain" (cloneDomainRequestBodyDomain obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CloneDomainRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("domain" Data.Aeson.Types.ToJSON..= cloneDomainRequestBodyDomain obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("domain" Data.Aeson.Types.ToJSON..= cloneDomainRequestBodyDomain obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CloneDomainRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CloneDomainRequestBody" (\obj -> GHC.Base.pure CloneDomainRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "domain"))
+-- | Create a new 'CloneDomainRequestBody' with all required fields.
+mkCloneDomainRequestBody :: Data.Text.Internal.Text -- ^ 'cloneDomainRequestBodyDomain'
+  -> CloneDomainRequestBody
+mkCloneDomainRequestBody cloneDomainRequestBodyDomain = CloneDomainRequestBody{cloneDomainRequestBodyDomain = cloneDomainRequestBodyDomain}
 -- | Represents a response of the operation 'cloneDomain'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CloneDomainResponseError' is used.
-data CloneDomainResponse =                                     
-   CloneDomainResponseError GHC.Base.String                    -- ^ Means either no matching case available or a parse error
-  | CloneDomainResponse200 Domain                              -- ^ A new Domain in Linode\'s DNS Manager, based on a cloned Domain. 
-  | CloneDomainResponseDefault CloneDomainResponseBodyDefault  -- ^ Error
+data CloneDomainResponse =
+   CloneDomainResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CloneDomainResponse200 Domain -- ^ A new Domain in Linode\'s DNS Manager, based on a cloned Domain. 
+  | CloneDomainResponseDefault CloneDomainResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CloneDomainResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CloneDomainResponseBodyDefault = CloneDomainResponseBodyDefault {
   -- | errors
-  cloneDomainResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  cloneDomainResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CloneDomainResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (cloneDomainResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (cloneDomainResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CloneDomainResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= cloneDomainResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= cloneDomainResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CloneDomainResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CloneDomainResponseBodyDefault" (\obj -> GHC.Base.pure CloneDomainResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CloneDomainResponseBodyDefault' with all required fields.
+mkCloneDomainResponseBodyDefault :: CloneDomainResponseBodyDefault
+mkCloneDomainResponseBodyDefault = CloneDomainResponseBodyDefault{cloneDomainResponseBodyDefaultErrors = GHC.Maybe.Nothing}

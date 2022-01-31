@@ -19,12 +19,9 @@ import qualified Linode.Common
 -- 
 -- @
 -- 'Linode.Configuration.defaultConfiguration'
---   { configSecurityScheme = 'BearerAuthenticationSecurityScheme' "token"
+--   { configSecurityScheme = 'bearerAuthenticationSecurityScheme' "token"
 --   }
 -- @
-data BearerAuthenticationSecurityScheme
-    = BearerAuthenticationSecurityScheme Data.Text.Internal.Text
-    deriving (GHC.Show.Show, GHC.Classes.Ord, GHC.Classes.Eq)
-
-instance Linode.Common.SecurityScheme BearerAuthenticationSecurityScheme
-    where authenticateRequest (BearerAuthenticationSecurityScheme token) = Network.HTTP.Simple.addRequestHeader "Authorization" GHC.Base.$ (Linode.Common.textToByte GHC.Base.$ ("Bearer " GHC.Base.<> token))
+bearerAuthenticationSecurityScheme :: Data.Text.Internal.Text ->
+                                      Linode.Common.SecurityScheme
+bearerAuthenticationSecurityScheme = \token_0 -> Network.HTTP.Simple.addRequestHeader "Authorization" GHC.Base.$ (Linode.Common.textToByte GHC.Base.$ ("Bearer " GHC.Base.<> token_0))

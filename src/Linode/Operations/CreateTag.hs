@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createTag
 module Linode.Operations.CreateTag where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -47,58 +47,19 @@ import Linode.Types
 -- Creates a new Tag and optionally tags requested objects with it immediately.
 -- 
 -- **Important**: You must be an unrestricted User in order to add or modify Tags.
-createTag :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe CreateTagRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateTagResponse)) -- ^ Monad containing the result of the operation
-createTag config
-          body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateTagResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateTagResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                             Tag)
-                                                                                                                                                                    | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateTagResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                               CreateTagResponseBodyDefault)
-                                                                                                                                                                    | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/tags") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /tags
--- 
--- The same as 'createTag' but returns the raw 'Data.ByteString.Char8.ByteString'
-createTagRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                Linode.Common.Configuration s ->
-                GHC.Base.Maybe CreateTagRequestBody ->
-                m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createTagRaw config
-             body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/tags") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /tags
--- 
--- Monadic version of 'createTag' (use with 'Linode.Common.runWithConfiguration')
-createTagM :: forall m s . (Linode.Common.MonadHTTP m,
-                            Linode.Common.SecurityScheme s) =>
-              GHC.Base.Maybe CreateTagRequestBody ->
-              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                 m
-                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                     (Network.HTTP.Client.Types.Response CreateTagResponse))
-createTagM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateTagResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateTagResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                              Tag)
-                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateTagResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                CreateTagResponseBodyDefault)
-                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/tags") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /tags
--- 
--- Monadic version of 'createTagRaw' (use with 'Linode.Common.runWithConfiguration')
-createTagRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 GHC.Base.Maybe CreateTagRequestBody ->
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createTagRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/tags") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createTagRequestBody
+createTag :: forall m . Linode.Common.MonadHTTP m => GHC.Maybe.Maybe CreateTagRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateTagResponse) -- ^ Monadic computation which returns the result of the operation
+createTag body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateTagResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateTagResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                              Tag)
+                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateTagResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                CreateTagResponseBodyDefault)
+                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/tags") GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/tags.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateTagRequestBody = CreateTagRequestBody {
   -- | domains: A list of Domain IDs to apply the new Tag to.  You must be allowed to \`read_write\` all of the requested Domains, or the Tag will not be created and an error will be returned.
-  createTagRequestBodyDomains :: (GHC.Base.Maybe ([] GHC.Integer.Type.Integer))
+  createTagRequestBodyDomains :: (GHC.Maybe.Maybe ([GHC.Types.Int]))
   -- | label: The new Tag.
   -- 
   -- 
@@ -108,36 +69,47 @@ data CreateTagRequestBody = CreateTagRequestBody {
   -- * Minimum length of 3
   , createTagRequestBodyLabel :: Data.Text.Internal.Text
   -- | linodes: A list of Linode IDs to apply the new Tag to.  You must be allowed to \`read_write\` all of the requested Linodes, or the Tag will not be created and an error will be returned.
-  , createTagRequestBodyLinodes :: (GHC.Base.Maybe ([] GHC.Integer.Type.Integer))
+  , createTagRequestBodyLinodes :: (GHC.Maybe.Maybe ([GHC.Types.Int]))
   -- | nodebalancers: A list of NodeBalancer IDs to apply the new Tag to. You must be allowed to \`read_write\` all of the requested NodeBalancers, or the Tag will not be created and an error will be returned.
-  , createTagRequestBodyNodebalancers :: (GHC.Base.Maybe ([] GHC.Integer.Type.Integer))
+  , createTagRequestBodyNodebalancers :: (GHC.Maybe.Maybe ([GHC.Types.Int]))
   -- | volumes: A list of Volume IDs to apply the new Tag to.  You must be allowed to \`read_write\` all of the requested Volumes, or the Tag will not be created and an error will be returned.
-  , createTagRequestBodyVolumes :: (GHC.Base.Maybe ([] GHC.Integer.Type.Integer))
+  , createTagRequestBodyVolumes :: (GHC.Maybe.Maybe ([GHC.Types.Int]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateTagRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "domains" (createTagRequestBodyDomains obj) : (Data.Aeson..=) "label" (createTagRequestBodyLabel obj) : (Data.Aeson..=) "linodes" (createTagRequestBodyLinodes obj) : (Data.Aeson..=) "nodebalancers" (createTagRequestBodyNodebalancers obj) : (Data.Aeson..=) "volumes" (createTagRequestBodyVolumes obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "domains" (createTagRequestBodyDomains obj) GHC.Base.<> ((Data.Aeson..=) "label" (createTagRequestBodyLabel obj) GHC.Base.<> ((Data.Aeson..=) "linodes" (createTagRequestBodyLinodes obj) GHC.Base.<> ((Data.Aeson..=) "nodebalancers" (createTagRequestBodyNodebalancers obj) GHC.Base.<> (Data.Aeson..=) "volumes" (createTagRequestBodyVolumes obj)))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateTagRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("domains" Data.Aeson.Types.ToJSON..= createTagRequestBodyDomains obj : "label" Data.Aeson.Types.ToJSON..= createTagRequestBodyLabel obj : "linodes" Data.Aeson.Types.ToJSON..= createTagRequestBodyLinodes obj : "nodebalancers" Data.Aeson.Types.ToJSON..= createTagRequestBodyNodebalancers obj : "volumes" Data.Aeson.Types.ToJSON..= createTagRequestBodyVolumes obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("domains" Data.Aeson.Types.ToJSON..= createTagRequestBodyDomains obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= createTagRequestBodyLabel obj) GHC.Base.<> (("linodes" Data.Aeson.Types.ToJSON..= createTagRequestBodyLinodes obj) GHC.Base.<> (("nodebalancers" Data.Aeson.Types.ToJSON..= createTagRequestBodyNodebalancers obj) GHC.Base.<> ("volumes" Data.Aeson.Types.ToJSON..= createTagRequestBodyVolumes obj)))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateTagRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateTagRequestBody" (\obj -> ((((GHC.Base.pure CreateTagRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "domains")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "linodes")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "nodebalancers")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "volumes"))
+-- | Create a new 'CreateTagRequestBody' with all required fields.
+mkCreateTagRequestBody :: Data.Text.Internal.Text -- ^ 'createTagRequestBodyLabel'
+  -> CreateTagRequestBody
+mkCreateTagRequestBody createTagRequestBodyLabel = CreateTagRequestBody{createTagRequestBodyDomains = GHC.Maybe.Nothing,
+                                                                        createTagRequestBodyLabel = createTagRequestBodyLabel,
+                                                                        createTagRequestBodyLinodes = GHC.Maybe.Nothing,
+                                                                        createTagRequestBodyNodebalancers = GHC.Maybe.Nothing,
+                                                                        createTagRequestBodyVolumes = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'createTag'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateTagResponseError' is used.
-data CreateTagResponse =                                   
-   CreateTagResponseError GHC.Base.String                  -- ^ Means either no matching case available or a parse error
-  | CreateTagResponse200 Tag                               -- ^ The new Tag.
-  | CreateTagResponseDefault CreateTagResponseBodyDefault  -- ^ Error
+data CreateTagResponse =
+   CreateTagResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateTagResponse200 Tag -- ^ The new Tag.
+  | CreateTagResponseDefault CreateTagResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateTagResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateTagResponseBodyDefault = CreateTagResponseBodyDefault {
   -- | errors
-  createTagResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createTagResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateTagResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createTagResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createTagResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateTagResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createTagResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createTagResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateTagResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateTagResponseBodyDefault" (\obj -> GHC.Base.pure CreateTagResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateTagResponseBodyDefault' with all required fields.
+mkCreateTagResponseBodyDefault :: CreateTagResponseBodyDefault
+mkCreateTagResponseBodyDefault = CreateTagResponseBodyDefault{createTagResponseBodyDefaultErrors = GHC.Maybe.Nothing}

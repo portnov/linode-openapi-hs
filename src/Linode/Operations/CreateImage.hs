@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createImage
 module Linode.Operations.CreateImage where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,87 +45,57 @@ import Linode.Types
 -- | > POST /images
 -- 
 -- Captures a private gold-master Image from a Linode Disk.
-createImage :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe CreateImageRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateImageResponse)) -- ^ Monad containing the result of the operation
-createImage config
-            body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateImageResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateImageResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                   Image)
-                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateImageResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                     CreateImageResponseBodyDefault)
-                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/images") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /images
--- 
--- The same as 'createImage' but returns the raw 'Data.ByteString.Char8.ByteString'
-createImageRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  Linode.Common.Configuration s ->
-                  GHC.Base.Maybe CreateImageRequestBody ->
-                  m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createImageRaw config
-               body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/images") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /images
--- 
--- Monadic version of 'createImage' (use with 'Linode.Common.runWithConfiguration')
-createImageM :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                GHC.Base.Maybe CreateImageRequestBody ->
-                Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                   m
-                                                   (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                       (Network.HTTP.Client.Types.Response CreateImageResponse))
-createImageM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateImageResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateImageResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                    Image)
-                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateImageResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                      CreateImageResponseBodyDefault)
-                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/images") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /images
--- 
--- Monadic version of 'createImageRaw' (use with 'Linode.Common.runWithConfiguration')
-createImageRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   GHC.Base.Maybe CreateImageRequestBody ->
-                   Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                      m
-                                                      (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createImageRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/images") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createImageRequestBody
+createImage :: forall m . Linode.Common.MonadHTTP m => GHC.Maybe.Maybe CreateImageRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateImageResponse) -- ^ Monadic computation which returns the result of the operation
+createImage body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateImageResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateImageResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                    Image)
+                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateImageResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                      CreateImageResponseBodyDefault)
+                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/images") GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/images.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateImageRequestBody = CreateImageRequestBody {
   -- | description: A detailed description of this Image.
-  createImageRequestBodyDescription :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  createImageRequestBodyDescription :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | disk_id: The ID of the Linode Disk that this Image will be created from.
-  , createImageRequestBodyDisk_id :: GHC.Integer.Type.Integer
+  , createImageRequestBodyDiskId :: GHC.Types.Int
   -- | label: A short title of this Image. Defaults to the label of the Disk it is being created from if not provided.
-  , createImageRequestBodyLabel :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createImageRequestBodyLabel :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateImageRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "description" (createImageRequestBodyDescription obj) : (Data.Aeson..=) "disk_id" (createImageRequestBodyDisk_id obj) : (Data.Aeson..=) "label" (createImageRequestBodyLabel obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "description" (createImageRequestBodyDescription obj) GHC.Base.<> ((Data.Aeson..=) "disk_id" (createImageRequestBodyDisk_id obj) GHC.Base.<> (Data.Aeson..=) "label" (createImageRequestBodyLabel obj)))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateImageRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("description" Data.Aeson.Types.ToJSON..= createImageRequestBodyDescription obj : "disk_id" Data.Aeson.Types.ToJSON..= createImageRequestBodyDiskId obj : "label" Data.Aeson.Types.ToJSON..= createImageRequestBodyLabel obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("description" Data.Aeson.Types.ToJSON..= createImageRequestBodyDescription obj) GHC.Base.<> (("disk_id" Data.Aeson.Types.ToJSON..= createImageRequestBodyDiskId obj) GHC.Base.<> ("label" Data.Aeson.Types.ToJSON..= createImageRequestBodyLabel obj)))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateImageRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateImageRequestBody" (\obj -> ((GHC.Base.pure CreateImageRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "description")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "disk_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label"))
+-- | Create a new 'CreateImageRequestBody' with all required fields.
+mkCreateImageRequestBody :: GHC.Types.Int -- ^ 'createImageRequestBodyDiskId'
+  -> CreateImageRequestBody
+mkCreateImageRequestBody createImageRequestBodyDiskId = CreateImageRequestBody{createImageRequestBodyDescription = GHC.Maybe.Nothing,
+                                                                               createImageRequestBodyDiskId = createImageRequestBodyDiskId,
+                                                                               createImageRequestBodyLabel = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'createImage'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateImageResponseError' is used.
-data CreateImageResponse =                                     
-   CreateImageResponseError GHC.Base.String                    -- ^ Means either no matching case available or a parse error
-  | CreateImageResponse200 Image                               -- ^ New private Image created successfully.
-  | CreateImageResponseDefault CreateImageResponseBodyDefault  -- ^ Error
+data CreateImageResponse =
+   CreateImageResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateImageResponse200 Image -- ^ New private Image created successfully.
+  | CreateImageResponseDefault CreateImageResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateImageResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateImageResponseBodyDefault = CreateImageResponseBodyDefault {
   -- | errors
-  createImageResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createImageResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateImageResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createImageResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createImageResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateImageResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createImageResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createImageResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateImageResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateImageResponseBodyDefault" (\obj -> GHC.Base.pure CreateImageResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateImageResponseBodyDefault' with all required fields.
+mkCreateImageResponseBodyDefault :: CreateImageResponseBodyDefault
+mkCreateImageResponseBodyDefault = CreateImageResponseBodyDefault{createImageResponseBodyDefaultErrors = GHC.Maybe.Nothing}

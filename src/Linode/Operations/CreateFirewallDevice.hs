@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createFirewallDevice
 module Linode.Operations.CreateFirewallDevice where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -55,70 +55,76 @@ import Linode.Types
 -- Additional disabled Firewalls can be assigned to a service, but they cannot be enabled if another active Firewall is already assigned to the same service.
 -- 
 -- * A \`firewall_device_add\` Event is generated when the Firewall Device is added successfully.
-createFirewallDevice :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe Data.Text.Internal.Text                                                                                           -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateFirewallDeviceResponse)) -- ^ Monad containing the result of the operation
-createFirewallDevice config
-                     body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateFirewallDeviceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallDeviceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                              FirewallDevices)
-                                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallDeviceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                CreateFirewallDeviceResponseBodyDefault)
-                                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/firewalls/{firewallId}/devices") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/firewalls/{firewallId}/devices
+createFirewallDevice :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ firewallId: ID of the Firewall to access. 
+  -> GHC.Maybe.Maybe CreateFirewallDeviceRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateFirewallDeviceResponse) -- ^ Monadic computation which returns the result of the operation
+createFirewallDevice firewallId
+                     body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateFirewallDeviceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallDeviceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                               FirewallDevices)
+                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallDeviceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                 CreateFirewallDeviceResponseBodyDefault)
+                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/networking/firewalls/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel firewallId)) GHC.Base.++ "/devices"))) GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/networking\/firewalls\/{firewallId}\/devices.POST.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
--- The same as 'createFirewallDevice' but returns the raw 'Data.ByteString.Char8.ByteString'
-createFirewallDeviceRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           Linode.Common.Configuration s ->
-                           GHC.Base.Maybe Data.Text.Internal.Text ->
-                           m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createFirewallDeviceRaw config
-                        body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/firewalls/{firewallId}/devices") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/firewalls/{firewallId}/devices
 -- 
--- Monadic version of 'createFirewallDevice' (use with 'Linode.Common.runWithConfiguration')
-createFirewallDeviceM :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         GHC.Base.Maybe Data.Text.Internal.Text ->
-                         Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                            m
-                                                            (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                (Network.HTTP.Client.Types.Response CreateFirewallDeviceResponse))
-createFirewallDeviceM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateFirewallDeviceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallDeviceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                               FirewallDevices)
-                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallDeviceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                 CreateFirewallDeviceResponseBodyDefault)
-                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/firewalls/{firewallId}/devices") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/firewalls/{firewallId}/devices
+data CreateFirewallDeviceRequestBody = CreateFirewallDeviceRequestBody {
+  -- | id: The entity\'s ID
+  createFirewallDeviceRequestBodyId :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | label: The entity\'s label.
+  , createFirewallDeviceRequestBodyLabel :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
+  -- | type: The entity\'s type.
+  , createFirewallDeviceRequestBodyType :: (GHC.Maybe.Maybe CreateFirewallDeviceRequestBodyType')
+  -- | url: The URL you can use to access this entity.
+  , createFirewallDeviceRequestBodyUrl :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateFirewallDeviceRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("id" Data.Aeson.Types.ToJSON..= createFirewallDeviceRequestBodyId obj : "label" Data.Aeson.Types.ToJSON..= createFirewallDeviceRequestBodyLabel obj : "type" Data.Aeson.Types.ToJSON..= createFirewallDeviceRequestBodyType obj : "url" Data.Aeson.Types.ToJSON..= createFirewallDeviceRequestBodyUrl obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("id" Data.Aeson.Types.ToJSON..= createFirewallDeviceRequestBodyId obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= createFirewallDeviceRequestBodyLabel obj) GHC.Base.<> (("type" Data.Aeson.Types.ToJSON..= createFirewallDeviceRequestBodyType obj) GHC.Base.<> ("url" Data.Aeson.Types.ToJSON..= createFirewallDeviceRequestBodyUrl obj))))
+instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallDeviceRequestBody
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateFirewallDeviceRequestBody" (\obj -> (((GHC.Base.pure CreateFirewallDeviceRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "type")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "url"))
+-- | Create a new 'CreateFirewallDeviceRequestBody' with all required fields.
+mkCreateFirewallDeviceRequestBody :: CreateFirewallDeviceRequestBody
+mkCreateFirewallDeviceRequestBody = CreateFirewallDeviceRequestBody{createFirewallDeviceRequestBodyId = GHC.Maybe.Nothing,
+                                                                    createFirewallDeviceRequestBodyLabel = GHC.Maybe.Nothing,
+                                                                    createFirewallDeviceRequestBodyType = GHC.Maybe.Nothing,
+                                                                    createFirewallDeviceRequestBodyUrl = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/networking\/firewalls\/{firewallId}\/devices.POST.requestBody.content.application\/json.schema.allOf.properties.type@ in the specification.
 -- 
--- Monadic version of 'createFirewallDeviceRaw' (use with 'Linode.Common.runWithConfiguration')
-createFirewallDeviceRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                          Linode.Common.SecurityScheme s) =>
-                            GHC.Base.Maybe Data.Text.Internal.Text ->
-                            Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                               m
-                                                               (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                   (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createFirewallDeviceRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/firewalls/{firewallId}/devices") [] body Linode.Common.RequestBodyEncodingJSON)
+-- The entity\'s type.
+data CreateFirewallDeviceRequestBodyType' =
+   CreateFirewallDeviceRequestBodyType'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateFirewallDeviceRequestBodyType'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateFirewallDeviceRequestBodyType'EnumLinode -- ^ Represents the JSON value @"linode"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateFirewallDeviceRequestBodyType'
+    where toJSON (CreateFirewallDeviceRequestBodyType'Other val) = val
+          toJSON (CreateFirewallDeviceRequestBodyType'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateFirewallDeviceRequestBodyType'EnumLinode) = "linode"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallDeviceRequestBodyType'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "linode" -> CreateFirewallDeviceRequestBodyType'EnumLinode
+                                            | GHC.Base.otherwise -> CreateFirewallDeviceRequestBodyType'Other val)
 -- | Represents a response of the operation 'createFirewallDevice'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateFirewallDeviceResponseError' is used.
-data CreateFirewallDeviceResponse =                                              
-   CreateFirewallDeviceResponseError GHC.Base.String                             -- ^ Means either no matching case available or a parse error
-  | CreateFirewallDeviceResponse200 FirewallDevices                              -- ^ Returns information about the created Firewall Device.
-  | CreateFirewallDeviceResponseDefault CreateFirewallDeviceResponseBodyDefault  -- ^ Error
+data CreateFirewallDeviceResponse =
+   CreateFirewallDeviceResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateFirewallDeviceResponse200 FirewallDevices -- ^ Returns information about the created Firewall Device.
+  | CreateFirewallDeviceResponseDefault CreateFirewallDeviceResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateFirewallDeviceResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateFirewallDeviceResponseBodyDefault = CreateFirewallDeviceResponseBodyDefault {
   -- | errors
-  createFirewallDeviceResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createFirewallDeviceResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateFirewallDeviceResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createFirewallDeviceResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createFirewallDeviceResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateFirewallDeviceResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createFirewallDeviceResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createFirewallDeviceResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallDeviceResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateFirewallDeviceResponseBodyDefault" (\obj -> GHC.Base.pure CreateFirewallDeviceResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateFirewallDeviceResponseBodyDefault' with all required fields.
+mkCreateFirewallDeviceResponseBodyDefault :: CreateFirewallDeviceResponseBodyDefault
+mkCreateFirewallDeviceResponseBodyDefault = CreateFirewallDeviceResponseBodyDefault{createFirewallDeviceResponseBodyDefaultErrors = GHC.Maybe.Nothing}

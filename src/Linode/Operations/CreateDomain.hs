@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createDomain
 module Linode.Operations.CreateDomain where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,58 +45,19 @@ import Linode.Types
 -- | > POST /domains
 -- 
 -- Adds a new Domain to Linode\'s DNS Manager. Linode is not a registrar, and you must own the domain before adding it here. Be sure to point your registrar to Linode\'s nameservers so that the records hosted here are used.
-createDomain :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CreateDomainRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateDomainResponse)) -- ^ Monad containing the result of the operation
-createDomain config
-             body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateDomainResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                      Domain)
-                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                        CreateDomainResponseBodyDefault)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /domains
--- 
--- The same as 'createDomain' but returns the raw 'Data.ByteString.Char8.ByteString'
-createDomainRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Linode.Common.Configuration s ->
-                   CreateDomainRequestBody ->
-                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createDomainRaw config
-                body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /domains
--- 
--- Monadic version of 'createDomain' (use with 'Linode.Common.runWithConfiguration')
-createDomainM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 CreateDomainRequestBody ->
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response CreateDomainResponse))
-createDomainM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateDomainResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                       Domain)
-                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                         CreateDomainResponseBodyDefault)
-                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /domains
--- 
--- Monadic version of 'createDomainRaw' (use with 'Linode.Common.runWithConfiguration')
-createDomainRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    CreateDomainRequestBody ->
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createDomainRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createDomainRequestBody
+createDomain :: forall m . Linode.Common.MonadHTTP m => CreateDomainRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateDomainResponse) -- ^ Monadic computation which returns the result of the operation
+createDomain body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateDomainResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                       Domain)
+                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                         CreateDomainResponseBodyDefault)
+                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/domains.POST.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data CreateDomainRequestBody = CreateDomainRequestBody {
   -- | axfr_ips: The list of IPs that may perform a zone transfer for this Domain. This is potentially dangerous, and should be set to an empty list unless you intend to use it.
-  createDomainRequestBodyAxfr_ips :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  createDomainRequestBodyAxfrIps :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   -- | description: A description for this Domain. This is for display purposes only.
   -- 
   -- 
@@ -104,7 +65,7 @@ data CreateDomainRequestBody = CreateDomainRequestBody {
   -- 
   -- * Maximum length of 255
   -- * Minimum length of 1
-  , createDomainRequestBodyDescription :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createDomainRequestBodyDescription :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | domain: The domain this Domain represents. Domain labels cannot be longer than 63 characters and must conform to [RFC1035](https:\/\/tools.ietf.org\/html\/rfc1035). Domains must be unique on Linode\'s platform, including across different Linode accounts; there cannot be two Domains representing the same domain.
   -- 
   -- 
@@ -113,7 +74,7 @@ data CreateDomainRequestBody = CreateDomainRequestBody {
   -- * Maximum length of 255
   -- * Minimum length of 1
   -- * Must match pattern \'\\A(\\*\\.)?([a-zA-Z0-9-_]{1,63}\\.)+([a-zA-Z]{2,3}\\.)?([a-zA-Z]{2,16}|xn--[a-zA-Z0-9]+)\\Z\'
-  , createDomainRequestBodyDomain :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createDomainRequestBodyDomain :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | expire_sec: The amount of time in seconds that may pass before this Domain is no longer
   -- authoritative.
   -- 
@@ -123,7 +84,7 @@ data CreateDomainRequestBody = CreateDomainRequestBody {
   -- * Any other value is rounded up to the nearest valid value.
   -- 
   -- * A value of 0 is equivalent to the default value of 1209600.
-  , createDomainRequestBodyExpire_sec :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRequestBodyExpireSec :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | group: The group this Domain belongs to.  This is for display purposes only.
   -- 
   -- 
@@ -131,11 +92,11 @@ data CreateDomainRequestBody = CreateDomainRequestBody {
   -- 
   -- * Maximum length of 50
   -- * Minimum length of 1
-  , createDomainRequestBodyGroup :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createDomainRequestBodyGroup :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | id: This Domain\'s unique ID
-  , createDomainRequestBodyId :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRequestBodyId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | master_ips: The IP addresses representing the master DNS for this Domain. At least one value is required for \`type\` slave Domains.
-  , createDomainRequestBodyMaster_ips :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  , createDomainRequestBodyMasterIps :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   -- | refresh_sec: The amount of time in seconds before this Domain should be refreshed.
   -- 
   -- * Valid values are
@@ -144,7 +105,7 @@ data CreateDomainRequestBody = CreateDomainRequestBody {
   -- * Any other value is rounded up to the nearest valid value.
   -- 
   -- * A value of 0 is equivalent to the default value of 14400.
-  , createDomainRequestBodyRefresh_sec :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRequestBodyRefreshSec :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | retry_sec: The interval, in seconds, at which a failed refresh should be retried.
   -- 
   -- * Valid values are
@@ -153,85 +114,100 @@ data CreateDomainRequestBody = CreateDomainRequestBody {
   -- * Any other value is rounded up to the nearest valid value.
   -- 
   -- * A value of 0 is equivalent to the default value of 14400.
-  , createDomainRequestBodyRetry_sec :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRequestBodyRetrySec :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | soa_email: Start of Authority email address. This is required for \`type\` master Domains.
-  , createDomainRequestBodySoa_email :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createDomainRequestBodySoaEmail :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | status: Used to control whether this Domain is currently being rendered.
-  , createDomainRequestBodyStatus :: (GHC.Base.Maybe CreateDomainRequestBodyStatus)
+  , createDomainRequestBodyStatus :: (GHC.Maybe.Maybe CreateDomainRequestBodyStatus')
   -- | tags: An array of tags applied to this object.  Tags are for organizational purposes only.
-  , createDomainRequestBodyTags :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  , createDomainRequestBodyTags :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   -- | ttl_sec: \"Time to Live\" - the amount of time in seconds that this Domain\'s records may be cached by resolvers or other domain servers.
   -- * Valid values are 0, 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200.
   -- * Any other value is rounded up to the nearest valid value.
   -- * A value of 0 is equivalent to the default value of 86400.
-  , createDomainRequestBodyTtl_sec :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRequestBodyTtlSec :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | type: Whether this Domain represents the authoritative source of information for the domain it describes (\"master\"), or whether it is a read-only copy of a master (\"slave\").
-  , createDomainRequestBodyType :: (GHC.Base.Maybe CreateDomainRequestBodyType)
+  , createDomainRequestBodyType :: (GHC.Maybe.Maybe CreateDomainRequestBodyType')
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateDomainRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "axfr_ips" (createDomainRequestBodyAxfr_ips obj) : (Data.Aeson..=) "description" (createDomainRequestBodyDescription obj) : (Data.Aeson..=) "domain" (createDomainRequestBodyDomain obj) : (Data.Aeson..=) "expire_sec" (createDomainRequestBodyExpire_sec obj) : (Data.Aeson..=) "group" (createDomainRequestBodyGroup obj) : (Data.Aeson..=) "id" (createDomainRequestBodyId obj) : (Data.Aeson..=) "master_ips" (createDomainRequestBodyMaster_ips obj) : (Data.Aeson..=) "refresh_sec" (createDomainRequestBodyRefresh_sec obj) : (Data.Aeson..=) "retry_sec" (createDomainRequestBodyRetry_sec obj) : (Data.Aeson..=) "soa_email" (createDomainRequestBodySoa_email obj) : (Data.Aeson..=) "status" (createDomainRequestBodyStatus obj) : (Data.Aeson..=) "tags" (createDomainRequestBodyTags obj) : (Data.Aeson..=) "ttl_sec" (createDomainRequestBodyTtl_sec obj) : (Data.Aeson..=) "type" (createDomainRequestBodyType obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "axfr_ips" (createDomainRequestBodyAxfr_ips obj) GHC.Base.<> ((Data.Aeson..=) "description" (createDomainRequestBodyDescription obj) GHC.Base.<> ((Data.Aeson..=) "domain" (createDomainRequestBodyDomain obj) GHC.Base.<> ((Data.Aeson..=) "expire_sec" (createDomainRequestBodyExpire_sec obj) GHC.Base.<> ((Data.Aeson..=) "group" (createDomainRequestBodyGroup obj) GHC.Base.<> ((Data.Aeson..=) "id" (createDomainRequestBodyId obj) GHC.Base.<> ((Data.Aeson..=) "master_ips" (createDomainRequestBodyMaster_ips obj) GHC.Base.<> ((Data.Aeson..=) "refresh_sec" (createDomainRequestBodyRefresh_sec obj) GHC.Base.<> ((Data.Aeson..=) "retry_sec" (createDomainRequestBodyRetry_sec obj) GHC.Base.<> ((Data.Aeson..=) "soa_email" (createDomainRequestBodySoa_email obj) GHC.Base.<> ((Data.Aeson..=) "status" (createDomainRequestBodyStatus obj) GHC.Base.<> ((Data.Aeson..=) "tags" (createDomainRequestBodyTags obj) GHC.Base.<> ((Data.Aeson..=) "ttl_sec" (createDomainRequestBodyTtl_sec obj) GHC.Base.<> (Data.Aeson..=) "type" (createDomainRequestBodyType obj))))))))))))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateDomainRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("axfr_ips" Data.Aeson.Types.ToJSON..= createDomainRequestBodyAxfrIps obj : "description" Data.Aeson.Types.ToJSON..= createDomainRequestBodyDescription obj : "domain" Data.Aeson.Types.ToJSON..= createDomainRequestBodyDomain obj : "expire_sec" Data.Aeson.Types.ToJSON..= createDomainRequestBodyExpireSec obj : "group" Data.Aeson.Types.ToJSON..= createDomainRequestBodyGroup obj : "id" Data.Aeson.Types.ToJSON..= createDomainRequestBodyId obj : "master_ips" Data.Aeson.Types.ToJSON..= createDomainRequestBodyMasterIps obj : "refresh_sec" Data.Aeson.Types.ToJSON..= createDomainRequestBodyRefreshSec obj : "retry_sec" Data.Aeson.Types.ToJSON..= createDomainRequestBodyRetrySec obj : "soa_email" Data.Aeson.Types.ToJSON..= createDomainRequestBodySoaEmail obj : "status" Data.Aeson.Types.ToJSON..= createDomainRequestBodyStatus obj : "tags" Data.Aeson.Types.ToJSON..= createDomainRequestBodyTags obj : "ttl_sec" Data.Aeson.Types.ToJSON..= createDomainRequestBodyTtlSec obj : "type" Data.Aeson.Types.ToJSON..= createDomainRequestBodyType obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("axfr_ips" Data.Aeson.Types.ToJSON..= createDomainRequestBodyAxfrIps obj) GHC.Base.<> (("description" Data.Aeson.Types.ToJSON..= createDomainRequestBodyDescription obj) GHC.Base.<> (("domain" Data.Aeson.Types.ToJSON..= createDomainRequestBodyDomain obj) GHC.Base.<> (("expire_sec" Data.Aeson.Types.ToJSON..= createDomainRequestBodyExpireSec obj) GHC.Base.<> (("group" Data.Aeson.Types.ToJSON..= createDomainRequestBodyGroup obj) GHC.Base.<> (("id" Data.Aeson.Types.ToJSON..= createDomainRequestBodyId obj) GHC.Base.<> (("master_ips" Data.Aeson.Types.ToJSON..= createDomainRequestBodyMasterIps obj) GHC.Base.<> (("refresh_sec" Data.Aeson.Types.ToJSON..= createDomainRequestBodyRefreshSec obj) GHC.Base.<> (("retry_sec" Data.Aeson.Types.ToJSON..= createDomainRequestBodyRetrySec obj) GHC.Base.<> (("soa_email" Data.Aeson.Types.ToJSON..= createDomainRequestBodySoaEmail obj) GHC.Base.<> (("status" Data.Aeson.Types.ToJSON..= createDomainRequestBodyStatus obj) GHC.Base.<> (("tags" Data.Aeson.Types.ToJSON..= createDomainRequestBodyTags obj) GHC.Base.<> (("ttl_sec" Data.Aeson.Types.ToJSON..= createDomainRequestBodyTtlSec obj) GHC.Base.<> ("type" Data.Aeson.Types.ToJSON..= createDomainRequestBodyType obj))))))))))))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateDomainRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateDomainRequestBody" (\obj -> (((((((((((((GHC.Base.pure CreateDomainRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "axfr_ips")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "description")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "domain")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "expire_sec")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "group")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "master_ips")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "refresh_sec")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "retry_sec")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "soa_email")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "status")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "tags")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ttl_sec")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "type"))
--- | Defines the enum schema createDomainRequestBodyStatus
+-- | Create a new 'CreateDomainRequestBody' with all required fields.
+mkCreateDomainRequestBody :: CreateDomainRequestBody
+mkCreateDomainRequestBody = CreateDomainRequestBody{createDomainRequestBodyAxfrIps = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyDescription = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyDomain = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyExpireSec = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyGroup = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyId = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyMasterIps = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyRefreshSec = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyRetrySec = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodySoaEmail = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyStatus = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyTags = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyTtlSec = GHC.Maybe.Nothing,
+                                                    createDomainRequestBodyType = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/domains.POST.requestBody.content.application\/json.schema.allOf.properties.status@ in the specification.
 -- 
 -- Used to control whether this Domain is currently being rendered.
-data CreateDomainRequestBodyStatus
-    = CreateDomainRequestBodyStatusEnumOther Data.Aeson.Types.Internal.Value
-    | CreateDomainRequestBodyStatusEnumTyped Data.Text.Internal.Text
-    | CreateDomainRequestBodyStatusEnumString_active
-    | CreateDomainRequestBodyStatusEnumString_disabled
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateDomainRequestBodyStatus
-    where toJSON (CreateDomainRequestBodyStatusEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateDomainRequestBodyStatusEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateDomainRequestBodyStatusEnumString_active) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "active"
-          toJSON (CreateDomainRequestBodyStatusEnumString_disabled) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "disabled"
-instance Data.Aeson.FromJSON CreateDomainRequestBodyStatus
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "active")
-                                          then CreateDomainRequestBodyStatusEnumString_active
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "disabled")
-                                                then CreateDomainRequestBodyStatusEnumString_disabled
-                                                else CreateDomainRequestBodyStatusEnumOther val)
--- | Defines the enum schema createDomainRequestBodyType
+data CreateDomainRequestBodyStatus' =
+   CreateDomainRequestBodyStatus'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateDomainRequestBodyStatus'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateDomainRequestBodyStatus'EnumDisabled -- ^ Represents the JSON value @"disabled"@
+  | CreateDomainRequestBodyStatus'EnumActive -- ^ Represents the JSON value @"active"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateDomainRequestBodyStatus'
+    where toJSON (CreateDomainRequestBodyStatus'Other val) = val
+          toJSON (CreateDomainRequestBodyStatus'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateDomainRequestBodyStatus'EnumDisabled) = "disabled"
+          toJSON (CreateDomainRequestBodyStatus'EnumActive) = "active"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateDomainRequestBodyStatus'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "disabled" -> CreateDomainRequestBodyStatus'EnumDisabled
+                                            | val GHC.Classes.== "active" -> CreateDomainRequestBodyStatus'EnumActive
+                                            | GHC.Base.otherwise -> CreateDomainRequestBodyStatus'Other val)
+-- | Defines the enum schema located at @paths.\/domains.POST.requestBody.content.application\/json.schema.allOf.properties.type@ in the specification.
 -- 
 -- Whether this Domain represents the authoritative source of information for the domain it describes (\"master\"), or whether it is a read-only copy of a master (\"slave\").
-data CreateDomainRequestBodyType
-    = CreateDomainRequestBodyTypeEnumOther Data.Aeson.Types.Internal.Value
-    | CreateDomainRequestBodyTypeEnumTyped Data.Text.Internal.Text
-    | CreateDomainRequestBodyTypeEnumString_master
-    | CreateDomainRequestBodyTypeEnumString_slave
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateDomainRequestBodyType
-    where toJSON (CreateDomainRequestBodyTypeEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateDomainRequestBodyTypeEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateDomainRequestBodyTypeEnumString_master) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "master"
-          toJSON (CreateDomainRequestBodyTypeEnumString_slave) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "slave"
-instance Data.Aeson.FromJSON CreateDomainRequestBodyType
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "master")
-                                          then CreateDomainRequestBodyTypeEnumString_master
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "slave")
-                                                then CreateDomainRequestBodyTypeEnumString_slave
-                                                else CreateDomainRequestBodyTypeEnumOther val)
+data CreateDomainRequestBodyType' =
+   CreateDomainRequestBodyType'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateDomainRequestBodyType'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateDomainRequestBodyType'EnumMaster -- ^ Represents the JSON value @"master"@
+  | CreateDomainRequestBodyType'EnumSlave -- ^ Represents the JSON value @"slave"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateDomainRequestBodyType'
+    where toJSON (CreateDomainRequestBodyType'Other val) = val
+          toJSON (CreateDomainRequestBodyType'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateDomainRequestBodyType'EnumMaster) = "master"
+          toJSON (CreateDomainRequestBodyType'EnumSlave) = "slave"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateDomainRequestBodyType'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "master" -> CreateDomainRequestBodyType'EnumMaster
+                                            | val GHC.Classes.== "slave" -> CreateDomainRequestBodyType'EnumSlave
+                                            | GHC.Base.otherwise -> CreateDomainRequestBodyType'Other val)
 -- | Represents a response of the operation 'createDomain'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateDomainResponseError' is used.
-data CreateDomainResponse =                                      
-   CreateDomainResponseError GHC.Base.String                     -- ^ Means either no matching case available or a parse error
-  | CreateDomainResponse200 Domain                               -- ^ Domain added successfully. 
-  | CreateDomainResponseDefault CreateDomainResponseBodyDefault  -- ^ Error
+data CreateDomainResponse =
+   CreateDomainResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateDomainResponse200 Domain -- ^ Domain added successfully. 
+  | CreateDomainResponseDefault CreateDomainResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateDomainResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateDomainResponseBodyDefault = CreateDomainResponseBodyDefault {
   -- | errors
-  createDomainResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createDomainResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateDomainResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createDomainResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createDomainResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateDomainResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createDomainResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createDomainResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateDomainResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateDomainResponseBodyDefault" (\obj -> GHC.Base.pure CreateDomainResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateDomainResponseBodyDefault' with all required fields.
+mkCreateDomainResponseBodyDefault :: CreateDomainResponseBodyDefault
+mkCreateDomainResponseBodyDefault = CreateDomainResponseBodyDefault{createDomainResponseBodyDefaultErrors = GHC.Maybe.Nothing}

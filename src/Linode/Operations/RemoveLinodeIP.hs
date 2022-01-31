@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation removeLinodeIP
 module Linode.Operations.RemoveLinodeIP where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,76 +45,59 @@ import Linode.Types
 -- | > DELETE /linode/instances/{linodeId}/ips/{address}
 -- 
 -- Deletes a public IPv4 address associated with this Linode. This will fail if it is the Linode\'s last remaining public IPv4 address. Private IPv4 addresses cannot be removed via this endpoint.
-removeLinodeIP :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response RemoveLinodeIPResponse)) -- ^ Monad containing the result of the operation
-removeLinodeIP config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either RemoveLinodeIPResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> RemoveLinodeIPResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                              RemoveLinodeIPResponseBody200)
-                                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> RemoveLinodeIPResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                RemoveLinodeIPResponseBodyDefault)
-                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/linode/instances/{linodeId}/ips/{address}") [])
--- | > DELETE /linode/instances/{linodeId}/ips/{address}
+removeLinodeIP :: forall m . Linode.Common.MonadHTTP m => RemoveLinodeIPParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response RemoveLinodeIPResponse) -- ^ Monadic computation which returns the result of the operation
+removeLinodeIP parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either RemoveLinodeIPResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> RemoveLinodeIPResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                   Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> RemoveLinodeIPResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                     RemoveLinodeIPResponseBodyDefault)
+                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack (("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (removeLinodeIPParametersPathLinodeId parameters))) GHC.Base.++ "/ips/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (removeLinodeIPParametersPathAddress parameters))) GHC.Base.++ ""))) GHC.Base.mempty)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/ips\/{address}.DELETE.parameters@ in the specification.
 -- 
--- The same as 'removeLinodeIP' but returns the raw 'Data.ByteString.Char8.ByteString'
-removeLinodeIPRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     Linode.Common.Configuration s ->
-                     m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-removeLinodeIPRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/linode/instances/{linodeId}/ips/{address}") [])
--- | > DELETE /linode/instances/{linodeId}/ips/{address}
 -- 
--- Monadic version of 'removeLinodeIP' (use with 'Linode.Common.runWithConfiguration')
-removeLinodeIPM :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                      m
-                                                      (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                          (Network.HTTP.Client.Types.Response RemoveLinodeIPResponse))
-removeLinodeIPM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either RemoveLinodeIPResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> RemoveLinodeIPResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                        RemoveLinodeIPResponseBody200)
-                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> RemoveLinodeIPResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                          RemoveLinodeIPResponseBodyDefault)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/linode/instances/{linodeId}/ips/{address}") [])
--- | > DELETE /linode/instances/{linodeId}/ips/{address}
--- 
--- Monadic version of 'removeLinodeIPRaw' (use with 'Linode.Common.runWithConfiguration')
-removeLinodeIPRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                         m
-                                                         (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-removeLinodeIPRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/linode/instances/{linodeId}/ips/{address}") [])
+data RemoveLinodeIPParameters = RemoveLinodeIPParameters {
+  -- | pathAddress: Represents the parameter named \'address\'
+  -- 
+  -- The IP address to look up.
+  removeLinodeIPParametersPathAddress :: Data.Text.Internal.Text
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- The ID of the Linode to look up.
+  , removeLinodeIPParametersPathLinodeId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON RemoveLinodeIPParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathAddress" Data.Aeson.Types.ToJSON..= removeLinodeIPParametersPathAddress obj : "pathLinodeId" Data.Aeson.Types.ToJSON..= removeLinodeIPParametersPathLinodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathAddress" Data.Aeson.Types.ToJSON..= removeLinodeIPParametersPathAddress obj) GHC.Base.<> ("pathLinodeId" Data.Aeson.Types.ToJSON..= removeLinodeIPParametersPathLinodeId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON RemoveLinodeIPParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "RemoveLinodeIPParameters" (\obj -> (GHC.Base.pure RemoveLinodeIPParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathAddress")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId"))
+-- | Create a new 'RemoveLinodeIPParameters' with all required fields.
+mkRemoveLinodeIPParameters :: Data.Text.Internal.Text -- ^ 'removeLinodeIPParametersPathAddress'
+  -> GHC.Types.Int -- ^ 'removeLinodeIPParametersPathLinodeId'
+  -> RemoveLinodeIPParameters
+mkRemoveLinodeIPParameters removeLinodeIPParametersPathAddress removeLinodeIPParametersPathLinodeId = RemoveLinodeIPParameters{removeLinodeIPParametersPathAddress = removeLinodeIPParametersPathAddress,
+                                                                                                                               removeLinodeIPParametersPathLinodeId = removeLinodeIPParametersPathLinodeId}
 -- | Represents a response of the operation 'removeLinodeIP'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'RemoveLinodeIPResponseError' is used.
-data RemoveLinodeIPResponse =                                        
-   RemoveLinodeIPResponseError GHC.Base.String                       -- ^ Means either no matching case available or a parse error
-  | RemoveLinodeIPResponse200 RemoveLinodeIPResponseBody200          -- ^ IP address successfully removed.
-  | RemoveLinodeIPResponseDefault RemoveLinodeIPResponseBodyDefault  -- ^ Error
+data RemoveLinodeIPResponse =
+   RemoveLinodeIPResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | RemoveLinodeIPResponse200 Data.Aeson.Types.Internal.Object -- ^ IP address successfully removed.
+  | RemoveLinodeIPResponseDefault RemoveLinodeIPResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema RemoveLinodeIPResponseBody200
--- 
--- 
-data RemoveLinodeIPResponseBody200 = RemoveLinodeIPResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON RemoveLinodeIPResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON RemoveLinodeIPResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "RemoveLinodeIPResponseBody200" (\obj -> GHC.Base.pure RemoveLinodeIPResponseBody200)
--- | Defines the data type for the schema RemoveLinodeIPResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data RemoveLinodeIPResponseBodyDefault = RemoveLinodeIPResponseBodyDefault {
   -- | errors
-  removeLinodeIPResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  removeLinodeIPResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON RemoveLinodeIPResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (removeLinodeIPResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (removeLinodeIPResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON RemoveLinodeIPResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= removeLinodeIPResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= removeLinodeIPResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON RemoveLinodeIPResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "RemoveLinodeIPResponseBodyDefault" (\obj -> GHC.Base.pure RemoveLinodeIPResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'RemoveLinodeIPResponseBodyDefault' with all required fields.
+mkRemoveLinodeIPResponseBodyDefault :: RemoveLinodeIPResponseBodyDefault
+mkRemoveLinodeIPResponseBodyDefault = RemoveLinodeIPResponseBodyDefault{removeLinodeIPResponseBodyDefaultErrors = GHC.Maybe.Nothing}

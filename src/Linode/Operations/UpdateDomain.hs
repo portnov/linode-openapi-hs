@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation updateDomain
 module Linode.Operations.UpdateDomain where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,70 +45,36 @@ import Linode.Types
 -- | > PUT /domains/{domainId}
 -- 
 -- Update information about a Domain in Linode\'s DNS Manager.
-updateDomain :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> Domain                                                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response UpdateDomainResponse)) -- ^ Monad containing the result of the operation
-updateDomain config
-             body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateDomainResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateDomainResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                      Domain)
-                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateDomainResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                        UpdateDomainResponseBodyDefault)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/domains/{domainId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /domains/{domainId}
--- 
--- The same as 'updateDomain' but returns the raw 'Data.ByteString.Char8.ByteString'
-updateDomainRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Linode.Common.Configuration s ->
-                   Domain ->
-                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateDomainRaw config
-                body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/domains/{domainId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /domains/{domainId}
--- 
--- Monadic version of 'updateDomain' (use with 'Linode.Common.runWithConfiguration')
-updateDomainM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Domain ->
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response UpdateDomainResponse))
-updateDomainM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either UpdateDomainResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateDomainResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                       Domain)
-                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateDomainResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                         UpdateDomainResponseBodyDefault)
-                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/domains/{domainId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /domains/{domainId}
--- 
--- Monadic version of 'updateDomainRaw' (use with 'Linode.Common.runWithConfiguration')
-updateDomainRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Domain ->
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateDomainRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/domains/{domainId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
+updateDomain :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ domainId: The ID of the Domain to access.
+  -> Domain -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response UpdateDomainResponse) -- ^ Monadic computation which returns the result of the operation
+updateDomain domainId
+             body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateDomainResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateDomainResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                       Domain)
+                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateDomainResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                         UpdateDomainResponseBodyDefault)
+                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack ("/domains/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel domainId)) GHC.Base.++ ""))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
 -- | Represents a response of the operation 'updateDomain'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'UpdateDomainResponseError' is used.
-data UpdateDomainResponse =                                      
-   UpdateDomainResponseError GHC.Base.String                     -- ^ Means either no matching case available or a parse error
-  | UpdateDomainResponse200 Domain                               -- ^ Domain update successful.
-  | UpdateDomainResponseDefault UpdateDomainResponseBodyDefault  -- ^ Error
+data UpdateDomainResponse =
+   UpdateDomainResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | UpdateDomainResponse200 Domain -- ^ Domain update successful.
+  | UpdateDomainResponseDefault UpdateDomainResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema UpdateDomainResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data UpdateDomainResponseBodyDefault = UpdateDomainResponseBodyDefault {
   -- | errors
-  updateDomainResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  updateDomainResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateDomainResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (updateDomainResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (updateDomainResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateDomainResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= updateDomainResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= updateDomainResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON UpdateDomainResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "UpdateDomainResponseBodyDefault" (\obj -> GHC.Base.pure UpdateDomainResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'UpdateDomainResponseBodyDefault' with all required fields.
+mkUpdateDomainResponseBodyDefault :: UpdateDomainResponseBodyDefault
+mkUpdateDomainResponseBodyDefault = UpdateDomainResponseBodyDefault{updateDomainResponseBodyDefaultErrors = GHC.Maybe.Nothing}

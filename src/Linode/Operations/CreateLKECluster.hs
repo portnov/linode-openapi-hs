@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createLKECluster
 module Linode.Operations.CreateLKECluster where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,7 +41,6 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > POST /lke/clusters
 -- 
@@ -51,106 +50,104 @@ import Linode.ManualTypes
 -- [Kubernetes API server endpoint](\/docs\/api\/linode-kubernetes-engine-lke\/\#kubernetes-api-endpoints-list) and
 -- the [Kubeconfig file](\/docs\/api\/linode-kubernetes-engine-lke\/\#kubeconfig-view) for the new cluster
 -- are ready.
-createLKECluster :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe CreateLKEClusterRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateLKEClusterResponse)) -- ^ Monad containing the result of the operation
-createLKECluster config
-                 body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateLKEClusterResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateLKEClusterResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                  LKECluster)
-                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateLKEClusterResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                    CreateLKEClusterResponseBodyDefault)
-                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/lke/clusters") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /lke/clusters
--- 
--- The same as 'createLKECluster' but returns the raw 'Data.ByteString.Char8.ByteString'
-createLKEClusterRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Linode.Common.Configuration s ->
-                       GHC.Base.Maybe CreateLKEClusterRequestBody ->
-                       m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createLKEClusterRaw config
-                    body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/lke/clusters") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /lke/clusters
--- 
--- Monadic version of 'createLKECluster' (use with 'Linode.Common.runWithConfiguration')
-createLKEClusterM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     GHC.Base.Maybe CreateLKEClusterRequestBody ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response CreateLKEClusterResponse))
-createLKEClusterM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateLKEClusterResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateLKEClusterResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                   LKECluster)
-                                                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateLKEClusterResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                     CreateLKEClusterResponseBodyDefault)
-                                                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/lke/clusters") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /lke/clusters
--- 
--- Monadic version of 'createLKEClusterRaw' (use with 'Linode.Common.runWithConfiguration')
-createLKEClusterRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        GHC.Base.Maybe CreateLKEClusterRequestBody ->
-                        Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                           m
-                                                           (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createLKEClusterRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/lke/clusters") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createLKEClusterRequestBody
+createLKECluster :: forall m . Linode.Common.MonadHTTP m => GHC.Maybe.Maybe CreateLKEClusterRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateLKEClusterResponse) -- ^ Monadic computation which returns the result of the operation
+createLKECluster body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateLKEClusterResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateLKEClusterResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                   LKECluster)
+                                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateLKEClusterResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                     CreateLKEClusterResponseBodyDefault)
+                                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/lke/clusters") GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/lke\/clusters.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateLKEClusterRequestBody = CreateLKEClusterRequestBody {
   -- | control_plane: Defines settings for the Kubernetes Control Plane. Allows for the enabling of High Availability (HA) for Control Plane Components. Enabling High Availability for LKE is an **irreversible** change.
-  createLKEClusterRequestBodyControl_plane :: (GHC.Base.Maybe CreateLKEClusterRequestBodyControl_plane)
-  -- | k8s_version
-  , createLKEClusterRequestBodyK8s_version :: LKECluster_properties_k8s_version
-  -- | label
-  , createLKEClusterRequestBodyLabel :: LKECluster_properties_label
+  createLKEClusterRequestBodyControlPlane :: (GHC.Maybe.Maybe CreateLKEClusterRequestBodyControlPlane')
+  -- | k8s_version: The desired Kubernetes version for this Kubernetes cluster in the format of &lt;major&gt;.&lt;minor&gt;, and the latest supported patch version will be deployed.
+  , createLKEClusterRequestBodyK8sVersion :: LKEClusterPropertiesK8sVersion
+  -- | label: This Kubernetes cluster\'s unique label for display purposes only.
+  -- Labels have the following constraints:
+  -- 
+  --   * UTF-8 characters will be returned by the API using escape
+  --     sequences of their Unicode code points. For example, the
+  --     Japanese character *か* is 3 bytes in UTF-8 (\`0xE382AB\`). Its
+  --     Unicode code point is 2 bytes (\`0x30AB\`). APIv4 supports this
+  --     character and the API will return it as the escape sequence
+  --     using six 1 byte characters which represent 2 bytes of Unicode
+  --     code point (\`\"\\u30ab\"\`).
+  --   * 4 byte UTF-8 characters are not supported.
+  --   * If the label is entirely composed of UTF-8 characters, the API
+  --     response will return the code points using up to 193 1 byte
+  --     characters.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maximum length of 32
+  -- * Minimum length of 1
+  , createLKEClusterRequestBodyLabel :: LKEClusterPropertiesLabel
   -- | node_pools
-  , createLKEClusterRequestBodyNode_pools :: ([] LKENodePoolRequestBody)
-  -- | region
-  , createLKEClusterRequestBodyRegion :: LKECluster_properties_region
-  -- | tags
-  , createLKEClusterRequestBodyTags :: (GHC.Base.Maybe LKECluster_properties_tags)
+  , createLKEClusterRequestBodyNodePools :: ([LKENodePoolRequestBody])
+  -- | region: This Kubernetes cluster\'s location.
+  , createLKEClusterRequestBodyRegion :: LKEClusterPropertiesRegion
+  -- | tags: An array of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.
+  , createLKEClusterRequestBodyTags :: (GHC.Maybe.Maybe LKEClusterPropertiesTags)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateLKEClusterRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "control_plane" (createLKEClusterRequestBodyControl_plane obj) : (Data.Aeson..=) "k8s_version" (createLKEClusterRequestBodyK8s_version obj) : (Data.Aeson..=) "label" (createLKEClusterRequestBodyLabel obj) : (Data.Aeson..=) "node_pools" (createLKEClusterRequestBodyNode_pools obj) : (Data.Aeson..=) "region" (createLKEClusterRequestBodyRegion obj) : (Data.Aeson..=) "tags" (createLKEClusterRequestBodyTags obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "control_plane" (createLKEClusterRequestBodyControl_plane obj) GHC.Base.<> ((Data.Aeson..=) "k8s_version" (createLKEClusterRequestBodyK8s_version obj) GHC.Base.<> ((Data.Aeson..=) "label" (createLKEClusterRequestBodyLabel obj) GHC.Base.<> ((Data.Aeson..=) "node_pools" (createLKEClusterRequestBodyNode_pools obj) GHC.Base.<> ((Data.Aeson..=) "region" (createLKEClusterRequestBodyRegion obj) GHC.Base.<> (Data.Aeson..=) "tags" (createLKEClusterRequestBodyTags obj))))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateLKEClusterRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("control_plane" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyControlPlane obj : "k8s_version" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyK8sVersion obj : "label" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyLabel obj : "node_pools" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyNodePools obj : "region" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyRegion obj : "tags" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyTags obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("control_plane" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyControlPlane obj) GHC.Base.<> (("k8s_version" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyK8sVersion obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyLabel obj) GHC.Base.<> (("node_pools" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyNodePools obj) GHC.Base.<> (("region" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyRegion obj) GHC.Base.<> ("tags" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyTags obj))))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateLKEClusterRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateLKEClusterRequestBody" (\obj -> (((((GHC.Base.pure CreateLKEClusterRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "control_plane")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "k8s_version")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "node_pools")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "region")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "tags"))
--- | Defines the data type for the schema createLKEClusterRequestBodyControl_plane
+-- | Create a new 'CreateLKEClusterRequestBody' with all required fields.
+mkCreateLKEClusterRequestBody :: LKEClusterPropertiesK8sVersion -- ^ 'createLKEClusterRequestBodyK8sVersion'
+  -> LKEClusterPropertiesLabel -- ^ 'createLKEClusterRequestBodyLabel'
+  -> [LKENodePoolRequestBody] -- ^ 'createLKEClusterRequestBodyNodePools'
+  -> LKEClusterPropertiesRegion -- ^ 'createLKEClusterRequestBodyRegion'
+  -> CreateLKEClusterRequestBody
+mkCreateLKEClusterRequestBody createLKEClusterRequestBodyK8sVersion createLKEClusterRequestBodyLabel createLKEClusterRequestBodyNodePools createLKEClusterRequestBodyRegion = CreateLKEClusterRequestBody{createLKEClusterRequestBodyControlPlane = GHC.Maybe.Nothing,
+                                                                                                                                                                                                          createLKEClusterRequestBodyK8sVersion = createLKEClusterRequestBodyK8sVersion,
+                                                                                                                                                                                                          createLKEClusterRequestBodyLabel = createLKEClusterRequestBodyLabel,
+                                                                                                                                                                                                          createLKEClusterRequestBodyNodePools = createLKEClusterRequestBodyNodePools,
+                                                                                                                                                                                                          createLKEClusterRequestBodyRegion = createLKEClusterRequestBodyRegion,
+                                                                                                                                                                                                          createLKEClusterRequestBodyTags = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/lke\/clusters.POST.requestBody.content.application\/json.schema.properties.control_plane@ in the specification.
 -- 
 -- Defines settings for the Kubernetes Control Plane. Allows for the enabling of High Availability (HA) for Control Plane Components. Enabling High Availability for LKE is an **irreversible** change.
-data CreateLKEClusterRequestBodyControl_plane = CreateLKEClusterRequestBodyControl_plane {
+data CreateLKEClusterRequestBodyControlPlane' = CreateLKEClusterRequestBodyControlPlane' {
   -- | high_availability: Defines whether High Availability is enabled for the Control Plane Components of the cluster. Defaults to \`false\`.
-  createLKEClusterRequestBodyControl_planeHigh_availability :: (GHC.Base.Maybe GHC.Types.Bool)
+  createLKEClusterRequestBodyControlPlane'HighAvailability :: (GHC.Maybe.Maybe GHC.Types.Bool)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateLKEClusterRequestBodyControl_plane
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "high_availability" (createLKEClusterRequestBodyControl_planeHigh_availability obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "high_availability" (createLKEClusterRequestBodyControl_planeHigh_availability obj))
-instance Data.Aeson.Types.FromJSON.FromJSON CreateLKEClusterRequestBodyControl_plane
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateLKEClusterRequestBodyControl_plane" (\obj -> GHC.Base.pure CreateLKEClusterRequestBodyControl_plane GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "high_availability"))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateLKEClusterRequestBodyControlPlane'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("high_availability" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyControlPlane'HighAvailability obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("high_availability" Data.Aeson.Types.ToJSON..= createLKEClusterRequestBodyControlPlane'HighAvailability obj)
+instance Data.Aeson.Types.FromJSON.FromJSON CreateLKEClusterRequestBodyControlPlane'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateLKEClusterRequestBodyControlPlane'" (\obj -> GHC.Base.pure CreateLKEClusterRequestBodyControlPlane' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "high_availability"))
+-- | Create a new 'CreateLKEClusterRequestBodyControlPlane'' with all required fields.
+mkCreateLKEClusterRequestBodyControlPlane' :: CreateLKEClusterRequestBodyControlPlane'
+mkCreateLKEClusterRequestBodyControlPlane' = CreateLKEClusterRequestBodyControlPlane'{createLKEClusterRequestBodyControlPlane'HighAvailability = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'createLKECluster'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateLKEClusterResponseError' is used.
-data CreateLKEClusterResponse =                                          
-   CreateLKEClusterResponseError GHC.Base.String                         -- ^ Means either no matching case available or a parse error
-  | CreateLKEClusterResponse200 LKECluster                               -- ^ Kubernetes cluster creation has started.
-  | CreateLKEClusterResponseDefault CreateLKEClusterResponseBodyDefault  -- ^ Error
+data CreateLKEClusterResponse =
+   CreateLKEClusterResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateLKEClusterResponse200 LKECluster -- ^ Kubernetes cluster creation has started.
+  | CreateLKEClusterResponseDefault CreateLKEClusterResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateLKEClusterResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateLKEClusterResponseBodyDefault = CreateLKEClusterResponseBodyDefault {
   -- | errors
-  createLKEClusterResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createLKEClusterResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateLKEClusterResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createLKEClusterResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createLKEClusterResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateLKEClusterResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createLKEClusterResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createLKEClusterResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateLKEClusterResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateLKEClusterResponseBodyDefault" (\obj -> GHC.Base.pure CreateLKEClusterResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateLKEClusterResponseBodyDefault' with all required fields.
+mkCreateLKEClusterResponseBodyDefault :: CreateLKEClusterResponseBodyDefault
+mkCreateLKEClusterResponseBodyDefault = CreateLKEClusterResponseBodyDefault{createLKEClusterResponseBodyDefaultErrors = GHC.Maybe.Nothing}

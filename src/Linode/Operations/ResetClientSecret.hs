@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation resetClientSecret
 module Linode.Operations.ResetClientSecret where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,64 +45,34 @@ import Linode.Types
 -- | > POST /account/oauth-clients/{clientId}/reset-secret
 -- 
 -- Resets the OAuth Client secret for a client you own, and returns the OAuth Client with the plaintext secret. This secret is not supposed to be publicly known or disclosed anywhere. This can be used to generate a new secret in case the one you have has been leaked, or to get a new secret if you lost the original. The old secret is expired immediately, and logins to your client with the old secret will fail.
-resetClientSecret :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response ResetClientSecretResponse)) -- ^ Monad containing the result of the operation
-resetClientSecret config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ResetClientSecretResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ResetClientSecretResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                       OAuthClient)
-                                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ResetClientSecretResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                         ResetClientSecretResponseBodyDefault)
-                                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/oauth-clients/{clientId}/reset-secret") [])
--- | > POST /account/oauth-clients/{clientId}/reset-secret
--- 
--- The same as 'resetClientSecret' but returns the raw 'Data.ByteString.Char8.ByteString'
-resetClientSecretRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        Linode.Common.Configuration s ->
-                        m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                              (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-resetClientSecretRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/oauth-clients/{clientId}/reset-secret") [])
--- | > POST /account/oauth-clients/{clientId}/reset-secret
--- 
--- Monadic version of 'resetClientSecret' (use with 'Linode.Common.runWithConfiguration')
-resetClientSecretM :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                         m
-                                                         (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                             (Network.HTTP.Client.Types.Response ResetClientSecretResponse))
-resetClientSecretM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either ResetClientSecretResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ResetClientSecretResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                 OAuthClient)
-                                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ResetClientSecretResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                   ResetClientSecretResponseBodyDefault)
-                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/oauth-clients/{clientId}/reset-secret") [])
--- | > POST /account/oauth-clients/{clientId}/reset-secret
--- 
--- Monadic version of 'resetClientSecretRaw' (use with 'Linode.Common.runWithConfiguration')
-resetClientSecretRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                            m
-                                                            (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-resetClientSecretRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/oauth-clients/{clientId}/reset-secret") [])
+resetClientSecret :: forall m . Linode.Common.MonadHTTP m => Data.Text.Internal.Text -- ^ clientId: The OAuth Client ID to look up.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response ResetClientSecretResponse) -- ^ Monadic computation which returns the result of the operation
+resetClientSecret clientId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ResetClientSecretResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ResetClientSecretResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                          OAuthClient)
+                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ResetClientSecretResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                            ResetClientSecretResponseBodyDefault)
+                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/account/oauth-clients/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel clientId)) GHC.Base.++ "/reset-secret"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'resetClientSecret'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'ResetClientSecretResponseError' is used.
-data ResetClientSecretResponse =                                           
-   ResetClientSecretResponseError GHC.Base.String                          -- ^ Means either no matching case available or a parse error
-  | ResetClientSecretResponse200 OAuthClient                               -- ^ Client secret reset successfully.
-  | ResetClientSecretResponseDefault ResetClientSecretResponseBodyDefault  -- ^ Error
+data ResetClientSecretResponse =
+   ResetClientSecretResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | ResetClientSecretResponse200 OAuthClient -- ^ Client secret reset successfully.
+  | ResetClientSecretResponseDefault ResetClientSecretResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema ResetClientSecretResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ResetClientSecretResponseBodyDefault = ResetClientSecretResponseBodyDefault {
   -- | errors
-  resetClientSecretResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  resetClientSecretResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ResetClientSecretResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (resetClientSecretResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (resetClientSecretResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ResetClientSecretResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= resetClientSecretResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= resetClientSecretResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON ResetClientSecretResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ResetClientSecretResponseBodyDefault" (\obj -> GHC.Base.pure ResetClientSecretResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'ResetClientSecretResponseBodyDefault' with all required fields.
+mkResetClientSecretResponseBodyDefault :: ResetClientSecretResponseBodyDefault
+mkResetClientSecretResponseBodyDefault = ResetClientSecretResponseBodyDefault{resetClientSecretResponseBodyDefaultErrors = GHC.Maybe.Nothing}

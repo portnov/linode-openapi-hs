@@ -1,0 +1,13 @@
+module Linode.Types.LinodeConfigInterface where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data LinodeConfigInterface
+instance Show LinodeConfigInterface
+instance Eq LinodeConfigInterface
+instance FromJSON LinodeConfigInterface
+instance ToJSON LinodeConfigInterface
+data LinodeConfigInterfacePurpose'
+instance Show LinodeConfigInterfacePurpose'
+instance Eq LinodeConfigInterfacePurpose'
+instance FromJSON LinodeConfigInterfacePurpose'
+instance ToJSON LinodeConfigInterfacePurpose'

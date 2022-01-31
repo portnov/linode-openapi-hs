@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getNodeBalancerConfig
 module Linode.Operations.GetNodeBalancerConfig where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,64 +45,59 @@ import Linode.Types
 -- | > GET /nodebalancers/{nodeBalancerId}/configs/{configId}
 -- 
 -- Returns configuration information for a single port of this NodeBalancer.
-getNodeBalancerConfig :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetNodeBalancerConfigResponse)) -- ^ Monad containing the result of the operation
-getNodeBalancerConfig config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetNodeBalancerConfigResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                   NodeBalancerConfig)
-                                                                                                                                                                                              | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                     GetNodeBalancerConfigResponseBodyDefault)
-                                                                                                                                                                                              | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/nodebalancers/{nodeBalancerId}/configs/{configId}") [])
--- | > GET /nodebalancers/{nodeBalancerId}/configs/{configId}
+getNodeBalancerConfig :: forall m . Linode.Common.MonadHTTP m => GetNodeBalancerConfigParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetNodeBalancerConfigResponse) -- ^ Monadic computation which returns the result of the operation
+getNodeBalancerConfig parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetNodeBalancerConfigResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                        NodeBalancerConfig)
+                                                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                          GetNodeBalancerConfigResponseBodyDefault)
+                                                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack (("/nodebalancers/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getNodeBalancerConfigParametersPathNodeBalancerId parameters))) GHC.Base.++ "/configs/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getNodeBalancerConfigParametersPathConfigId parameters))) GHC.Base.++ ""))) GHC.Base.mempty)
+-- | Defines the object schema located at @paths.\/nodebalancers\/{nodeBalancerId}\/configs\/{configId}.GET.parameters@ in the specification.
 -- 
--- The same as 'getNodeBalancerConfig' but returns the raw 'Data.ByteString.Char8.ByteString'
-getNodeBalancerConfigRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                          Linode.Common.SecurityScheme s) =>
-                            Linode.Common.Configuration s ->
-                            m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                  (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getNodeBalancerConfigRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/nodebalancers/{nodeBalancerId}/configs/{configId}") [])
--- | > GET /nodebalancers/{nodeBalancerId}/configs/{configId}
 -- 
--- Monadic version of 'getNodeBalancerConfig' (use with 'Linode.Common.runWithConfiguration')
-getNodeBalancerConfigM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response GetNodeBalancerConfigResponse))
-getNodeBalancerConfigM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetNodeBalancerConfigResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                             NodeBalancerConfig)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                               GetNodeBalancerConfigResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/nodebalancers/{nodeBalancerId}/configs/{configId}") [])
--- | > GET /nodebalancers/{nodeBalancerId}/configs/{configId}
--- 
--- Monadic version of 'getNodeBalancerConfigRaw' (use with 'Linode.Common.runWithConfiguration')
-getNodeBalancerConfigRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                           Linode.Common.SecurityScheme s) =>
-                             Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                m
-                                                                (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                    (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getNodeBalancerConfigRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/nodebalancers/{nodeBalancerId}/configs/{configId}") [])
+data GetNodeBalancerConfigParameters = GetNodeBalancerConfigParameters {
+  -- | pathConfigId: Represents the parameter named \'configId\'
+  -- 
+  -- The ID of the config to access.
+  getNodeBalancerConfigParametersPathConfigId :: GHC.Types.Int
+  -- | pathNodeBalancerId: Represents the parameter named \'nodeBalancerId\'
+  -- 
+  -- The ID of the NodeBalancer to access.
+  , getNodeBalancerConfigParametersPathNodeBalancerId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetNodeBalancerConfigParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathConfigId" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigParametersPathConfigId obj : "pathNodeBalancerId" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigParametersPathNodeBalancerId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathConfigId" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigParametersPathConfigId obj) GHC.Base.<> ("pathNodeBalancerId" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigParametersPathNodeBalancerId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetNodeBalancerConfigParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetNodeBalancerConfigParameters" (\obj -> (GHC.Base.pure GetNodeBalancerConfigParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathConfigId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathNodeBalancerId"))
+-- | Create a new 'GetNodeBalancerConfigParameters' with all required fields.
+mkGetNodeBalancerConfigParameters :: GHC.Types.Int -- ^ 'getNodeBalancerConfigParametersPathConfigId'
+  -> GHC.Types.Int -- ^ 'getNodeBalancerConfigParametersPathNodeBalancerId'
+  -> GetNodeBalancerConfigParameters
+mkGetNodeBalancerConfigParameters getNodeBalancerConfigParametersPathConfigId getNodeBalancerConfigParametersPathNodeBalancerId = GetNodeBalancerConfigParameters{getNodeBalancerConfigParametersPathConfigId = getNodeBalancerConfigParametersPathConfigId,
+                                                                                                                                                                  getNodeBalancerConfigParametersPathNodeBalancerId = getNodeBalancerConfigParametersPathNodeBalancerId}
 -- | Represents a response of the operation 'getNodeBalancerConfig'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetNodeBalancerConfigResponseError' is used.
-data GetNodeBalancerConfigResponse =                                               
-   GetNodeBalancerConfigResponseError GHC.Base.String                              -- ^ Means either no matching case available or a parse error
-  | GetNodeBalancerConfigResponse200 NodeBalancerConfig                            -- ^ The requested NodeBalancer config.
-  | GetNodeBalancerConfigResponseDefault GetNodeBalancerConfigResponseBodyDefault  -- ^ Error
+data GetNodeBalancerConfigResponse =
+   GetNodeBalancerConfigResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetNodeBalancerConfigResponse200 NodeBalancerConfig -- ^ The requested NodeBalancer config.
+  | GetNodeBalancerConfigResponseDefault GetNodeBalancerConfigResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetNodeBalancerConfigResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetNodeBalancerConfigResponseBodyDefault = GetNodeBalancerConfigResponseBodyDefault {
   -- | errors
-  getNodeBalancerConfigResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getNodeBalancerConfigResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetNodeBalancerConfigResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getNodeBalancerConfigResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getNodeBalancerConfigResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetNodeBalancerConfigResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetNodeBalancerConfigResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetNodeBalancerConfigResponseBodyDefault" (\obj -> GHC.Base.pure GetNodeBalancerConfigResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetNodeBalancerConfigResponseBodyDefault' with all required fields.
+mkGetNodeBalancerConfigResponseBodyDefault :: GetNodeBalancerConfigResponseBodyDefault
+mkGetNodeBalancerConfigResponseBodyDefault = GetNodeBalancerConfigResponseBodyDefault{getNodeBalancerConfigResponseBodyDefaultErrors = GHC.Maybe.Nothing}

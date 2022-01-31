@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createObjectStorageSSL
 module Linode.Operations.CreateObjectStorageSSL where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -50,70 +50,61 @@ import Linode.Types
 -- 
 -- To replace an expired certificate, [delete your current certificate](\/docs\/api\/object-storage\/\#object-storage-tlsssl-cert-delete)
 -- and upload a new one.
-createObjectStorageSSL :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe ObjectStorageSSL                                                                                                    -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateObjectStorageSSLResponse)) -- ^ Monad containing the result of the operation
-createObjectStorageSSL config
-                       body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateObjectStorageSSLResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageSSLResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    ObjectStorageSSLResponse)
-                                                                                                                                                                                              | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageSSLResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                      CreateObjectStorageSSLResponseBodyDefault)
-                                                                                                                                                                                              | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/ssl") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /object-storage/buckets/{clusterId}/{bucket}/ssl
+createObjectStorageSSL :: forall m . Linode.Common.MonadHTTP m => CreateObjectStorageSSLParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> GHC.Maybe.Maybe ObjectStorageSSL -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateObjectStorageSSLResponse) -- ^ Monadic computation which returns the result of the operation
+createObjectStorageSSL parameters
+                       body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateObjectStorageSSLResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageSSLResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                     ObjectStorageSSLResponse)
+                                                                                                                                                                               | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageSSLResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                       CreateObjectStorageSSLResponseBodyDefault)
+                                                                                                                                                                               | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack (("/object-storage/buckets/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (createObjectStorageSSLParametersPathClusterId parameters))) GHC.Base.++ "/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (createObjectStorageSSLParametersPathBucket parameters))) GHC.Base.++ "/ssl"))) GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/ssl.POST.parameters@ in the specification.
 -- 
--- The same as 'createObjectStorageSSL' but returns the raw 'Data.ByteString.Char8.ByteString'
-createObjectStorageSSLRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                           Linode.Common.SecurityScheme s) =>
-                             Linode.Common.Configuration s ->
-                             GHC.Base.Maybe ObjectStorageSSL ->
-                             m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                   (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createObjectStorageSSLRaw config
-                          body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/ssl") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /object-storage/buckets/{clusterId}/{bucket}/ssl
 -- 
--- Monadic version of 'createObjectStorageSSL' (use with 'Linode.Common.runWithConfiguration')
-createObjectStorageSSLM :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           GHC.Base.Maybe ObjectStorageSSL ->
-                           Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                              m
-                                                              (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                  (Network.HTTP.Client.Types.Response CreateObjectStorageSSLResponse))
-createObjectStorageSSLM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateObjectStorageSSLResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageSSLResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                     ObjectStorageSSLResponse)
-                                                                                                                                                                                               | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateObjectStorageSSLResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                       CreateObjectStorageSSLResponseBodyDefault)
-                                                                                                                                                                                               | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/ssl") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /object-storage/buckets/{clusterId}/{bucket}/ssl
--- 
--- Monadic version of 'createObjectStorageSSLRaw' (use with 'Linode.Common.runWithConfiguration')
-createObjectStorageSSLRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                            Linode.Common.SecurityScheme s) =>
-                              GHC.Base.Maybe ObjectStorageSSL ->
-                              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                 m
-                                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                     (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createObjectStorageSSLRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/ssl") [] body Linode.Common.RequestBodyEncodingJSON)
+data CreateObjectStorageSSLParameters = CreateObjectStorageSSLParameters {
+  -- | pathBucket: Represents the parameter named \'bucket\'
+  -- 
+  -- The bucket name.
+  createObjectStorageSSLParametersPathBucket :: Data.Text.Internal.Text
+  -- | pathClusterId: Represents the parameter named \'clusterId\'
+  -- 
+  -- The ID of the cluster this bucket exists in.
+  , createObjectStorageSSLParametersPathClusterId :: Data.Text.Internal.Text
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateObjectStorageSSLParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathBucket" Data.Aeson.Types.ToJSON..= createObjectStorageSSLParametersPathBucket obj : "pathClusterId" Data.Aeson.Types.ToJSON..= createObjectStorageSSLParametersPathClusterId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathBucket" Data.Aeson.Types.ToJSON..= createObjectStorageSSLParametersPathBucket obj) GHC.Base.<> ("pathClusterId" Data.Aeson.Types.ToJSON..= createObjectStorageSSLParametersPathClusterId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON CreateObjectStorageSSLParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateObjectStorageSSLParameters" (\obj -> (GHC.Base.pure CreateObjectStorageSSLParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathBucket")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathClusterId"))
+-- | Create a new 'CreateObjectStorageSSLParameters' with all required fields.
+mkCreateObjectStorageSSLParameters :: Data.Text.Internal.Text -- ^ 'createObjectStorageSSLParametersPathBucket'
+  -> Data.Text.Internal.Text -- ^ 'createObjectStorageSSLParametersPathClusterId'
+  -> CreateObjectStorageSSLParameters
+mkCreateObjectStorageSSLParameters createObjectStorageSSLParametersPathBucket createObjectStorageSSLParametersPathClusterId = CreateObjectStorageSSLParameters{createObjectStorageSSLParametersPathBucket = createObjectStorageSSLParametersPathBucket,
+                                                                                                                                                               createObjectStorageSSLParametersPathClusterId = createObjectStorageSSLParametersPathClusterId}
 -- | Represents a response of the operation 'createObjectStorageSSL'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateObjectStorageSSLResponseError' is used.
-data CreateObjectStorageSSLResponse =                                                
-   CreateObjectStorageSSLResponseError GHC.Base.String                               -- ^ Means either no matching case available or a parse error
-  | CreateObjectStorageSSLResponse200 ObjectStorageSSLResponse                       -- ^ Returns whether this bucket has a corresponding TLS\/SSL certificate that was uploaded by a user.
-  | CreateObjectStorageSSLResponseDefault CreateObjectStorageSSLResponseBodyDefault  -- ^ Error
+data CreateObjectStorageSSLResponse =
+   CreateObjectStorageSSLResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateObjectStorageSSLResponse200 ObjectStorageSSLResponse -- ^ Returns whether this bucket has a corresponding TLS\/SSL certificate that was uploaded by a user.
+  | CreateObjectStorageSSLResponseDefault CreateObjectStorageSSLResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateObjectStorageSSLResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateObjectStorageSSLResponseBodyDefault = CreateObjectStorageSSLResponseBodyDefault {
   -- | errors
-  createObjectStorageSSLResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createObjectStorageSSLResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateObjectStorageSSLResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createObjectStorageSSLResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createObjectStorageSSLResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateObjectStorageSSLResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createObjectStorageSSLResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createObjectStorageSSLResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateObjectStorageSSLResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateObjectStorageSSLResponseBodyDefault" (\obj -> GHC.Base.pure CreateObjectStorageSSLResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateObjectStorageSSLResponseBodyDefault' with all required fields.
+mkCreateObjectStorageSSLResponseBodyDefault :: CreateObjectStorageSSLResponseBodyDefault
+mkCreateObjectStorageSSLResponseBodyDefault = CreateObjectStorageSSLResponseBodyDefault{createObjectStorageSSLResponseBodyDefaultErrors = GHC.Maybe.Nothing}

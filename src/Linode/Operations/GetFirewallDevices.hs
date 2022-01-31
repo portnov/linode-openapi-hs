@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getFirewallDevices
 module Linode.Operations.GetFirewallDevices where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,112 +41,104 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /networking/firewalls/{firewallId}/devices
 -- 
 -- Returns a paginated list of a Firewall\'s Devices. A Firewall Device assigns a
 -- Firewall to a Linode service (referred to as the Device\'s \`entity\`). Currently,
 -- only Devices with an entity of type \`linode\` are accepted.
-getFirewallDevices :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                        -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                        -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetFirewallDevicesResponse)) -- ^ Monad containing the result of the operation
-getFirewallDevices config
-                   page
-                   page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetFirewallDevicesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallDevicesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                             GetFirewallDevicesResponseBody200)
-                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallDevicesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                               GetFirewallDevicesResponseBodyDefault)
-                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/firewalls/{firewallId}/devices") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /networking/firewalls/{firewallId}/devices
+getFirewallDevices :: forall m . Linode.Common.MonadHTTP m => GetFirewallDevicesParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetFirewallDevicesResponse) -- ^ Monadic computation which returns the result of the operation
+getFirewallDevices parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetFirewallDevicesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallDevicesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                               GetFirewallDevicesResponseBody200)
+                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallDevicesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                 GetFirewallDevicesResponseBodyDefault)
+                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/networking/firewalls/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getFirewallDevicesParametersPathFirewallId parameters))) GHC.Base.++ "/devices"))) [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getFirewallDevicesParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getFirewallDevicesParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/networking\/firewalls\/{firewallId}\/devices.GET.parameters@ in the specification.
 -- 
--- The same as 'getFirewallDevices' but returns the raw 'Data.ByteString.Char8.ByteString'
-getFirewallDevicesRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                         GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getFirewallDevicesRaw config
-                      page
-                      page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/firewalls/{firewallId}/devices") ((Data.Text.pack "page",
-                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /networking/firewalls/{firewallId}/devices
 -- 
--- Monadic version of 'getFirewallDevices' (use with 'Linode.Common.runWithConfiguration')
-getFirewallDevicesM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response GetFirewallDevicesResponse))
-getFirewallDevicesM page
-                    page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetFirewallDevicesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallDevicesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                              GetFirewallDevicesResponseBody200)
-                                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetFirewallDevicesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                GetFirewallDevicesResponseBodyDefault)
-                                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/firewalls/{firewallId}/devices") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /networking/firewalls/{firewallId}/devices
--- 
--- Monadic version of 'getFirewallDevicesRaw' (use with 'Linode.Common.runWithConfiguration')
-getFirewallDevicesRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                          GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getFirewallDevicesRawM page
-                       page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/firewalls/{firewallId}/devices") ((Data.Text.pack "page",
-                                                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetFirewallDevicesParameters = GetFirewallDevicesParameters {
+  -- | pathFirewallId: Represents the parameter named \'firewallId\'
+  -- 
+  -- ID of the Firewall to access.
+  getFirewallDevicesParametersPathFirewallId :: GHC.Types.Int
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  , getFirewallDevicesParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getFirewallDevicesParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetFirewallDevicesParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathFirewallId" Data.Aeson.Types.ToJSON..= getFirewallDevicesParametersPathFirewallId obj : "queryPage" Data.Aeson.Types.ToJSON..= getFirewallDevicesParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getFirewallDevicesParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathFirewallId" Data.Aeson.Types.ToJSON..= getFirewallDevicesParametersPathFirewallId obj) GHC.Base.<> (("queryPage" Data.Aeson.Types.ToJSON..= getFirewallDevicesParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getFirewallDevicesParametersQueryPageSize obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetFirewallDevicesParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetFirewallDevicesParameters" (\obj -> ((GHC.Base.pure GetFirewallDevicesParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathFirewallId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetFirewallDevicesParameters' with all required fields.
+mkGetFirewallDevicesParameters :: GHC.Types.Int -- ^ 'getFirewallDevicesParametersPathFirewallId'
+  -> GetFirewallDevicesParameters
+mkGetFirewallDevicesParameters getFirewallDevicesParametersPathFirewallId = GetFirewallDevicesParameters{getFirewallDevicesParametersPathFirewallId = getFirewallDevicesParametersPathFirewallId,
+                                                                                                         getFirewallDevicesParametersQueryPage = GHC.Maybe.Nothing,
+                                                                                                         getFirewallDevicesParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getFirewallDevices'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetFirewallDevicesResponseError' is used.
-data GetFirewallDevicesResponse =                                            
-   GetFirewallDevicesResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | GetFirewallDevicesResponse200 GetFirewallDevicesResponseBody200          -- ^ A paginated list of Firewall Devices
-  | GetFirewallDevicesResponseDefault GetFirewallDevicesResponseBodyDefault  -- ^ Error
+data GetFirewallDevicesResponse =
+   GetFirewallDevicesResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetFirewallDevicesResponse200 GetFirewallDevicesResponseBody200 -- ^ A paginated list of Firewall Devices
+  | GetFirewallDevicesResponseDefault GetFirewallDevicesResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetFirewallDevicesResponseBody200
+-- | Defines the object schema located at @paths.\/networking\/firewalls\/{firewallId}\/devices.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetFirewallDevicesResponseBody200 = GetFirewallDevicesResponseBody200 {
   -- | data
-  getFirewallDevicesResponseBody200Data :: (GHC.Base.Maybe ([] FirewallDevices))
-  -- | page
-  , getFirewallDevicesResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getFirewallDevicesResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getFirewallDevicesResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getFirewallDevicesResponseBody200Data :: (GHC.Maybe.Maybe ([FirewallDevices]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getFirewallDevicesResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getFirewallDevicesResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getFirewallDevicesResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetFirewallDevicesResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getFirewallDevicesResponseBody200Data obj) : (Data.Aeson..=) "page" (getFirewallDevicesResponseBody200Page obj) : (Data.Aeson..=) "pages" (getFirewallDevicesResponseBody200Pages obj) : (Data.Aeson..=) "results" (getFirewallDevicesResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getFirewallDevicesResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getFirewallDevicesResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getFirewallDevicesResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getFirewallDevicesResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetFirewallDevicesResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetFirewallDevicesResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetFirewallDevicesResponseBody200" (\obj -> (((GHC.Base.pure GetFirewallDevicesResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetFirewallDevicesResponseBodyDefault
+-- | Create a new 'GetFirewallDevicesResponseBody200' with all required fields.
+mkGetFirewallDevicesResponseBody200 :: GetFirewallDevicesResponseBody200
+mkGetFirewallDevicesResponseBody200 = GetFirewallDevicesResponseBody200{getFirewallDevicesResponseBody200Data = GHC.Maybe.Nothing,
+                                                                        getFirewallDevicesResponseBody200Page = GHC.Maybe.Nothing,
+                                                                        getFirewallDevicesResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                        getFirewallDevicesResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetFirewallDevicesResponseBodyDefault = GetFirewallDevicesResponseBodyDefault {
   -- | errors
-  getFirewallDevicesResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getFirewallDevicesResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetFirewallDevicesResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getFirewallDevicesResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getFirewallDevicesResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetFirewallDevicesResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getFirewallDevicesResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetFirewallDevicesResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetFirewallDevicesResponseBodyDefault" (\obj -> GHC.Base.pure GetFirewallDevicesResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetFirewallDevicesResponseBodyDefault' with all required fields.
+mkGetFirewallDevicesResponseBodyDefault :: GetFirewallDevicesResponseBodyDefault
+mkGetFirewallDevicesResponseBodyDefault = GetFirewallDevicesResponseBodyDefault{getFirewallDevicesResponseBodyDefaultErrors = GHC.Maybe.Nothing}

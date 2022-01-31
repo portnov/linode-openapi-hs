@@ -1,0 +1,8 @@
+module Linode.Types.DiskPropertiesFilesystem where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data DiskPropertiesFilesystem
+instance Show DiskPropertiesFilesystem
+instance Eq DiskPropertiesFilesystem
+instance FromJSON DiskPropertiesFilesystem
+instance ToJSON DiskPropertiesFilesystem

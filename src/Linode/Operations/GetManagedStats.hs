@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getManagedStats
 module Linode.Operations.GetManagedStats where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,7 +41,6 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /managed/stats
 -- 
@@ -56,88 +55,63 @@ import Linode.ManualTypes
 -- * swap
 -- * network in
 -- * network out
-getManagedStats :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetManagedStatsResponse)) -- ^ Monad containing the result of the operation
-getManagedStats config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetManagedStatsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetManagedStatsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                 GetManagedStatsResponseBody200)
-                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetManagedStatsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                   GetManagedStatsResponseBodyDefault)
-                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/stats") [])
--- | > GET /managed/stats
--- 
--- The same as 'getManagedStats' but returns the raw 'Data.ByteString.Char8.ByteString'
-getManagedStatsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      Linode.Common.Configuration s ->
-                      m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getManagedStatsRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/stats") [])
--- | > GET /managed/stats
--- 
--- Monadic version of 'getManagedStats' (use with 'Linode.Common.runWithConfiguration')
-getManagedStatsM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response GetManagedStatsResponse))
-getManagedStatsM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetManagedStatsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetManagedStatsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                           GetManagedStatsResponseBody200)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetManagedStatsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                             GetManagedStatsResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/stats") [])
--- | > GET /managed/stats
--- 
--- Monadic version of 'getManagedStatsRaw' (use with 'Linode.Common.runWithConfiguration')
-getManagedStatsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getManagedStatsRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/stats") [])
+getManagedStats :: forall m . Linode.Common.MonadHTTP m => Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetManagedStatsResponse) -- ^ Monadic computation which returns the result of the operation
+getManagedStats = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetManagedStatsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetManagedStatsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                           GetManagedStatsResponseBody200)
+                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetManagedStatsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                             GetManagedStatsResponseBodyDefault)
+                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/managed/stats") GHC.Base.mempty)
 -- | Represents a response of the operation 'getManagedStats'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetManagedStatsResponseError' is used.
-data GetManagedStatsResponse =                                         
-   GetManagedStatsResponseError GHC.Base.String                        -- ^ Means either no matching case available or a parse error
-  | GetManagedStatsResponse200 GetManagedStatsResponseBody200          -- ^ A list of Managed Stats from the last 24 hours.
-  | GetManagedStatsResponseDefault GetManagedStatsResponseBodyDefault  -- ^ Error
+data GetManagedStatsResponse =
+   GetManagedStatsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetManagedStatsResponse200 GetManagedStatsResponseBody200 -- ^ A list of Managed Stats from the last 24 hours.
+  | GetManagedStatsResponseDefault GetManagedStatsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetManagedStatsResponseBody200
+-- | Defines the object schema located at @paths.\/managed\/stats.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetManagedStatsResponseBody200 = GetManagedStatsResponseBody200 {
   -- | data
-  getManagedStatsResponseBody200Data :: (GHC.Base.Maybe GetManagedStatsResponseBody200DataVariants)
+  getManagedStatsResponseBody200Data :: (GHC.Maybe.Maybe GetManagedStatsResponseBody200Data'Variants)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetManagedStatsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getManagedStatsResponseBody200Data obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getManagedStatsResponseBody200Data obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetManagedStatsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getManagedStatsResponseBody200Data obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("data" Data.Aeson.Types.ToJSON..= getManagedStatsResponseBody200Data obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetManagedStatsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetManagedStatsResponseBody200" (\obj -> GHC.Base.pure GetManagedStatsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data"))
--- | Define the one-of schema GetManagedStatsResponseBody200Data
+-- | Create a new 'GetManagedStatsResponseBody200' with all required fields.
+mkGetManagedStatsResponseBody200 :: GetManagedStatsResponseBody200
+mkGetManagedStatsResponseBody200 = GetManagedStatsResponseBody200{getManagedStatsResponseBody200Data = GHC.Maybe.Nothing}
+-- | Defines the oneOf schema located at @paths.\/managed\/stats.GET.responses.200.content.application\/json.schema.properties.data.oneOf@ in the specification.
 -- 
 -- 
-data GetManagedStatsResponseBody200DataVariants
-    = GetManagedStatsResponseBody200DataStatsDataAvailable StatsDataAvailable
-    | GetManagedStatsResponseBody200DataStatsDataUnavailable StatsDataUnavailable
-    deriving (GHC.Show.Show, GHC.Classes.Eq, GHC.Generics.Generic)
-instance Data.Aeson.ToJSON GetManagedStatsResponseBody200DataVariants
-    where toJSON = Data.Aeson.Types.ToJSON.genericToJSON Data.Aeson.Types.Internal.defaultOptions{Data.Aeson.Types.Internal.sumEncoding = Data.Aeson.Types.Internal.UntaggedValue}
-instance Data.Aeson.FromJSON GetManagedStatsResponseBody200DataVariants
-    where parseJSON = Data.Aeson.Types.FromJSON.genericParseJSON Data.Aeson.Types.Internal.defaultOptions{Data.Aeson.Types.Internal.sumEncoding = Data.Aeson.Types.Internal.UntaggedValue}
--- | Defines the data type for the schema GetManagedStatsResponseBodyDefault
+data GetManagedStatsResponseBody200Data'Variants =
+   GetManagedStatsResponseBody200Data'StatsDataAvailable StatsDataAvailable
+  | GetManagedStatsResponseBody200Data'StatsDataUnavailable StatsDataUnavailable
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetManagedStatsResponseBody200Data'Variants
+    where toJSON (GetManagedStatsResponseBody200Data'StatsDataAvailable a) = Data.Aeson.Types.ToJSON.toJSON a
+          toJSON (GetManagedStatsResponseBody200Data'StatsDataUnavailable a) = Data.Aeson.Types.ToJSON.toJSON a
+instance Data.Aeson.Types.FromJSON.FromJSON GetManagedStatsResponseBody200Data'Variants
+    where parseJSON val = case (GetManagedStatsResponseBody200Data'StatsDataAvailable Data.Functor.<$> Data.Aeson.Types.FromJSON.fromJSON val) GHC.Base.<|> ((GetManagedStatsResponseBody200Data'StatsDataUnavailable Data.Functor.<$> Data.Aeson.Types.FromJSON.fromJSON val) GHC.Base.<|> Data.Aeson.Types.Internal.Error "No variant matched") of
+                              Data.Aeson.Types.Internal.Success a -> GHC.Base.pure a
+                              Data.Aeson.Types.Internal.Error a -> Control.Monad.Fail.fail a
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetManagedStatsResponseBodyDefault = GetManagedStatsResponseBodyDefault {
   -- | errors
-  getManagedStatsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getManagedStatsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetManagedStatsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getManagedStatsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getManagedStatsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetManagedStatsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getManagedStatsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getManagedStatsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetManagedStatsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetManagedStatsResponseBodyDefault" (\obj -> GHC.Base.pure GetManagedStatsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetManagedStatsResponseBodyDefault' with all required fields.
+mkGetManagedStatsResponseBodyDefault :: GetManagedStatsResponseBodyDefault
+mkGetManagedStatsResponseBodyDefault = GetManagedStatsResponseBodyDefault{getManagedStatsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

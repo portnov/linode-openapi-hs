@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getLKEClusterNode
 module Linode.Operations.GetLKEClusterNode where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,122 +45,123 @@ import Linode.Types
 -- | > GET /lke/clusters/{clusterId}/nodes/{nodeId}
 -- 
 -- Returns the values for a specified node object.
-getLKEClusterNode :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetLKEClusterNodeResponse)) -- ^ Monad containing the result of the operation
-getLKEClusterNode config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLKEClusterNodeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLKEClusterNodeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                       GetLKEClusterNodeResponseBody200)
-                                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLKEClusterNodeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                         GetLKEClusterNodeResponseBodyDefault)
-                                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/lke/clusters/{clusterId}/nodes/{nodeId}") [])
--- | > GET /lke/clusters/{clusterId}/nodes/{nodeId}
+getLKEClusterNode :: forall m . Linode.Common.MonadHTTP m => GetLKEClusterNodeParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetLKEClusterNodeResponse) -- ^ Monadic computation which returns the result of the operation
+getLKEClusterNode parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLKEClusterNodeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLKEClusterNodeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                            GetLKEClusterNodeResponseBody200)
+                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLKEClusterNodeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                              GetLKEClusterNodeResponseBodyDefault)
+                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/lke/clusters/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getLKEClusterNodeParametersPathClusterId parameters))) GHC.Base.++ ("/nodes/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getLKEClusterNodeParametersPathNodeId parameters))) GHC.Base.++ ""))))) GHC.Base.mempty)
+-- | Defines the object schema located at @paths.\/lke\/clusters\/{clusterId}\/nodes\/{nodeId}.GET.parameters@ in the specification.
 -- 
--- The same as 'getLKEClusterNode' but returns the raw 'Data.ByteString.Char8.ByteString'
-getLKEClusterNodeRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        Linode.Common.Configuration s ->
-                        m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                              (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLKEClusterNodeRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/lke/clusters/{clusterId}/nodes/{nodeId}") [])
--- | > GET /lke/clusters/{clusterId}/nodes/{nodeId}
 -- 
--- Monadic version of 'getLKEClusterNode' (use with 'Linode.Common.runWithConfiguration')
-getLKEClusterNodeM :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                         m
-                                                         (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                             (Network.HTTP.Client.Types.Response GetLKEClusterNodeResponse))
-getLKEClusterNodeM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetLKEClusterNodeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLKEClusterNodeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                 GetLKEClusterNodeResponseBody200)
-                                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLKEClusterNodeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                   GetLKEClusterNodeResponseBodyDefault)
-                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/lke/clusters/{clusterId}/nodes/{nodeId}") [])
--- | > GET /lke/clusters/{clusterId}/nodes/{nodeId}
--- 
--- Monadic version of 'getLKEClusterNodeRaw' (use with 'Linode.Common.runWithConfiguration')
-getLKEClusterNodeRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                            m
-                                                            (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLKEClusterNodeRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/lke/clusters/{clusterId}/nodes/{nodeId}") [])
+data GetLKEClusterNodeParameters = GetLKEClusterNodeParameters {
+  -- | pathClusterId: Represents the parameter named \'clusterId\'
+  -- 
+  -- ID of the Kubernetes cluster containing the Node.
+  getLKEClusterNodeParametersPathClusterId :: GHC.Types.Int
+  -- | pathNodeId: Represents the parameter named \'nodeId\'
+  -- 
+  -- ID of the Node to look up.
+  , getLKEClusterNodeParametersPathNodeId :: Data.Text.Internal.Text
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetLKEClusterNodeParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathClusterId" Data.Aeson.Types.ToJSON..= getLKEClusterNodeParametersPathClusterId obj : "pathNodeId" Data.Aeson.Types.ToJSON..= getLKEClusterNodeParametersPathNodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathClusterId" Data.Aeson.Types.ToJSON..= getLKEClusterNodeParametersPathClusterId obj) GHC.Base.<> ("pathNodeId" Data.Aeson.Types.ToJSON..= getLKEClusterNodeParametersPathNodeId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetLKEClusterNodeParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLKEClusterNodeParameters" (\obj -> (GHC.Base.pure GetLKEClusterNodeParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathClusterId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathNodeId"))
+-- | Create a new 'GetLKEClusterNodeParameters' with all required fields.
+mkGetLKEClusterNodeParameters :: GHC.Types.Int -- ^ 'getLKEClusterNodeParametersPathClusterId'
+  -> Data.Text.Internal.Text -- ^ 'getLKEClusterNodeParametersPathNodeId'
+  -> GetLKEClusterNodeParameters
+mkGetLKEClusterNodeParameters getLKEClusterNodeParametersPathClusterId getLKEClusterNodeParametersPathNodeId = GetLKEClusterNodeParameters{getLKEClusterNodeParametersPathClusterId = getLKEClusterNodeParametersPathClusterId,
+                                                                                                                                           getLKEClusterNodeParametersPathNodeId = getLKEClusterNodeParametersPathNodeId}
 -- | Represents a response of the operation 'getLKEClusterNode'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetLKEClusterNodeResponseError' is used.
-data GetLKEClusterNodeResponse =                                           
-   GetLKEClusterNodeResponseError GHC.Base.String                          -- ^ Means either no matching case available or a parse error
-  | GetLKEClusterNodeResponse200 GetLKEClusterNodeResponseBody200          -- ^ Returns the values of a node object in the form that it appears currently in the node pool array.
-  | GetLKEClusterNodeResponseDefault GetLKEClusterNodeResponseBodyDefault  -- ^ Error
+data GetLKEClusterNodeResponse =
+   GetLKEClusterNodeResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetLKEClusterNodeResponse200 GetLKEClusterNodeResponseBody200 -- ^ Returns the values of a node object in the form that it appears currently in the node pool array.
+  | GetLKEClusterNodeResponseDefault GetLKEClusterNodeResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetLKEClusterNodeResponseBody200
+-- | Defines the object schema located at @paths.\/lke\/clusters\/{clusterId}\/nodes\/{nodeId}.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLKEClusterNodeResponseBody200 = GetLKEClusterNodeResponseBody200 {
   -- | data: The selected node in the cluster.
-  getLKEClusterNodeResponseBody200Data :: (GHC.Base.Maybe GetLKEClusterNodeResponseBody200Data)
+  getLKEClusterNodeResponseBody200Data :: (GHC.Maybe.Maybe GetLKEClusterNodeResponseBody200Data')
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLKEClusterNodeResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getLKEClusterNodeResponseBody200Data obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getLKEClusterNodeResponseBody200Data obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLKEClusterNodeResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBody200Data obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("data" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBody200Data obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetLKEClusterNodeResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLKEClusterNodeResponseBody200" (\obj -> GHC.Base.pure GetLKEClusterNodeResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data"))
--- | Defines the data type for the schema GetLKEClusterNodeResponseBody200Data
+-- | Create a new 'GetLKEClusterNodeResponseBody200' with all required fields.
+mkGetLKEClusterNodeResponseBody200 :: GetLKEClusterNodeResponseBody200
+mkGetLKEClusterNodeResponseBody200 = GetLKEClusterNodeResponseBody200{getLKEClusterNodeResponseBody200Data = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/lke\/clusters\/{clusterId}\/nodes\/{nodeId}.GET.responses.200.content.application\/json.schema.properties.data@ in the specification.
 -- 
 -- The selected node in the cluster.
-data GetLKEClusterNodeResponseBody200Data = GetLKEClusterNodeResponseBody200Data {
+data GetLKEClusterNodeResponseBody200Data' = GetLKEClusterNodeResponseBody200Data' {
   -- | id: The Node\'s ID.
-  getLKEClusterNodeResponseBody200DataId :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  getLKEClusterNodeResponseBody200Data'Id :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | instance_id: The Linode\'s ID. If no Linode is currently provisioned for this Node, this is \`null\`.
-  , getLKEClusterNodeResponseBody200DataInstance_id :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , getLKEClusterNodeResponseBody200Data'InstanceId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | status: The creation status of this Node. This status is distinct from this Node\'s readiness as a Kubernetes Node Object as determined by the command \`kubectl get nodes\`.
   -- 
   -- \`not_ready\` indicates that the Linode is still being created.
   -- 
   -- \`ready\` indicates that the Linode has successfully been created and is running Kubernetes software.
-  , getLKEClusterNodeResponseBody200DataStatus :: (GHC.Base.Maybe GetLKEClusterNodeResponseBody200DataStatus)
+  , getLKEClusterNodeResponseBody200Data'Status :: (GHC.Maybe.Maybe GetLKEClusterNodeResponseBody200Data'Status')
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLKEClusterNodeResponseBody200Data
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "id" (getLKEClusterNodeResponseBody200DataId obj) : (Data.Aeson..=) "instance_id" (getLKEClusterNodeResponseBody200DataInstance_id obj) : (Data.Aeson..=) "status" (getLKEClusterNodeResponseBody200DataStatus obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "id" (getLKEClusterNodeResponseBody200DataId obj) GHC.Base.<> ((Data.Aeson..=) "instance_id" (getLKEClusterNodeResponseBody200DataInstance_id obj) GHC.Base.<> (Data.Aeson..=) "status" (getLKEClusterNodeResponseBody200DataStatus obj)))
-instance Data.Aeson.Types.FromJSON.FromJSON GetLKEClusterNodeResponseBody200Data
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLKEClusterNodeResponseBody200Data" (\obj -> ((GHC.Base.pure GetLKEClusterNodeResponseBody200Data GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "instance_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "status"))
--- | Defines the enum schema GetLKEClusterNodeResponseBody200DataStatus
+instance Data.Aeson.Types.ToJSON.ToJSON GetLKEClusterNodeResponseBody200Data'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("id" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBody200Data'Id obj : "instance_id" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBody200Data'InstanceId obj : "status" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBody200Data'Status obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("id" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBody200Data'Id obj) GHC.Base.<> (("instance_id" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBody200Data'InstanceId obj) GHC.Base.<> ("status" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBody200Data'Status obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetLKEClusterNodeResponseBody200Data'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLKEClusterNodeResponseBody200Data'" (\obj -> ((GHC.Base.pure GetLKEClusterNodeResponseBody200Data' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "instance_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "status"))
+-- | Create a new 'GetLKEClusterNodeResponseBody200Data'' with all required fields.
+mkGetLKEClusterNodeResponseBody200Data' :: GetLKEClusterNodeResponseBody200Data'
+mkGetLKEClusterNodeResponseBody200Data' = GetLKEClusterNodeResponseBody200Data'{getLKEClusterNodeResponseBody200Data'Id = GHC.Maybe.Nothing,
+                                                                                getLKEClusterNodeResponseBody200Data'InstanceId = GHC.Maybe.Nothing,
+                                                                                getLKEClusterNodeResponseBody200Data'Status = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/lke\/clusters\/{clusterId}\/nodes\/{nodeId}.GET.responses.200.content.application\/json.schema.properties.data.properties.status@ in the specification.
 -- 
 -- The creation status of this Node. This status is distinct from this Node\'s readiness as a Kubernetes Node Object as determined by the command \`kubectl get nodes\`.
 -- 
 -- \`not_ready\` indicates that the Linode is still being created.
 -- 
 -- \`ready\` indicates that the Linode has successfully been created and is running Kubernetes software.
-data GetLKEClusterNodeResponseBody200DataStatus
-    = GetLKEClusterNodeResponseBody200DataStatusEnumOther Data.Aeson.Types.Internal.Value
-    | GetLKEClusterNodeResponseBody200DataStatusEnumTyped Data.Text.Internal.Text
-    | GetLKEClusterNodeResponseBody200DataStatusEnumString_not_ready
-    | GetLKEClusterNodeResponseBody200DataStatusEnumString_ready
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLKEClusterNodeResponseBody200DataStatus
-    where toJSON (GetLKEClusterNodeResponseBody200DataStatusEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (GetLKEClusterNodeResponseBody200DataStatusEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (GetLKEClusterNodeResponseBody200DataStatusEnumString_not_ready) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "not_ready"
-          toJSON (GetLKEClusterNodeResponseBody200DataStatusEnumString_ready) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "ready"
-instance Data.Aeson.FromJSON GetLKEClusterNodeResponseBody200DataStatus
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "not_ready")
-                                          then GetLKEClusterNodeResponseBody200DataStatusEnumString_not_ready
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "ready")
-                                                then GetLKEClusterNodeResponseBody200DataStatusEnumString_ready
-                                                else GetLKEClusterNodeResponseBody200DataStatusEnumOther val)
--- | Defines the data type for the schema GetLKEClusterNodeResponseBodyDefault
+data GetLKEClusterNodeResponseBody200Data'Status' =
+   GetLKEClusterNodeResponseBody200Data'Status'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | GetLKEClusterNodeResponseBody200Data'Status'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | GetLKEClusterNodeResponseBody200Data'Status'EnumReady -- ^ Represents the JSON value @"ready"@
+  | GetLKEClusterNodeResponseBody200Data'Status'EnumNotReady -- ^ Represents the JSON value @"not_ready"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetLKEClusterNodeResponseBody200Data'Status'
+    where toJSON (GetLKEClusterNodeResponseBody200Data'Status'Other val) = val
+          toJSON (GetLKEClusterNodeResponseBody200Data'Status'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (GetLKEClusterNodeResponseBody200Data'Status'EnumReady) = "ready"
+          toJSON (GetLKEClusterNodeResponseBody200Data'Status'EnumNotReady) = "not_ready"
+instance Data.Aeson.Types.FromJSON.FromJSON GetLKEClusterNodeResponseBody200Data'Status'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "ready" -> GetLKEClusterNodeResponseBody200Data'Status'EnumReady
+                                            | val GHC.Classes.== "not_ready" -> GetLKEClusterNodeResponseBody200Data'Status'EnumNotReady
+                                            | GHC.Base.otherwise -> GetLKEClusterNodeResponseBody200Data'Status'Other val)
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLKEClusterNodeResponseBodyDefault = GetLKEClusterNodeResponseBodyDefault {
   -- | errors
-  getLKEClusterNodeResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getLKEClusterNodeResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLKEClusterNodeResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getLKEClusterNodeResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getLKEClusterNodeResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLKEClusterNodeResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getLKEClusterNodeResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetLKEClusterNodeResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLKEClusterNodeResponseBodyDefault" (\obj -> GHC.Base.pure GetLKEClusterNodeResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetLKEClusterNodeResponseBodyDefault' with all required fields.
+mkGetLKEClusterNodeResponseBodyDefault :: GetLKEClusterNodeResponseBodyDefault
+mkGetLKEClusterNodeResponseBodyDefault = GetLKEClusterNodeResponseBodyDefault{getLKEClusterNodeResponseBodyDefaultErrors = GHC.Maybe.Nothing}

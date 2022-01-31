@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createDomainRecord
 module Linode.Operations.CreateDomainRecord where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,60 +45,23 @@ import Linode.Types
 -- | > POST /domains/{domainId}/records
 -- 
 -- Adds a new Domain Record to the zonefile this Domain represents.
-createDomainRecord :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CreateDomainRecordRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateDomainRecordResponse)) -- ^ Monad containing the result of the operation
-createDomainRecord config
-                   body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateDomainRecordResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainRecordResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                        DomainRecord)
-                                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainRecordResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                          CreateDomainRecordResponseBodyDefault)
-                                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains/{domainId}/records") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /domains/{domainId}/records
--- 
--- The same as 'createDomainRecord' but returns the raw 'Data.ByteString.Char8.ByteString'
-createDomainRecordRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         CreateDomainRecordRequestBody ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createDomainRecordRaw config
-                      body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains/{domainId}/records") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /domains/{domainId}/records
--- 
--- Monadic version of 'createDomainRecord' (use with 'Linode.Common.runWithConfiguration')
-createDomainRecordM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       CreateDomainRecordRequestBody ->
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response CreateDomainRecordResponse))
-createDomainRecordM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateDomainRecordResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainRecordResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                         DomainRecord)
-                                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainRecordResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                           CreateDomainRecordResponseBodyDefault)
-                                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains/{domainId}/records") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /domains/{domainId}/records
--- 
--- Monadic version of 'createDomainRecordRaw' (use with 'Linode.Common.runWithConfiguration')
-createDomainRecordRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          CreateDomainRecordRequestBody ->
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createDomainRecordRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/domains/{domainId}/records") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createDomainRecordRequestBody
+createDomainRecord :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ domainId: The ID of the Domain we are accessing Records for.
+  -> CreateDomainRecordRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateDomainRecordResponse) -- ^ Monadic computation which returns the result of the operation
+createDomainRecord domainId
+                   body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateDomainRecordResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainRecordResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                         DomainRecord)
+                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateDomainRecordResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                           CreateDomainRecordResponseBodyDefault)
+                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/domains/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel domainId)) GHC.Base.++ "/records"))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/domains\/{domainId}\/records.POST.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data CreateDomainRecordRequestBody = CreateDomainRecordRequestBody {
   -- | created: When this Domain Record was created.
-  createDomainRecordRequestBodyCreated :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  createDomainRecordRequestBodyCreated :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | id: This Record\'s unique ID.
-  , createDomainRecordRequestBodyId :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRecordRequestBodyId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | name: The name of this Record. For requests, this property\'s actual usage and whether it is required depends
   -- on the type of record this represents:
   -- 
@@ -125,7 +88,7 @@ data CreateDomainRecordRequestBody = CreateDomainRecordRequestBody {
   -- 
   -- * Maximum length of 100
   -- * Minimum length of 1
-  , createDomainRecordRequestBodyName :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createDomainRecordRequestBodyName :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | port: The port this Record points to. Only valid and required for SRV record requests.
   -- 
   -- 
@@ -133,7 +96,7 @@ data CreateDomainRecordRequestBody = CreateDomainRecordRequestBody {
   -- 
   -- * Maxium  of 65535.0
   -- * Minimum  of 0.0
-  , createDomainRecordRequestBodyPort :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRecordRequestBodyPort :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | priority: The priority of the target host for this Record. Lower values are preferred. Only valid for
   -- MX and SRV record requests. Required for SRV record requests.
   -- 
@@ -144,13 +107,13 @@ data CreateDomainRecordRequestBody = CreateDomainRecordRequestBody {
   -- 
   -- * Maxium  of 255.0
   -- * Minimum  of 0.0
-  , createDomainRecordRequestBodyPriority :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRecordRequestBodyPriority :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | protocol: The protocol this Record\'s service communicates with. An underscore (\`_\`) is prepended automatically to the submitted value for this property. Only valid for SRV record requests.
-  , createDomainRecordRequestBodyProtocol :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createDomainRecordRequestBodyProtocol :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | service: The name of the service. An underscore (\`_\`) is prepended and a period (\`.\`) is appended automatically to the submitted value for this property. Only valid and required for SRV record requests.
-  , createDomainRecordRequestBodyService :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createDomainRecordRequestBodyService :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | tag: The tag portion of a CAA record. Only valid and required for CAA record requests.
-  , createDomainRecordRequestBodyTag :: (GHC.Base.Maybe CreateDomainRecordRequestBodyTag)
+  , createDomainRecordRequestBodyTag :: (GHC.Maybe.Maybe CreateDomainRecordRequestBodyTag')
   -- | target: The target for this Record. For requests, this property\'s actual usage and whether it is required depends
   -- on the type of record this represents:
   -- 
@@ -179,13 +142,13 @@ data CreateDomainRecordRequestBody = CreateDomainRecordRequestBody {
   -- (rDNS)](\/docs\/guides\/configure-your-linode-for-reverse-dns).
   -- 
   -- With the exception of A, AAAA, and CAA records, this field accepts a trailing period.
-  , createDomainRecordRequestBodyTarget :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createDomainRecordRequestBodyTarget :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | ttl_sec: \"Time to Live\" - the amount of time in seconds that this Domain\'s records may be cached by resolvers or other domain servers. Valid values are 300, 3600, 7200, 14400, 28800, 57600, 86400, 172800, 345600, 604800, 1209600, and 2419200 - any other value will be rounded to the nearest valid value.
-  , createDomainRecordRequestBodyTtl_sec :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRecordRequestBodyTtlSec :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | type: The type of Record this is in the DNS system. For example, A records associate a domain name with an IPv4 address, and AAAA records associate a domain name with an IPv6 address. For more information, see our guide on [DNS Records](\/docs\/guides\/dns-records-an-introduction).
-  , createDomainRecordRequestBodyType :: (GHC.Base.Maybe CreateDomainRecordRequestBodyType)
+  , createDomainRecordRequestBodyType :: (GHC.Maybe.Maybe CreateDomainRecordRequestBodyType')
   -- | updated: When this Domain Record was last updated.
-  , createDomainRecordRequestBodyUpdated :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createDomainRecordRequestBodyUpdated :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | weight: The relative weight of this Record used in the case of identical priority. Higher values are preferred. Only valid and required for SRV record requests.
   -- 
   -- 
@@ -193,104 +156,110 @@ data CreateDomainRecordRequestBody = CreateDomainRecordRequestBody {
   -- 
   -- * Maxium  of 65535.0
   -- * Minimum  of 0.0
-  , createDomainRecordRequestBodyWeight :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createDomainRecordRequestBodyWeight :: (GHC.Maybe.Maybe GHC.Types.Int)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateDomainRecordRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "created" (createDomainRecordRequestBodyCreated obj) : (Data.Aeson..=) "id" (createDomainRecordRequestBodyId obj) : (Data.Aeson..=) "name" (createDomainRecordRequestBodyName obj) : (Data.Aeson..=) "port" (createDomainRecordRequestBodyPort obj) : (Data.Aeson..=) "priority" (createDomainRecordRequestBodyPriority obj) : (Data.Aeson..=) "protocol" (createDomainRecordRequestBodyProtocol obj) : (Data.Aeson..=) "service" (createDomainRecordRequestBodyService obj) : (Data.Aeson..=) "tag" (createDomainRecordRequestBodyTag obj) : (Data.Aeson..=) "target" (createDomainRecordRequestBodyTarget obj) : (Data.Aeson..=) "ttl_sec" (createDomainRecordRequestBodyTtl_sec obj) : (Data.Aeson..=) "type" (createDomainRecordRequestBodyType obj) : (Data.Aeson..=) "updated" (createDomainRecordRequestBodyUpdated obj) : (Data.Aeson..=) "weight" (createDomainRecordRequestBodyWeight obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "created" (createDomainRecordRequestBodyCreated obj) GHC.Base.<> ((Data.Aeson..=) "id" (createDomainRecordRequestBodyId obj) GHC.Base.<> ((Data.Aeson..=) "name" (createDomainRecordRequestBodyName obj) GHC.Base.<> ((Data.Aeson..=) "port" (createDomainRecordRequestBodyPort obj) GHC.Base.<> ((Data.Aeson..=) "priority" (createDomainRecordRequestBodyPriority obj) GHC.Base.<> ((Data.Aeson..=) "protocol" (createDomainRecordRequestBodyProtocol obj) GHC.Base.<> ((Data.Aeson..=) "service" (createDomainRecordRequestBodyService obj) GHC.Base.<> ((Data.Aeson..=) "tag" (createDomainRecordRequestBodyTag obj) GHC.Base.<> ((Data.Aeson..=) "target" (createDomainRecordRequestBodyTarget obj) GHC.Base.<> ((Data.Aeson..=) "ttl_sec" (createDomainRecordRequestBodyTtl_sec obj) GHC.Base.<> ((Data.Aeson..=) "type" (createDomainRecordRequestBodyType obj) GHC.Base.<> ((Data.Aeson..=) "updated" (createDomainRecordRequestBodyUpdated obj) GHC.Base.<> (Data.Aeson..=) "weight" (createDomainRecordRequestBodyWeight obj)))))))))))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateDomainRecordRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("created" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyCreated obj : "id" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyId obj : "name" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyName obj : "port" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyPort obj : "priority" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyPriority obj : "protocol" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyProtocol obj : "service" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyService obj : "tag" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyTag obj : "target" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyTarget obj : "ttl_sec" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyTtlSec obj : "type" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyType obj : "updated" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyUpdated obj : "weight" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyWeight obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("created" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyCreated obj) GHC.Base.<> (("id" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyId obj) GHC.Base.<> (("name" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyName obj) GHC.Base.<> (("port" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyPort obj) GHC.Base.<> (("priority" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyPriority obj) GHC.Base.<> (("protocol" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyProtocol obj) GHC.Base.<> (("service" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyService obj) GHC.Base.<> (("tag" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyTag obj) GHC.Base.<> (("target" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyTarget obj) GHC.Base.<> (("ttl_sec" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyTtlSec obj) GHC.Base.<> (("type" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyType obj) GHC.Base.<> (("updated" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyUpdated obj) GHC.Base.<> ("weight" Data.Aeson.Types.ToJSON..= createDomainRecordRequestBodyWeight obj)))))))))))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateDomainRecordRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateDomainRecordRequestBody" (\obj -> ((((((((((((GHC.Base.pure CreateDomainRecordRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "created")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "name")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "port")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "priority")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "protocol")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "service")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "tag")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "target")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ttl_sec")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "type")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "updated")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "weight"))
--- | Defines the enum schema createDomainRecordRequestBodyTag
+-- | Create a new 'CreateDomainRecordRequestBody' with all required fields.
+mkCreateDomainRecordRequestBody :: CreateDomainRecordRequestBody
+mkCreateDomainRecordRequestBody = CreateDomainRecordRequestBody{createDomainRecordRequestBodyCreated = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyId = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyName = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyPort = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyPriority = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyProtocol = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyService = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyTag = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyTarget = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyTtlSec = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyType = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyUpdated = GHC.Maybe.Nothing,
+                                                                createDomainRecordRequestBodyWeight = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/domains\/{domainId}\/records.POST.requestBody.content.application\/json.schema.allOf.properties.tag@ in the specification.
 -- 
 -- The tag portion of a CAA record. Only valid and required for CAA record requests.
-data CreateDomainRecordRequestBodyTag
-    = CreateDomainRecordRequestBodyTagEnumOther Data.Aeson.Types.Internal.Value
-    | CreateDomainRecordRequestBodyTagEnumTyped Data.Text.Internal.Text
-    | CreateDomainRecordRequestBodyTagEnumString_iodef
-    | CreateDomainRecordRequestBodyTagEnumString_issue
-    | CreateDomainRecordRequestBodyTagEnumString_issuewild
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateDomainRecordRequestBodyTag
-    where toJSON (CreateDomainRecordRequestBodyTagEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateDomainRecordRequestBodyTagEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateDomainRecordRequestBodyTagEnumString_iodef) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "iodef"
-          toJSON (CreateDomainRecordRequestBodyTagEnumString_issue) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "issue"
-          toJSON (CreateDomainRecordRequestBodyTagEnumString_issuewild) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "issuewild"
-instance Data.Aeson.FromJSON CreateDomainRecordRequestBodyTag
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "iodef")
-                                          then CreateDomainRecordRequestBodyTagEnumString_iodef
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "issue")
-                                                then CreateDomainRecordRequestBodyTagEnumString_issue
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "issuewild")
-                                                      then CreateDomainRecordRequestBodyTagEnumString_issuewild
-                                                      else CreateDomainRecordRequestBodyTagEnumOther val)
--- | Defines the enum schema createDomainRecordRequestBodyType
+data CreateDomainRecordRequestBodyTag' =
+   CreateDomainRecordRequestBodyTag'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateDomainRecordRequestBodyTag'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateDomainRecordRequestBodyTag'EnumIssue -- ^ Represents the JSON value @"issue"@
+  | CreateDomainRecordRequestBodyTag'EnumIssuewild -- ^ Represents the JSON value @"issuewild"@
+  | CreateDomainRecordRequestBodyTag'EnumIodef -- ^ Represents the JSON value @"iodef"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateDomainRecordRequestBodyTag'
+    where toJSON (CreateDomainRecordRequestBodyTag'Other val) = val
+          toJSON (CreateDomainRecordRequestBodyTag'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateDomainRecordRequestBodyTag'EnumIssue) = "issue"
+          toJSON (CreateDomainRecordRequestBodyTag'EnumIssuewild) = "issuewild"
+          toJSON (CreateDomainRecordRequestBodyTag'EnumIodef) = "iodef"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateDomainRecordRequestBodyTag'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "issue" -> CreateDomainRecordRequestBodyTag'EnumIssue
+                                            | val GHC.Classes.== "issuewild" -> CreateDomainRecordRequestBodyTag'EnumIssuewild
+                                            | val GHC.Classes.== "iodef" -> CreateDomainRecordRequestBodyTag'EnumIodef
+                                            | GHC.Base.otherwise -> CreateDomainRecordRequestBodyTag'Other val)
+-- | Defines the enum schema located at @paths.\/domains\/{domainId}\/records.POST.requestBody.content.application\/json.schema.allOf.properties.type@ in the specification.
 -- 
 -- The type of Record this is in the DNS system. For example, A records associate a domain name with an IPv4 address, and AAAA records associate a domain name with an IPv6 address. For more information, see our guide on [DNS Records](\/docs\/guides\/dns-records-an-introduction).
-data CreateDomainRecordRequestBodyType
-    = CreateDomainRecordRequestBodyTypeEnumOther Data.Aeson.Types.Internal.Value
-    | CreateDomainRecordRequestBodyTypeEnumTyped Data.Text.Internal.Text
-    | CreateDomainRecordRequestBodyTypeEnumString_A
-    | CreateDomainRecordRequestBodyTypeEnumString_AAAA
-    | CreateDomainRecordRequestBodyTypeEnumString_CAA
-    | CreateDomainRecordRequestBodyTypeEnumString_CNAME
-    | CreateDomainRecordRequestBodyTypeEnumString_MX
-    | CreateDomainRecordRequestBodyTypeEnumString_NS
-    | CreateDomainRecordRequestBodyTypeEnumString_PTR
-    | CreateDomainRecordRequestBodyTypeEnumString_SRV
-    | CreateDomainRecordRequestBodyTypeEnumString_TXT
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateDomainRecordRequestBodyType
-    where toJSON (CreateDomainRecordRequestBodyTypeEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateDomainRecordRequestBodyTypeEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateDomainRecordRequestBodyTypeEnumString_A) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "A"
-          toJSON (CreateDomainRecordRequestBodyTypeEnumString_AAAA) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "AAAA"
-          toJSON (CreateDomainRecordRequestBodyTypeEnumString_CAA) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "CAA"
-          toJSON (CreateDomainRecordRequestBodyTypeEnumString_CNAME) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "CNAME"
-          toJSON (CreateDomainRecordRequestBodyTypeEnumString_MX) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "MX"
-          toJSON (CreateDomainRecordRequestBodyTypeEnumString_NS) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "NS"
-          toJSON (CreateDomainRecordRequestBodyTypeEnumString_PTR) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "PTR"
-          toJSON (CreateDomainRecordRequestBodyTypeEnumString_SRV) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "SRV"
-          toJSON (CreateDomainRecordRequestBodyTypeEnumString_TXT) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "TXT"
-instance Data.Aeson.FromJSON CreateDomainRecordRequestBodyType
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "A")
-                                          then CreateDomainRecordRequestBodyTypeEnumString_A
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "AAAA")
-                                                then CreateDomainRecordRequestBodyTypeEnumString_AAAA
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "CAA")
-                                                      then CreateDomainRecordRequestBodyTypeEnumString_CAA
-                                                      else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "CNAME")
-                                                            then CreateDomainRecordRequestBodyTypeEnumString_CNAME
-                                                            else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "MX")
-                                                                  then CreateDomainRecordRequestBodyTypeEnumString_MX
-                                                                  else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "NS")
-                                                                        then CreateDomainRecordRequestBodyTypeEnumString_NS
-                                                                        else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "PTR")
-                                                                              then CreateDomainRecordRequestBodyTypeEnumString_PTR
-                                                                              else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "SRV")
-                                                                                    then CreateDomainRecordRequestBodyTypeEnumString_SRV
-                                                                                    else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "TXT")
-                                                                                          then CreateDomainRecordRequestBodyTypeEnumString_TXT
-                                                                                          else CreateDomainRecordRequestBodyTypeEnumOther val)
+data CreateDomainRecordRequestBodyType' =
+   CreateDomainRecordRequestBodyType'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateDomainRecordRequestBodyType'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateDomainRecordRequestBodyType'EnumA -- ^ Represents the JSON value @"A"@
+  | CreateDomainRecordRequestBodyType'EnumAAAA -- ^ Represents the JSON value @"AAAA"@
+  | CreateDomainRecordRequestBodyType'EnumNS -- ^ Represents the JSON value @"NS"@
+  | CreateDomainRecordRequestBodyType'EnumMX -- ^ Represents the JSON value @"MX"@
+  | CreateDomainRecordRequestBodyType'EnumCNAME -- ^ Represents the JSON value @"CNAME"@
+  | CreateDomainRecordRequestBodyType'EnumTXT -- ^ Represents the JSON value @"TXT"@
+  | CreateDomainRecordRequestBodyType'EnumSRV -- ^ Represents the JSON value @"SRV"@
+  | CreateDomainRecordRequestBodyType'EnumPTR -- ^ Represents the JSON value @"PTR"@
+  | CreateDomainRecordRequestBodyType'EnumCAA -- ^ Represents the JSON value @"CAA"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateDomainRecordRequestBodyType'
+    where toJSON (CreateDomainRecordRequestBodyType'Other val) = val
+          toJSON (CreateDomainRecordRequestBodyType'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateDomainRecordRequestBodyType'EnumA) = "A"
+          toJSON (CreateDomainRecordRequestBodyType'EnumAAAA) = "AAAA"
+          toJSON (CreateDomainRecordRequestBodyType'EnumNS) = "NS"
+          toJSON (CreateDomainRecordRequestBodyType'EnumMX) = "MX"
+          toJSON (CreateDomainRecordRequestBodyType'EnumCNAME) = "CNAME"
+          toJSON (CreateDomainRecordRequestBodyType'EnumTXT) = "TXT"
+          toJSON (CreateDomainRecordRequestBodyType'EnumSRV) = "SRV"
+          toJSON (CreateDomainRecordRequestBodyType'EnumPTR) = "PTR"
+          toJSON (CreateDomainRecordRequestBodyType'EnumCAA) = "CAA"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateDomainRecordRequestBodyType'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "A" -> CreateDomainRecordRequestBodyType'EnumA
+                                            | val GHC.Classes.== "AAAA" -> CreateDomainRecordRequestBodyType'EnumAAAA
+                                            | val GHC.Classes.== "NS" -> CreateDomainRecordRequestBodyType'EnumNS
+                                            | val GHC.Classes.== "MX" -> CreateDomainRecordRequestBodyType'EnumMX
+                                            | val GHC.Classes.== "CNAME" -> CreateDomainRecordRequestBodyType'EnumCNAME
+                                            | val GHC.Classes.== "TXT" -> CreateDomainRecordRequestBodyType'EnumTXT
+                                            | val GHC.Classes.== "SRV" -> CreateDomainRecordRequestBodyType'EnumSRV
+                                            | val GHC.Classes.== "PTR" -> CreateDomainRecordRequestBodyType'EnumPTR
+                                            | val GHC.Classes.== "CAA" -> CreateDomainRecordRequestBodyType'EnumCAA
+                                            | GHC.Base.otherwise -> CreateDomainRecordRequestBodyType'Other val)
 -- | Represents a response of the operation 'createDomainRecord'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateDomainRecordResponseError' is used.
-data CreateDomainRecordResponse =                                            
-   CreateDomainRecordResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | CreateDomainRecordResponse200 DomainRecord                               -- ^ Domain Record created successfully.
-  | CreateDomainRecordResponseDefault CreateDomainRecordResponseBodyDefault  -- ^ Error
+data CreateDomainRecordResponse =
+   CreateDomainRecordResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateDomainRecordResponse200 DomainRecord -- ^ Domain Record created successfully.
+  | CreateDomainRecordResponseDefault CreateDomainRecordResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateDomainRecordResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateDomainRecordResponseBodyDefault = CreateDomainRecordResponseBodyDefault {
   -- | errors
-  createDomainRecordResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createDomainRecordResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateDomainRecordResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createDomainRecordResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createDomainRecordResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateDomainRecordResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createDomainRecordResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createDomainRecordResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateDomainRecordResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateDomainRecordResponseBodyDefault" (\obj -> GHC.Base.pure CreateDomainRecordResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateDomainRecordResponseBodyDefault' with all required fields.
+mkCreateDomainRecordResponseBodyDefault :: CreateDomainRecordResponseBodyDefault
+mkCreateDomainRecordResponseBodyDefault = CreateDomainRecordResponseBodyDefault{createDomainRecordResponseBodyDefaultErrors = GHC.Maybe.Nothing}

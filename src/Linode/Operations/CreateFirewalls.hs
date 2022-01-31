@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createFirewalls
 module Linode.Operations.CreateFirewalls where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -57,60 +57,21 @@ import Linode.Types
 -- Additional disabled Firewalls can be assigned to a service, but they cannot be enabled if another active Firewall is already assigned to the same service.
 -- 
 -- * A \`firewall_create\` Event is generated when this endpoint returns successfully.
-createFirewalls :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe CreateFirewallsRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateFirewallsResponse)) -- ^ Monad containing the result of the operation
-createFirewalls config
-                body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateFirewallsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                               Firewall)
-                                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                 CreateFirewallsResponseBodyDefault)
-                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/firewalls") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/firewalls
--- 
--- The same as 'createFirewalls' but returns the raw 'Data.ByteString.Char8.ByteString'
-createFirewallsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      Linode.Common.Configuration s ->
-                      GHC.Base.Maybe CreateFirewallsRequestBody ->
-                      m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createFirewallsRaw config
-                   body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/firewalls") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/firewalls
--- 
--- Monadic version of 'createFirewalls' (use with 'Linode.Common.runWithConfiguration')
-createFirewallsM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    GHC.Base.Maybe CreateFirewallsRequestBody ->
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response CreateFirewallsResponse))
-createFirewallsM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateFirewallsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                Firewall)
-                                                                                                                                                                                 | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                  CreateFirewallsResponseBodyDefault)
-                                                                                                                                                                                 | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/firewalls") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/firewalls
--- 
--- Monadic version of 'createFirewallsRaw' (use with 'Linode.Common.runWithConfiguration')
-createFirewallsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       GHC.Base.Maybe CreateFirewallsRequestBody ->
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createFirewallsRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/firewalls") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createFirewallsRequestBody
+createFirewalls :: forall m . Linode.Common.MonadHTTP m => GHC.Maybe.Maybe CreateFirewallsRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateFirewallsResponse) -- ^ Monadic computation which returns the result of the operation
+createFirewalls body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateFirewallsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                Firewall)
+                                                                                                                                                                 | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateFirewallsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                  CreateFirewallsResponseBodyDefault)
+                                                                                                                                                                 | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/firewalls") GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/networking\/firewalls.POST.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data CreateFirewallsRequestBody = CreateFirewallsRequestBody {
   -- | created: When this Firewall was created.
-  createFirewallsRequestBodyCreated :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  createFirewallsRequestBodyCreated :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | id: The Firewall\'s unique ID.
-  , createFirewallsRequestBodyId :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createFirewallsRequestBodyId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | label: The Firewall\'s label, for display purposes only.
   -- 
   -- Firewall labels have the following constraints:
@@ -127,135 +88,146 @@ data CreateFirewallsRequestBody = CreateFirewallsRequestBody {
   -- * Maximum length of 32
   -- * Minimum length of 3
   -- * Must match pattern \'^[a-zA-Z]((?!--|__|..)[a-zA-Z0-9-_.])+\$\'
-  , createFirewallsRequestBodyLabel :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createFirewallsRequestBodyLabel :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | rules: The inbound and outbound access rules to apply to the Firewall.
   -- 
   -- A Firewall may have up to 25 rules across its inbound and outbound rulesets.
-  , createFirewallsRequestBodyRules :: (GHC.Base.Maybe CreateFirewallsRequestBodyRules)
+  , createFirewallsRequestBodyRules :: (GHC.Maybe.Maybe CreateFirewallsRequestBodyRules')
   -- | status: The status of this Firewall.
   -- 
   --   * When a Firewall is first created its status is \`enabled\`.
   --   * Use the [Update Firewall](\/docs\/api\/networking\/\#firewall-update) endpoint to set a Firewall\'s status to \`enabled\` or \`disabled\`.
   --   * Use the [Delete Firewall](\/docs\/api\/networking\/\#firewall-delete) endpoint to delete a Firewall.
-  , createFirewallsRequestBodyStatus :: (GHC.Base.Maybe CreateFirewallsRequestBodyStatus)
+  , createFirewallsRequestBodyStatus :: (GHC.Maybe.Maybe CreateFirewallsRequestBodyStatus')
   -- | tags: An array of tags applied to this object. Tags are for organizational purposes only.
-  , createFirewallsRequestBodyTags :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  , createFirewallsRequestBodyTags :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   -- | updated: When this Firewall was last updated.
-  , createFirewallsRequestBodyUpdated :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createFirewallsRequestBodyUpdated :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateFirewallsRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "created" (createFirewallsRequestBodyCreated obj) : (Data.Aeson..=) "id" (createFirewallsRequestBodyId obj) : (Data.Aeson..=) "label" (createFirewallsRequestBodyLabel obj) : (Data.Aeson..=) "rules" (createFirewallsRequestBodyRules obj) : (Data.Aeson..=) "status" (createFirewallsRequestBodyStatus obj) : (Data.Aeson..=) "tags" (createFirewallsRequestBodyTags obj) : (Data.Aeson..=) "updated" (createFirewallsRequestBodyUpdated obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "created" (createFirewallsRequestBodyCreated obj) GHC.Base.<> ((Data.Aeson..=) "id" (createFirewallsRequestBodyId obj) GHC.Base.<> ((Data.Aeson..=) "label" (createFirewallsRequestBodyLabel obj) GHC.Base.<> ((Data.Aeson..=) "rules" (createFirewallsRequestBodyRules obj) GHC.Base.<> ((Data.Aeson..=) "status" (createFirewallsRequestBodyStatus obj) GHC.Base.<> ((Data.Aeson..=) "tags" (createFirewallsRequestBodyTags obj) GHC.Base.<> (Data.Aeson..=) "updated" (createFirewallsRequestBodyUpdated obj)))))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateFirewallsRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("created" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyCreated obj : "id" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyId obj : "label" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyLabel obj : "rules" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules obj : "status" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyStatus obj : "tags" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyTags obj : "updated" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyUpdated obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("created" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyCreated obj) GHC.Base.<> (("id" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyId obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyLabel obj) GHC.Base.<> (("rules" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules obj) GHC.Base.<> (("status" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyStatus obj) GHC.Base.<> (("tags" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyTags obj) GHC.Base.<> ("updated" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyUpdated obj)))))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallsRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateFirewallsRequestBody" (\obj -> ((((((GHC.Base.pure CreateFirewallsRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "created")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "rules")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "status")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "tags")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "updated"))
--- | Defines the data type for the schema createFirewallsRequestBodyRules
+-- | Create a new 'CreateFirewallsRequestBody' with all required fields.
+mkCreateFirewallsRequestBody :: CreateFirewallsRequestBody
+mkCreateFirewallsRequestBody = CreateFirewallsRequestBody{createFirewallsRequestBodyCreated = GHC.Maybe.Nothing,
+                                                          createFirewallsRequestBodyId = GHC.Maybe.Nothing,
+                                                          createFirewallsRequestBodyLabel = GHC.Maybe.Nothing,
+                                                          createFirewallsRequestBodyRules = GHC.Maybe.Nothing,
+                                                          createFirewallsRequestBodyStatus = GHC.Maybe.Nothing,
+                                                          createFirewallsRequestBodyTags = GHC.Maybe.Nothing,
+                                                          createFirewallsRequestBodyUpdated = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/networking\/firewalls.POST.requestBody.content.application\/json.schema.allOf.properties.rules@ in the specification.
 -- 
 -- The inbound and outbound access rules to apply to the Firewall.
 -- 
 -- A Firewall may have up to 25 rules across its inbound and outbound rulesets.
-data CreateFirewallsRequestBodyRules = CreateFirewallsRequestBodyRules {
+data CreateFirewallsRequestBodyRules' = CreateFirewallsRequestBodyRules' {
   -- | inbound: The inbound rules for the firewall, as a JSON array.
-  createFirewallsRequestBodyRulesInbound :: (GHC.Base.Maybe ([] FirewallRuleConfig))
+  createFirewallsRequestBodyRules'Inbound :: (GHC.Maybe.Maybe ([FirewallRuleConfig]))
   -- | inbound_policy: The default behavior for inbound traffic. This setting can be overridden by [updating](\/docs\/api\/networking\/\#firewall-rules-update) the \`inbound.action\` property of the Firewall Rule.
-  , createFirewallsRequestBodyRulesInbound_policy :: (GHC.Base.Maybe CreateFirewallsRequestBodyRulesInbound_policy)
+  , createFirewallsRequestBodyRules'InboundPolicy :: (GHC.Maybe.Maybe CreateFirewallsRequestBodyRules'InboundPolicy')
   -- | outbound: The outbound rules for the firewall, as a JSON array.
-  , createFirewallsRequestBodyRulesOutbound :: (GHC.Base.Maybe ([] FirewallRuleConfig))
+  , createFirewallsRequestBodyRules'Outbound :: (GHC.Maybe.Maybe ([FirewallRuleConfig]))
   -- | outbound_policy: The default behavior for outbound traffic. This setting can be overridden by [updating](\/docs\/api\/networking\/\#firewall-rules-update) the \`outbound.action\` property of the Firewall Rule.
-  , createFirewallsRequestBodyRulesOutbound_policy :: (GHC.Base.Maybe CreateFirewallsRequestBodyRulesOutbound_policy)
+  , createFirewallsRequestBodyRules'OutboundPolicy :: (GHC.Maybe.Maybe CreateFirewallsRequestBodyRules'OutboundPolicy')
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateFirewallsRequestBodyRules
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "inbound" (createFirewallsRequestBodyRulesInbound obj) : (Data.Aeson..=) "inbound_policy" (createFirewallsRequestBodyRulesInbound_policy obj) : (Data.Aeson..=) "outbound" (createFirewallsRequestBodyRulesOutbound obj) : (Data.Aeson..=) "outbound_policy" (createFirewallsRequestBodyRulesOutbound_policy obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "inbound" (createFirewallsRequestBodyRulesInbound obj) GHC.Base.<> ((Data.Aeson..=) "inbound_policy" (createFirewallsRequestBodyRulesInbound_policy obj) GHC.Base.<> ((Data.Aeson..=) "outbound" (createFirewallsRequestBodyRulesOutbound obj) GHC.Base.<> (Data.Aeson..=) "outbound_policy" (createFirewallsRequestBodyRulesOutbound_policy obj))))
-instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallsRequestBodyRules
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateFirewallsRequestBodyRules" (\obj -> (((GHC.Base.pure CreateFirewallsRequestBodyRules GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "inbound")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "inbound_policy")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "outbound")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "outbound_policy"))
--- | Defines the enum schema createFirewallsRequestBodyRulesInbound_policy
+instance Data.Aeson.Types.ToJSON.ToJSON CreateFirewallsRequestBodyRules'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("inbound" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules'Inbound obj : "inbound_policy" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules'InboundPolicy obj : "outbound" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules'Outbound obj : "outbound_policy" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules'OutboundPolicy obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("inbound" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules'Inbound obj) GHC.Base.<> (("inbound_policy" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules'InboundPolicy obj) GHC.Base.<> (("outbound" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules'Outbound obj) GHC.Base.<> ("outbound_policy" Data.Aeson.Types.ToJSON..= createFirewallsRequestBodyRules'OutboundPolicy obj))))
+instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallsRequestBodyRules'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateFirewallsRequestBodyRules'" (\obj -> (((GHC.Base.pure CreateFirewallsRequestBodyRules' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "inbound")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "inbound_policy")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "outbound")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "outbound_policy"))
+-- | Create a new 'CreateFirewallsRequestBodyRules'' with all required fields.
+mkCreateFirewallsRequestBodyRules' :: CreateFirewallsRequestBodyRules'
+mkCreateFirewallsRequestBodyRules' = CreateFirewallsRequestBodyRules'{createFirewallsRequestBodyRules'Inbound = GHC.Maybe.Nothing,
+                                                                      createFirewallsRequestBodyRules'InboundPolicy = GHC.Maybe.Nothing,
+                                                                      createFirewallsRequestBodyRules'Outbound = GHC.Maybe.Nothing,
+                                                                      createFirewallsRequestBodyRules'OutboundPolicy = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/networking\/firewalls.POST.requestBody.content.application\/json.schema.allOf.properties.rules.properties.inbound_policy@ in the specification.
 -- 
 -- The default behavior for inbound traffic. This setting can be overridden by [updating](\/docs\/api\/networking\/\#firewall-rules-update) the \`inbound.action\` property of the Firewall Rule.
-data CreateFirewallsRequestBodyRulesInbound_policy
-    = CreateFirewallsRequestBodyRulesInbound_policyEnumOther Data.Aeson.Types.Internal.Value
-    | CreateFirewallsRequestBodyRulesInbound_policyEnumTyped Data.Text.Internal.Text
-    | CreateFirewallsRequestBodyRulesInbound_policyEnumString_ACCEPT
-    | CreateFirewallsRequestBodyRulesInbound_policyEnumString_DROP
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateFirewallsRequestBodyRulesInbound_policy
-    where toJSON (CreateFirewallsRequestBodyRulesInbound_policyEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateFirewallsRequestBodyRulesInbound_policyEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateFirewallsRequestBodyRulesInbound_policyEnumString_ACCEPT) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "ACCEPT"
-          toJSON (CreateFirewallsRequestBodyRulesInbound_policyEnumString_DROP) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "DROP"
-instance Data.Aeson.FromJSON CreateFirewallsRequestBodyRulesInbound_policy
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "ACCEPT")
-                                          then CreateFirewallsRequestBodyRulesInbound_policyEnumString_ACCEPT
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "DROP")
-                                                then CreateFirewallsRequestBodyRulesInbound_policyEnumString_DROP
-                                                else CreateFirewallsRequestBodyRulesInbound_policyEnumOther val)
--- | Defines the enum schema createFirewallsRequestBodyRulesOutbound_policy
+data CreateFirewallsRequestBodyRules'InboundPolicy' =
+   CreateFirewallsRequestBodyRules'InboundPolicy'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateFirewallsRequestBodyRules'InboundPolicy'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateFirewallsRequestBodyRules'InboundPolicy'EnumACCEPT -- ^ Represents the JSON value @"ACCEPT"@
+  | CreateFirewallsRequestBodyRules'InboundPolicy'EnumDROP -- ^ Represents the JSON value @"DROP"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateFirewallsRequestBodyRules'InboundPolicy'
+    where toJSON (CreateFirewallsRequestBodyRules'InboundPolicy'Other val) = val
+          toJSON (CreateFirewallsRequestBodyRules'InboundPolicy'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateFirewallsRequestBodyRules'InboundPolicy'EnumACCEPT) = "ACCEPT"
+          toJSON (CreateFirewallsRequestBodyRules'InboundPolicy'EnumDROP) = "DROP"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallsRequestBodyRules'InboundPolicy'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "ACCEPT" -> CreateFirewallsRequestBodyRules'InboundPolicy'EnumACCEPT
+                                            | val GHC.Classes.== "DROP" -> CreateFirewallsRequestBodyRules'InboundPolicy'EnumDROP
+                                            | GHC.Base.otherwise -> CreateFirewallsRequestBodyRules'InboundPolicy'Other val)
+-- | Defines the enum schema located at @paths.\/networking\/firewalls.POST.requestBody.content.application\/json.schema.allOf.properties.rules.properties.outbound_policy@ in the specification.
 -- 
 -- The default behavior for outbound traffic. This setting can be overridden by [updating](\/docs\/api\/networking\/\#firewall-rules-update) the \`outbound.action\` property of the Firewall Rule.
-data CreateFirewallsRequestBodyRulesOutbound_policy
-    = CreateFirewallsRequestBodyRulesOutbound_policyEnumOther Data.Aeson.Types.Internal.Value
-    | CreateFirewallsRequestBodyRulesOutbound_policyEnumTyped Data.Text.Internal.Text
-    | CreateFirewallsRequestBodyRulesOutbound_policyEnumString_ACCEPT
-    | CreateFirewallsRequestBodyRulesOutbound_policyEnumString_DROP
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateFirewallsRequestBodyRulesOutbound_policy
-    where toJSON (CreateFirewallsRequestBodyRulesOutbound_policyEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateFirewallsRequestBodyRulesOutbound_policyEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateFirewallsRequestBodyRulesOutbound_policyEnumString_ACCEPT) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "ACCEPT"
-          toJSON (CreateFirewallsRequestBodyRulesOutbound_policyEnumString_DROP) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "DROP"
-instance Data.Aeson.FromJSON CreateFirewallsRequestBodyRulesOutbound_policy
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "ACCEPT")
-                                          then CreateFirewallsRequestBodyRulesOutbound_policyEnumString_ACCEPT
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "DROP")
-                                                then CreateFirewallsRequestBodyRulesOutbound_policyEnumString_DROP
-                                                else CreateFirewallsRequestBodyRulesOutbound_policyEnumOther val)
--- | Defines the enum schema createFirewallsRequestBodyStatus
+data CreateFirewallsRequestBodyRules'OutboundPolicy' =
+   CreateFirewallsRequestBodyRules'OutboundPolicy'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateFirewallsRequestBodyRules'OutboundPolicy'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateFirewallsRequestBodyRules'OutboundPolicy'EnumACCEPT -- ^ Represents the JSON value @"ACCEPT"@
+  | CreateFirewallsRequestBodyRules'OutboundPolicy'EnumDROP -- ^ Represents the JSON value @"DROP"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateFirewallsRequestBodyRules'OutboundPolicy'
+    where toJSON (CreateFirewallsRequestBodyRules'OutboundPolicy'Other val) = val
+          toJSON (CreateFirewallsRequestBodyRules'OutboundPolicy'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateFirewallsRequestBodyRules'OutboundPolicy'EnumACCEPT) = "ACCEPT"
+          toJSON (CreateFirewallsRequestBodyRules'OutboundPolicy'EnumDROP) = "DROP"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallsRequestBodyRules'OutboundPolicy'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "ACCEPT" -> CreateFirewallsRequestBodyRules'OutboundPolicy'EnumACCEPT
+                                            | val GHC.Classes.== "DROP" -> CreateFirewallsRequestBodyRules'OutboundPolicy'EnumDROP
+                                            | GHC.Base.otherwise -> CreateFirewallsRequestBodyRules'OutboundPolicy'Other val)
+-- | Defines the enum schema located at @paths.\/networking\/firewalls.POST.requestBody.content.application\/json.schema.allOf.properties.status@ in the specification.
 -- 
 -- The status of this Firewall.
 -- 
 --   * When a Firewall is first created its status is \`enabled\`.
 --   * Use the [Update Firewall](\/docs\/api\/networking\/\#firewall-update) endpoint to set a Firewall\'s status to \`enabled\` or \`disabled\`.
 --   * Use the [Delete Firewall](\/docs\/api\/networking\/\#firewall-delete) endpoint to delete a Firewall.
-data CreateFirewallsRequestBodyStatus
-    = CreateFirewallsRequestBodyStatusEnumOther Data.Aeson.Types.Internal.Value
-    | CreateFirewallsRequestBodyStatusEnumTyped Data.Text.Internal.Text
-    | CreateFirewallsRequestBodyStatusEnumString_deleted
-    | CreateFirewallsRequestBodyStatusEnumString_disabled
-    | CreateFirewallsRequestBodyStatusEnumString_enabled
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateFirewallsRequestBodyStatus
-    where toJSON (CreateFirewallsRequestBodyStatusEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateFirewallsRequestBodyStatusEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateFirewallsRequestBodyStatusEnumString_deleted) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "deleted"
-          toJSON (CreateFirewallsRequestBodyStatusEnumString_disabled) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "disabled"
-          toJSON (CreateFirewallsRequestBodyStatusEnumString_enabled) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "enabled"
-instance Data.Aeson.FromJSON CreateFirewallsRequestBodyStatus
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "deleted")
-                                          then CreateFirewallsRequestBodyStatusEnumString_deleted
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "disabled")
-                                                then CreateFirewallsRequestBodyStatusEnumString_disabled
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "enabled")
-                                                      then CreateFirewallsRequestBodyStatusEnumString_enabled
-                                                      else CreateFirewallsRequestBodyStatusEnumOther val)
+data CreateFirewallsRequestBodyStatus' =
+   CreateFirewallsRequestBodyStatus'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateFirewallsRequestBodyStatus'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateFirewallsRequestBodyStatus'EnumEnabled -- ^ Represents the JSON value @"enabled"@
+  | CreateFirewallsRequestBodyStatus'EnumDisabled -- ^ Represents the JSON value @"disabled"@
+  | CreateFirewallsRequestBodyStatus'EnumDeleted -- ^ Represents the JSON value @"deleted"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateFirewallsRequestBodyStatus'
+    where toJSON (CreateFirewallsRequestBodyStatus'Other val) = val
+          toJSON (CreateFirewallsRequestBodyStatus'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateFirewallsRequestBodyStatus'EnumEnabled) = "enabled"
+          toJSON (CreateFirewallsRequestBodyStatus'EnumDisabled) = "disabled"
+          toJSON (CreateFirewallsRequestBodyStatus'EnumDeleted) = "deleted"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallsRequestBodyStatus'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "enabled" -> CreateFirewallsRequestBodyStatus'EnumEnabled
+                                            | val GHC.Classes.== "disabled" -> CreateFirewallsRequestBodyStatus'EnumDisabled
+                                            | val GHC.Classes.== "deleted" -> CreateFirewallsRequestBodyStatus'EnumDeleted
+                                            | GHC.Base.otherwise -> CreateFirewallsRequestBodyStatus'Other val)
 -- | Represents a response of the operation 'createFirewalls'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateFirewallsResponseError' is used.
-data CreateFirewallsResponse =                                         
-   CreateFirewallsResponseError GHC.Base.String                        -- ^ Means either no matching case available or a parse error
-  | CreateFirewallsResponse200 Firewall                                -- ^ Returns information about the created Firewall.
-  | CreateFirewallsResponseDefault CreateFirewallsResponseBodyDefault  -- ^ Error
+data CreateFirewallsResponse =
+   CreateFirewallsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateFirewallsResponse200 Firewall -- ^ Returns information about the created Firewall.
+  | CreateFirewallsResponseDefault CreateFirewallsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateFirewallsResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateFirewallsResponseBodyDefault = CreateFirewallsResponseBodyDefault {
   -- | errors
-  createFirewallsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createFirewallsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateFirewallsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createFirewallsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createFirewallsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateFirewallsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createFirewallsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createFirewallsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateFirewallsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateFirewallsResponseBodyDefault" (\obj -> GHC.Base.pure CreateFirewallsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateFirewallsResponseBodyDefault' with all required fields.
+mkCreateFirewallsResponseBodyDefault :: CreateFirewallsResponseBodyDefault
+mkCreateFirewallsResponseBodyDefault = CreateFirewallsResponseBodyDefault{createFirewallsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

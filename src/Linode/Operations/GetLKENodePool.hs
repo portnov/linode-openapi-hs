@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getLKENodePool
 module Linode.Operations.GetLKENodePool where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,46 +45,40 @@ import Linode.Types
 -- | > GET /lke/clusters/{clusterId}/pools/{poolId}
 -- 
 -- Get a specific Node Pool by ID.
-getLKENodePool :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetLKENodePoolResponse)) -- ^ Monad containing the result of the operation
-getLKENodePool config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLKENodePoolResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLKENodePoolResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                              LKENodePool)
-                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/lke/clusters/{clusterId}/pools/{poolId}") [])
--- | > GET /lke/clusters/{clusterId}/pools/{poolId}
+getLKENodePool :: forall m . Linode.Common.MonadHTTP m => GetLKENodePoolParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetLKENodePoolResponse) -- ^ Monadic computation which returns the result of the operation
+getLKENodePool parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLKENodePoolResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLKENodePoolResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                   LKENodePool)
+                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/lke/clusters/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getLKENodePoolParametersPathClusterId parameters))) GHC.Base.++ ("/pools/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getLKENodePoolParametersPathPoolId parameters))) GHC.Base.++ ""))))) GHC.Base.mempty)
+-- | Defines the object schema located at @paths.\/lke\/clusters\/{clusterId}\/pools\/{poolId}.GET.parameters@ in the specification.
 -- 
--- The same as 'getLKENodePool' but returns the raw 'Data.ByteString.Char8.ByteString'
-getLKENodePoolRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     Linode.Common.Configuration s ->
-                     m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLKENodePoolRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/lke/clusters/{clusterId}/pools/{poolId}") [])
--- | > GET /lke/clusters/{clusterId}/pools/{poolId}
 -- 
--- Monadic version of 'getLKENodePool' (use with 'Linode.Common.runWithConfiguration')
-getLKENodePoolM :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                      m
-                                                      (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                          (Network.HTTP.Client.Types.Response GetLKENodePoolResponse))
-getLKENodePoolM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetLKENodePoolResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLKENodePoolResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                        LKENodePool)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/lke/clusters/{clusterId}/pools/{poolId}") [])
--- | > GET /lke/clusters/{clusterId}/pools/{poolId}
--- 
--- Monadic version of 'getLKENodePoolRaw' (use with 'Linode.Common.runWithConfiguration')
-getLKENodePoolRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                         m
-                                                         (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLKENodePoolRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/lke/clusters/{clusterId}/pools/{poolId}") [])
+data GetLKENodePoolParameters = GetLKENodePoolParameters {
+  -- | pathClusterId: Represents the parameter named \'clusterId\'
+  -- 
+  -- ID of the Kubernetes cluster to look up.
+  getLKENodePoolParametersPathClusterId :: GHC.Types.Int
+  -- | pathPoolId: Represents the parameter named \'poolId\'
+  -- 
+  -- ID of the Pool to look up
+  , getLKENodePoolParametersPathPoolId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetLKENodePoolParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathClusterId" Data.Aeson.Types.ToJSON..= getLKENodePoolParametersPathClusterId obj : "pathPoolId" Data.Aeson.Types.ToJSON..= getLKENodePoolParametersPathPoolId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathClusterId" Data.Aeson.Types.ToJSON..= getLKENodePoolParametersPathClusterId obj) GHC.Base.<> ("pathPoolId" Data.Aeson.Types.ToJSON..= getLKENodePoolParametersPathPoolId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetLKENodePoolParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLKENodePoolParameters" (\obj -> (GHC.Base.pure GetLKENodePoolParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathClusterId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathPoolId"))
+-- | Create a new 'GetLKENodePoolParameters' with all required fields.
+mkGetLKENodePoolParameters :: GHC.Types.Int -- ^ 'getLKENodePoolParametersPathClusterId'
+  -> GHC.Types.Int -- ^ 'getLKENodePoolParametersPathPoolId'
+  -> GetLKENodePoolParameters
+mkGetLKENodePoolParameters getLKENodePoolParametersPathClusterId getLKENodePoolParametersPathPoolId = GetLKENodePoolParameters{getLKENodePoolParametersPathClusterId = getLKENodePoolParametersPathClusterId,
+                                                                                                                               getLKENodePoolParametersPathPoolId = getLKENodePoolParametersPathPoolId}
 -- | Represents a response of the operation 'getLKENodePool'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetLKENodePoolResponseError' is used.
-data GetLKENodePoolResponse =                   
-   GetLKENodePoolResponseError GHC.Base.String  -- ^ Means either no matching case available or a parse error
-  | GetLKENodePoolResponse200 LKENodePool       -- ^ Returns the requested Node Pool.
+data GetLKENodePoolResponse =
+   GetLKENodePoolResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetLKENodePoolResponse200 LKENodePool -- ^ Returns the requested Node Pool.
   deriving (GHC.Show.Show, GHC.Classes.Eq)

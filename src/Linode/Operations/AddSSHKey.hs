@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation addSSHKey
 module Linode.Operations.AddSSHKey where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,70 +45,34 @@ import Linode.Types
 -- | > POST /profile/sshkeys
 -- 
 -- Adds an SSH Key to your Account profile.
-addSSHKey :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe SSHKeyRequest                                                                                          -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response AddSSHKeyResponse)) -- ^ Monad containing the result of the operation
-addSSHKey config
-          body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either AddSSHKeyResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> AddSSHKeyResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                             SSHKey)
-                                                                                                                                                                    | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> AddSSHKeyResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                               AddSSHKeyResponseBodyDefault)
-                                                                                                                                                                    | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/sshkeys") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /profile/sshkeys
--- 
--- The same as 'addSSHKey' but returns the raw 'Data.ByteString.Char8.ByteString'
-addSSHKeyRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                Linode.Common.Configuration s ->
-                GHC.Base.Maybe SSHKeyRequest ->
-                m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-addSSHKeyRaw config
-             body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/sshkeys") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /profile/sshkeys
--- 
--- Monadic version of 'addSSHKey' (use with 'Linode.Common.runWithConfiguration')
-addSSHKeyM :: forall m s . (Linode.Common.MonadHTTP m,
-                            Linode.Common.SecurityScheme s) =>
-              GHC.Base.Maybe SSHKeyRequest ->
-              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                 m
-                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                     (Network.HTTP.Client.Types.Response AddSSHKeyResponse))
-addSSHKeyM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either AddSSHKeyResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> AddSSHKeyResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                              SSHKey)
-                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> AddSSHKeyResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                AddSSHKeyResponseBodyDefault)
-                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/sshkeys") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /profile/sshkeys
--- 
--- Monadic version of 'addSSHKeyRaw' (use with 'Linode.Common.runWithConfiguration')
-addSSHKeyRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 GHC.Base.Maybe SSHKeyRequest ->
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-addSSHKeyRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/sshkeys") [] body Linode.Common.RequestBodyEncodingJSON)
+addSSHKey :: forall m . Linode.Common.MonadHTTP m => GHC.Maybe.Maybe SSHKeyRequest -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response AddSSHKeyResponse) -- ^ Monadic computation which returns the result of the operation
+addSSHKey body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either AddSSHKeyResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> AddSSHKeyResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                              SSHKey)
+                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> AddSSHKeyResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                AddSSHKeyResponseBodyDefault)
+                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/profile/sshkeys") GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
 -- | Represents a response of the operation 'addSSHKey'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'AddSSHKeyResponseError' is used.
-data AddSSHKeyResponse =                                   
-   AddSSHKeyResponseError GHC.Base.String                  -- ^ Means either no matching case available or a parse error
-  | AddSSHKeyResponse200 SSHKey                            -- ^ SSH Key associated successfully.
-  | AddSSHKeyResponseDefault AddSSHKeyResponseBodyDefault  -- ^ Error
+data AddSSHKeyResponse =
+   AddSSHKeyResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | AddSSHKeyResponse200 SSHKey -- ^ SSH Key associated successfully.
+  | AddSSHKeyResponseDefault AddSSHKeyResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema AddSSHKeyResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data AddSSHKeyResponseBodyDefault = AddSSHKeyResponseBodyDefault {
   -- | errors
-  addSSHKeyResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  addSSHKeyResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON AddSSHKeyResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (addSSHKeyResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (addSSHKeyResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON AddSSHKeyResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= addSSHKeyResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= addSSHKeyResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON AddSSHKeyResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "AddSSHKeyResponseBodyDefault" (\obj -> GHC.Base.pure AddSSHKeyResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'AddSSHKeyResponseBodyDefault' with all required fields.
+mkAddSSHKeyResponseBodyDefault :: AddSSHKeyResponseBodyDefault
+mkAddSSHKeyResponseBodyDefault = AddSSHKeyResponseBodyDefault{addSSHKeyResponseBodyDefaultErrors = GHC.Maybe.Nothing}

@@ -1,0 +1,13 @@
+module Linode.Types.LKENodePoolPropertiesDisksItems where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data LKENodePoolPropertiesDisksItems
+instance Show LKENodePoolPropertiesDisksItems
+instance Eq LKENodePoolPropertiesDisksItems
+instance FromJSON LKENodePoolPropertiesDisksItems
+instance ToJSON LKENodePoolPropertiesDisksItems
+data LKENodePoolPropertiesDisksItemsType'
+instance Show LKENodePoolPropertiesDisksItemsType'
+instance Eq LKENodePoolPropertiesDisksItemsType'
+instance FromJSON LKENodePoolPropertiesDisksItemsType'
+instance ToJSON LKENodePoolPropertiesDisksItemsType'

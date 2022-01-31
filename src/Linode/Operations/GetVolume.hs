@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getVolume
 module Linode.Operations.GetVolume where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,86 +45,73 @@ import Linode.Types
 -- | > GET /volumes/{volumeId}
 -- 
 -- Get information about a single Volume.
-getVolume :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                               -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                               -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetVolumeResponse)) -- ^ Monad containing the result of the operation
-getVolume config
-          page
-          page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                  Volume)
-                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                    GetVolumeResponseBodyDefault)
-                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/volumes/{volumeId}") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /volumes/{volumeId}
+getVolume :: forall m . Linode.Common.MonadHTTP m => GetVolumeParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetVolumeResponse) -- ^ Monadic computation which returns the result of the operation
+getVolume parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                    Volume)
+                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                      GetVolumeResponseBodyDefault)
+                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/volumes/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getVolumeParametersPathVolumeId parameters))) GHC.Base.++ ""))) [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getVolumeParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getVolumeParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/volumes\/{volumeId}.GET.parameters@ in the specification.
 -- 
--- The same as 'getVolume' but returns the raw 'Data.ByteString.Char8.ByteString'
-getVolumeRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                Linode.Common.Configuration s ->
-                GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getVolumeRaw config
-             page
-             page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/volumes/{volumeId}") ((Data.Text.pack "page",
-                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /volumes/{volumeId}
 -- 
--- Monadic version of 'getVolume' (use with 'Linode.Common.runWithConfiguration')
-getVolumeM :: forall m s . (Linode.Common.MonadHTTP m,
-                            Linode.Common.SecurityScheme s) =>
-              GHC.Base.Maybe GHC.Integer.Type.Integer ->
-              GHC.Base.Maybe GHC.Integer.Type.Integer ->
-              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                 m
-                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                     (Network.HTTP.Client.Types.Response GetVolumeResponse))
-getVolumeM page
-           page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                   Volume)
-                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                     GetVolumeResponseBodyDefault)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/volumes/{volumeId}") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                   Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /volumes/{volumeId}
--- 
--- Monadic version of 'getVolumeRaw' (use with 'Linode.Common.runWithConfiguration')
-getVolumeRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                 GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getVolumeRawM page
-              page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/volumes/{volumeId}") ((Data.Text.pack "page",
-                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetVolumeParameters = GetVolumeParameters {
+  -- | pathVolumeId: Represents the parameter named \'volumeId\'
+  -- 
+  -- ID of the Volume to look up.
+  getVolumeParametersPathVolumeId :: GHC.Types.Int
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  , getVolumeParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getVolumeParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetVolumeParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathVolumeId" Data.Aeson.Types.ToJSON..= getVolumeParametersPathVolumeId obj : "queryPage" Data.Aeson.Types.ToJSON..= getVolumeParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getVolumeParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathVolumeId" Data.Aeson.Types.ToJSON..= getVolumeParametersPathVolumeId obj) GHC.Base.<> (("queryPage" Data.Aeson.Types.ToJSON..= getVolumeParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getVolumeParametersQueryPageSize obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetVolumeParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetVolumeParameters" (\obj -> ((GHC.Base.pure GetVolumeParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathVolumeId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetVolumeParameters' with all required fields.
+mkGetVolumeParameters :: GHC.Types.Int -- ^ 'getVolumeParametersPathVolumeId'
+  -> GetVolumeParameters
+mkGetVolumeParameters getVolumeParametersPathVolumeId = GetVolumeParameters{getVolumeParametersPathVolumeId = getVolumeParametersPathVolumeId,
+                                                                            getVolumeParametersQueryPage = GHC.Maybe.Nothing,
+                                                                            getVolumeParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getVolume'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetVolumeResponseError' is used.
-data GetVolumeResponse =                                   
-   GetVolumeResponseError GHC.Base.String                  -- ^ Means either no matching case available or a parse error
-  | GetVolumeResponse200 Volume                            -- ^ Returns a single Volume object.
-  | GetVolumeResponseDefault GetVolumeResponseBodyDefault  -- ^ Error
+data GetVolumeResponse =
+   GetVolumeResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetVolumeResponse200 Volume -- ^ Returns a single Volume object.
+  | GetVolumeResponseDefault GetVolumeResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetVolumeResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetVolumeResponseBodyDefault = GetVolumeResponseBodyDefault {
   -- | errors
-  getVolumeResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getVolumeResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetVolumeResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getVolumeResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getVolumeResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetVolumeResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getVolumeResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getVolumeResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetVolumeResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetVolumeResponseBodyDefault" (\obj -> GHC.Base.pure GetVolumeResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetVolumeResponseBodyDefault' with all required fields.
+mkGetVolumeResponseBodyDefault :: GetVolumeResponseBodyDefault
+mkGetVolumeResponseBodyDefault = GetVolumeResponseBodyDefault{getVolumeResponseBodyDefaultErrors = GHC.Maybe.Nothing}

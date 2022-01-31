@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation disableManagedService
 module Linode.Operations.DisableManagedService where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,64 +45,34 @@ import Linode.Types
 -- | > POST /managed/services/{serviceId}/disable
 -- 
 -- Temporarily disables monitoring of a Managed Service.
-disableManagedService :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response DisableManagedServiceResponse)) -- ^ Monad containing the result of the operation
-disableManagedService config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DisableManagedServiceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DisableManagedServiceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                   ManagedService)
-                                                                                                                                                                                              | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DisableManagedServiceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                     DisableManagedServiceResponseBodyDefault)
-                                                                                                                                                                                              | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/managed/services/{serviceId}/disable") [])
--- | > POST /managed/services/{serviceId}/disable
--- 
--- The same as 'disableManagedService' but returns the raw 'Data.ByteString.Char8.ByteString'
-disableManagedServiceRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                          Linode.Common.SecurityScheme s) =>
-                            Linode.Common.Configuration s ->
-                            m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                  (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-disableManagedServiceRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/managed/services/{serviceId}/disable") [])
--- | > POST /managed/services/{serviceId}/disable
--- 
--- Monadic version of 'disableManagedService' (use with 'Linode.Common.runWithConfiguration')
-disableManagedServiceM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response DisableManagedServiceResponse))
-disableManagedServiceM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either DisableManagedServiceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DisableManagedServiceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                             ManagedService)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DisableManagedServiceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                               DisableManagedServiceResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/managed/services/{serviceId}/disable") [])
--- | > POST /managed/services/{serviceId}/disable
--- 
--- Monadic version of 'disableManagedServiceRaw' (use with 'Linode.Common.runWithConfiguration')
-disableManagedServiceRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                           Linode.Common.SecurityScheme s) =>
-                             Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                m
-                                                                (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                    (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-disableManagedServiceRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/managed/services/{serviceId}/disable") [])
+disableManagedService :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ serviceId: The ID of the Managed Service to disable.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response DisableManagedServiceResponse) -- ^ Monadic computation which returns the result of the operation
+disableManagedService serviceId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DisableManagedServiceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DisableManagedServiceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                       ManagedService)
+                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DisableManagedServiceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                         DisableManagedServiceResponseBodyDefault)
+                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/managed/services/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel serviceId)) GHC.Base.++ "/disable"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'disableManagedService'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'DisableManagedServiceResponseError' is used.
-data DisableManagedServiceResponse =                                               
-   DisableManagedServiceResponseError GHC.Base.String                              -- ^ Means either no matching case available or a parse error
-  | DisableManagedServiceResponse200 ManagedService                                -- ^ Service disabled.
-  | DisableManagedServiceResponseDefault DisableManagedServiceResponseBodyDefault  -- ^ Error
+data DisableManagedServiceResponse =
+   DisableManagedServiceResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | DisableManagedServiceResponse200 ManagedService -- ^ Service disabled.
+  | DisableManagedServiceResponseDefault DisableManagedServiceResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema DisableManagedServiceResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data DisableManagedServiceResponseBodyDefault = DisableManagedServiceResponseBodyDefault {
   -- | errors
-  disableManagedServiceResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  disableManagedServiceResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DisableManagedServiceResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (disableManagedServiceResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (disableManagedServiceResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON DisableManagedServiceResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= disableManagedServiceResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= disableManagedServiceResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON DisableManagedServiceResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "DisableManagedServiceResponseBodyDefault" (\obj -> GHC.Base.pure DisableManagedServiceResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'DisableManagedServiceResponseBodyDefault' with all required fields.
+mkDisableManagedServiceResponseBodyDefault :: DisableManagedServiceResponseBodyDefault
+mkDisableManagedServiceResponseBodyDefault = DisableManagedServiceResponseBodyDefault{disableManagedServiceResponseBodyDefaultErrors = GHC.Maybe.Nothing}

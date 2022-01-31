@@ -1,0 +1,13 @@
+module Linode.Types.LKENodePoolRequestBody where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data LKENodePoolRequestBody
+instance Show LKENodePoolRequestBody
+instance Eq LKENodePoolRequestBody
+instance FromJSON LKENodePoolRequestBody
+instance ToJSON LKENodePoolRequestBody
+data LKENodePoolRequestBodyAutoscaler'
+instance Show LKENodePoolRequestBodyAutoscaler'
+instance Eq LKENodePoolRequestBodyAutoscaler'
+instance FromJSON LKENodePoolRequestBodyAutoscaler'
+instance ToJSON LKENodePoolRequestBodyAutoscaler'

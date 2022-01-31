@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getTicketReplies
 module Linode.Operations.GetTicketReplies where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,102 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /support/tickets/{ticketId}/replies
 -- 
 -- Returns a collection of replies to a Support Ticket on your Account.
-getTicketReplies :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                      -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                      -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetTicketRepliesResponse)) -- ^ Monad containing the result of the operation
-getTicketReplies config
-                 page
-                 page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetTicketRepliesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetTicketRepliesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                       GetTicketRepliesResponseBody200)
-                                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetTicketRepliesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                         GetTicketRepliesResponseBodyDefault)
-                                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/support/tickets/{ticketId}/replies") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /support/tickets/{ticketId}/replies
+getTicketReplies :: forall m . Linode.Common.MonadHTTP m => GetTicketRepliesParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetTicketRepliesResponse) -- ^ Monadic computation which returns the result of the operation
+getTicketReplies parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetTicketRepliesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetTicketRepliesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                         GetTicketRepliesResponseBody200)
+                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetTicketRepliesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                           GetTicketRepliesResponseBodyDefault)
+                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/support/tickets/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getTicketRepliesParametersPathTicketId parameters))) GHC.Base.++ "/replies"))) [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getTicketRepliesParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getTicketRepliesParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/support\/tickets\/{ticketId}\/replies.GET.parameters@ in the specification.
 -- 
--- The same as 'getTicketReplies' but returns the raw 'Data.ByteString.Char8.ByteString'
-getTicketRepliesRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Linode.Common.Configuration s ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getTicketRepliesRaw config
-                    page
-                    page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/support/tickets/{ticketId}/replies") ((Data.Text.pack "page",
-                                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /support/tickets/{ticketId}/replies
 -- 
--- Monadic version of 'getTicketReplies' (use with 'Linode.Common.runWithConfiguration')
-getTicketRepliesM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response GetTicketRepliesResponse))
-getTicketRepliesM page
-                  page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetTicketRepliesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetTicketRepliesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                        GetTicketRepliesResponseBody200)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetTicketRepliesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                          GetTicketRepliesResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/support/tickets/{ticketId}/replies") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /support/tickets/{ticketId}/replies
--- 
--- Monadic version of 'getTicketRepliesRaw' (use with 'Linode.Common.runWithConfiguration')
-getTicketRepliesRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                        GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                        Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                           m
-                                                           (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getTicketRepliesRawM page
-                     page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/support/tickets/{ticketId}/replies") ((Data.Text.pack "page",
-                                                                                                                                                                                                   Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetTicketRepliesParameters = GetTicketRepliesParameters {
+  -- | pathTicketId: Represents the parameter named \'ticketId\'
+  -- 
+  -- The ID of the Support Ticket.
+  getTicketRepliesParametersPathTicketId :: GHC.Types.Int
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  , getTicketRepliesParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getTicketRepliesParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetTicketRepliesParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathTicketId" Data.Aeson.Types.ToJSON..= getTicketRepliesParametersPathTicketId obj : "queryPage" Data.Aeson.Types.ToJSON..= getTicketRepliesParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getTicketRepliesParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathTicketId" Data.Aeson.Types.ToJSON..= getTicketRepliesParametersPathTicketId obj) GHC.Base.<> (("queryPage" Data.Aeson.Types.ToJSON..= getTicketRepliesParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getTicketRepliesParametersQueryPageSize obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetTicketRepliesParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetTicketRepliesParameters" (\obj -> ((GHC.Base.pure GetTicketRepliesParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathTicketId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetTicketRepliesParameters' with all required fields.
+mkGetTicketRepliesParameters :: GHC.Types.Int -- ^ 'getTicketRepliesParametersPathTicketId'
+  -> GetTicketRepliesParameters
+mkGetTicketRepliesParameters getTicketRepliesParametersPathTicketId = GetTicketRepliesParameters{getTicketRepliesParametersPathTicketId = getTicketRepliesParametersPathTicketId,
+                                                                                                 getTicketRepliesParametersQueryPage = GHC.Maybe.Nothing,
+                                                                                                 getTicketRepliesParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getTicketReplies'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetTicketRepliesResponseError' is used.
-data GetTicketRepliesResponse =                                          
-   GetTicketRepliesResponseError GHC.Base.String                         -- ^ Means either no matching case available or a parse error
-  | GetTicketRepliesResponse200 GetTicketRepliesResponseBody200          -- ^ Returns a paginated list of SupportTicketReply objects.
-  | GetTicketRepliesResponseDefault GetTicketRepliesResponseBodyDefault  -- ^ Error
+data GetTicketRepliesResponse =
+   GetTicketRepliesResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetTicketRepliesResponse200 GetTicketRepliesResponseBody200 -- ^ Returns a paginated list of SupportTicketReply objects.
+  | GetTicketRepliesResponseDefault GetTicketRepliesResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetTicketRepliesResponseBody200
+-- | Defines the object schema located at @paths.\/support\/tickets\/{ticketId}\/replies.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetTicketRepliesResponseBody200 = GetTicketRepliesResponseBody200 {
   -- | data
-  getTicketRepliesResponseBody200Data :: (GHC.Base.Maybe ([] SupportTicketReply))
-  -- | page
-  , getTicketRepliesResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getTicketRepliesResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getTicketRepliesResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getTicketRepliesResponseBody200Data :: (GHC.Maybe.Maybe ([SupportTicketReply]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getTicketRepliesResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getTicketRepliesResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getTicketRepliesResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetTicketRepliesResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getTicketRepliesResponseBody200Data obj) : (Data.Aeson..=) "page" (getTicketRepliesResponseBody200Page obj) : (Data.Aeson..=) "pages" (getTicketRepliesResponseBody200Pages obj) : (Data.Aeson..=) "results" (getTicketRepliesResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getTicketRepliesResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getTicketRepliesResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getTicketRepliesResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getTicketRepliesResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetTicketRepliesResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetTicketRepliesResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetTicketRepliesResponseBody200" (\obj -> (((GHC.Base.pure GetTicketRepliesResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetTicketRepliesResponseBodyDefault
+-- | Create a new 'GetTicketRepliesResponseBody200' with all required fields.
+mkGetTicketRepliesResponseBody200 :: GetTicketRepliesResponseBody200
+mkGetTicketRepliesResponseBody200 = GetTicketRepliesResponseBody200{getTicketRepliesResponseBody200Data = GHC.Maybe.Nothing,
+                                                                    getTicketRepliesResponseBody200Page = GHC.Maybe.Nothing,
+                                                                    getTicketRepliesResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                    getTicketRepliesResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetTicketRepliesResponseBodyDefault = GetTicketRepliesResponseBodyDefault {
   -- | errors
-  getTicketRepliesResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getTicketRepliesResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetTicketRepliesResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getTicketRepliesResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getTicketRepliesResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetTicketRepliesResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getTicketRepliesResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetTicketRepliesResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetTicketRepliesResponseBodyDefault" (\obj -> GHC.Base.pure GetTicketRepliesResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetTicketRepliesResponseBodyDefault' with all required fields.
+mkGetTicketRepliesResponseBodyDefault :: GetTicketRepliesResponseBodyDefault
+mkGetTicketRepliesResponseBodyDefault = GetTicketRepliesResponseBodyDefault{getTicketRepliesResponseBodyDefaultErrors = GHC.Maybe.Nothing}

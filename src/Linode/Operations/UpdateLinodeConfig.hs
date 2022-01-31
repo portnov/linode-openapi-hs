@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation updateLinodeConfig
 module Linode.Operations.UpdateLinodeConfig where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,70 +45,61 @@ import Linode.Types
 -- | > PUT /linode/instances/{linodeId}/configs/{configId}
 -- 
 -- Updates a Configuration profile.
-updateLinodeConfig :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> LinodeConfig                                                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response UpdateLinodeConfigResponse)) -- ^ Monad containing the result of the operation
-updateLinodeConfig config
-                   body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateLinodeConfigResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateLinodeConfigResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                        LinodeConfig)
-                                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateLinodeConfigResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                          UpdateLinodeConfigResponseBodyDefault)
-                                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/linode/instances/{linodeId}/configs/{configId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /linode/instances/{linodeId}/configs/{configId}
+updateLinodeConfig :: forall m . Linode.Common.MonadHTTP m => UpdateLinodeConfigParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> LinodeConfig -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response UpdateLinodeConfigResponse) -- ^ Monadic computation which returns the result of the operation
+updateLinodeConfig parameters
+                   body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateLinodeConfigResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateLinodeConfigResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                         LinodeConfig)
+                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateLinodeConfigResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                           UpdateLinodeConfigResponseBodyDefault)
+                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack (("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (updateLinodeConfigParametersPathLinodeId parameters))) GHC.Base.++ "/configs/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (updateLinodeConfigParametersPathConfigId parameters))) GHC.Base.++ ""))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/configs\/{configId}.PUT.parameters@ in the specification.
 -- 
--- The same as 'updateLinodeConfig' but returns the raw 'Data.ByteString.Char8.ByteString'
-updateLinodeConfigRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         LinodeConfig ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateLinodeConfigRaw config
-                      body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/linode/instances/{linodeId}/configs/{configId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /linode/instances/{linodeId}/configs/{configId}
 -- 
--- Monadic version of 'updateLinodeConfig' (use with 'Linode.Common.runWithConfiguration')
-updateLinodeConfigM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       LinodeConfig ->
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response UpdateLinodeConfigResponse))
-updateLinodeConfigM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either UpdateLinodeConfigResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateLinodeConfigResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                         LinodeConfig)
-                                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateLinodeConfigResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                           UpdateLinodeConfigResponseBodyDefault)
-                                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/linode/instances/{linodeId}/configs/{configId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /linode/instances/{linodeId}/configs/{configId}
--- 
--- Monadic version of 'updateLinodeConfigRaw' (use with 'Linode.Common.runWithConfiguration')
-updateLinodeConfigRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          LinodeConfig ->
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateLinodeConfigRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/linode/instances/{linodeId}/configs/{configId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
+data UpdateLinodeConfigParameters = UpdateLinodeConfigParameters {
+  -- | pathConfigId: Represents the parameter named \'configId\'
+  -- 
+  -- The ID of the Configuration profile to look up.
+  updateLinodeConfigParametersPathConfigId :: GHC.Types.Int
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- The ID of the Linode whose Configuration profile to look up.
+  , updateLinodeConfigParametersPathLinodeId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateLinodeConfigParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathConfigId" Data.Aeson.Types.ToJSON..= updateLinodeConfigParametersPathConfigId obj : "pathLinodeId" Data.Aeson.Types.ToJSON..= updateLinodeConfigParametersPathLinodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathConfigId" Data.Aeson.Types.ToJSON..= updateLinodeConfigParametersPathConfigId obj) GHC.Base.<> ("pathLinodeId" Data.Aeson.Types.ToJSON..= updateLinodeConfigParametersPathLinodeId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON UpdateLinodeConfigParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "UpdateLinodeConfigParameters" (\obj -> (GHC.Base.pure UpdateLinodeConfigParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathConfigId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId"))
+-- | Create a new 'UpdateLinodeConfigParameters' with all required fields.
+mkUpdateLinodeConfigParameters :: GHC.Types.Int -- ^ 'updateLinodeConfigParametersPathConfigId'
+  -> GHC.Types.Int -- ^ 'updateLinodeConfigParametersPathLinodeId'
+  -> UpdateLinodeConfigParameters
+mkUpdateLinodeConfigParameters updateLinodeConfigParametersPathConfigId updateLinodeConfigParametersPathLinodeId = UpdateLinodeConfigParameters{updateLinodeConfigParametersPathConfigId = updateLinodeConfigParametersPathConfigId,
+                                                                                                                                                updateLinodeConfigParametersPathLinodeId = updateLinodeConfigParametersPathLinodeId}
 -- | Represents a response of the operation 'updateLinodeConfig'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'UpdateLinodeConfigResponseError' is used.
-data UpdateLinodeConfigResponse =                                            
-   UpdateLinodeConfigResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | UpdateLinodeConfigResponse200 LinodeConfig                               -- ^ Configuration profile successfully updated.
-  | UpdateLinodeConfigResponseDefault UpdateLinodeConfigResponseBodyDefault  -- ^ Error
+data UpdateLinodeConfigResponse =
+   UpdateLinodeConfigResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | UpdateLinodeConfigResponse200 LinodeConfig -- ^ Configuration profile successfully updated.
+  | UpdateLinodeConfigResponseDefault UpdateLinodeConfigResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema UpdateLinodeConfigResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data UpdateLinodeConfigResponseBodyDefault = UpdateLinodeConfigResponseBodyDefault {
   -- | errors
-  updateLinodeConfigResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  updateLinodeConfigResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateLinodeConfigResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (updateLinodeConfigResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (updateLinodeConfigResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateLinodeConfigResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= updateLinodeConfigResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= updateLinodeConfigResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON UpdateLinodeConfigResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "UpdateLinodeConfigResponseBodyDefault" (\obj -> GHC.Base.pure UpdateLinodeConfigResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'UpdateLinodeConfigResponseBodyDefault' with all required fields.
+mkUpdateLinodeConfigResponseBodyDefault :: UpdateLinodeConfigResponseBodyDefault
+mkUpdateLinodeConfigResponseBodyDefault = UpdateLinodeConfigResponseBodyDefault{updateLinodeConfigResponseBodyDefaultErrors = GHC.Maybe.Nothing}

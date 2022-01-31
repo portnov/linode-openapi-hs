@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation viewObjectStorageBucketACL
 module Linode.Operations.ViewObjectStorageBucketACL where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -51,121 +51,111 @@ import Linode.Types
 -- 
 -- This endpoint is available for convenience. It is recommended that instead you
 -- use the more [fully-featured S3 API](https:\/\/docs.ceph.com\/en\/latest\/radosgw\/s3\/objectops\/\#get-object-acl) directly.
-viewObjectStorageBucketACL :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> Data.Text.Internal.Text                                                                                                                -- ^ name: The \`name\` of the object for which to retrieve its Access Control List (ACL). Use the [Object Storage Bucket Contents List](\/docs\/api\/object-storage\/\#object-storage-bucket-contents-list) endpoint to access all object names in a bucket. 
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response ViewObjectStorageBucketACLResponse)) -- ^ Monad containing the result of the operation
-viewObjectStorageBucketACL config
-                           name = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ViewObjectStorageBucketACLResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ViewObjectStorageBucketACLResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                ViewObjectStorageBucketACLResponseBody200)
-                                                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ViewObjectStorageBucketACLResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                  ViewObjectStorageBucketACLResponseBodyDefault)
-                                                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-acl") ((Data.Text.pack "name",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         GHC.Base.Just GHC.Base.$ Linode.Common.stringifyModel name) : []))
--- | > GET /object-storage/buckets/{clusterId}/{bucket}/object-acl
+viewObjectStorageBucketACL :: forall m . Linode.Common.MonadHTTP m => ViewObjectStorageBucketACLParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response ViewObjectStorageBucketACLResponse) -- ^ Monadic computation which returns the result of the operation
+viewObjectStorageBucketACL parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ViewObjectStorageBucketACLResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ViewObjectStorageBucketACLResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                                       ViewObjectStorageBucketACLResponseBody200)
+                                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ViewObjectStorageBucketACLResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                         ViewObjectStorageBucketACLResponseBodyDefault)
+                                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack (("/object-storage/buckets/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (viewObjectStorageBucketACLParametersPathClusterId parameters))) GHC.Base.++ "/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (viewObjectStorageBucketACLParametersPathBucket parameters))) GHC.Base.++ "/object-acl"))) [Linode.Common.QueryParameter (Data.Text.pack "name") (GHC.Maybe.Just GHC.Base.$ Data.Aeson.Types.ToJSON.toJSON (viewObjectStorageBucketACLParametersQueryName parameters)) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/object-acl.GET.parameters@ in the specification.
 -- 
--- The same as 'viewObjectStorageBucketACL' but returns the raw 'Data.ByteString.Char8.ByteString'
-viewObjectStorageBucketACLRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                               Linode.Common.SecurityScheme s) =>
-                                 Linode.Common.Configuration s ->
-                                 Data.Text.Internal.Text ->
-                                 m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-viewObjectStorageBucketACLRaw config
-                              name = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-acl") ((Data.Text.pack "name",
-                                                                                                                                                                                                                                 GHC.Base.Just GHC.Base.$ Linode.Common.stringifyModel name) : []))
--- | > GET /object-storage/buckets/{clusterId}/{bucket}/object-acl
 -- 
--- Monadic version of 'viewObjectStorageBucketACL' (use with 'Linode.Common.runWithConfiguration')
-viewObjectStorageBucketACLM :: forall m s . (Linode.Common.MonadHTTP m,
-                                             Linode.Common.SecurityScheme s) =>
-                               Data.Text.Internal.Text ->
-                               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                  m
-                                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                      (Network.HTTP.Client.Types.Response ViewObjectStorageBucketACLResponse))
-viewObjectStorageBucketACLM name = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either ViewObjectStorageBucketACLResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ViewObjectStorageBucketACLResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ViewObjectStorageBucketACLResponseBody200)
-                                                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ViewObjectStorageBucketACLResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                   ViewObjectStorageBucketACLResponseBodyDefault)
-                                                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-acl") ((Data.Text.pack "name",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    GHC.Base.Just GHC.Base.$ Linode.Common.stringifyModel name) : []))
--- | > GET /object-storage/buckets/{clusterId}/{bucket}/object-acl
--- 
--- Monadic version of 'viewObjectStorageBucketACLRaw' (use with 'Linode.Common.runWithConfiguration')
-viewObjectStorageBucketACLRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                                Linode.Common.SecurityScheme s) =>
-                                  Data.Text.Internal.Text ->
-                                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                     m
-                                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-viewObjectStorageBucketACLRawM name = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-acl") ((Data.Text.pack "name",
-                                                                                                                                                                                                                            GHC.Base.Just GHC.Base.$ Linode.Common.stringifyModel name) : []))
+data ViewObjectStorageBucketACLParameters = ViewObjectStorageBucketACLParameters {
+  -- | pathBucket: Represents the parameter named \'bucket\'
+  -- 
+  -- The bucket name.
+  viewObjectStorageBucketACLParametersPathBucket :: Data.Text.Internal.Text
+  -- | pathClusterId: Represents the parameter named \'clusterId\'
+  -- 
+  -- The ID of the cluster this bucket exists in.
+  , viewObjectStorageBucketACLParametersPathClusterId :: Data.Text.Internal.Text
+  -- | queryName: Represents the parameter named \'name\'
+  -- 
+  -- The \`name\` of the object for which to retrieve its Access Control List (ACL). Use the [Object Storage Bucket Contents List](\/docs\/api\/object-storage\/\#object-storage-bucket-contents-list) endpoint to access all object names in a bucket.
+  , viewObjectStorageBucketACLParametersQueryName :: Data.Text.Internal.Text
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON ViewObjectStorageBucketACLParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathBucket" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLParametersPathBucket obj : "pathClusterId" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLParametersPathClusterId obj : "queryName" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLParametersQueryName obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathBucket" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLParametersPathBucket obj) GHC.Base.<> (("pathClusterId" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLParametersPathClusterId obj) GHC.Base.<> ("queryName" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLParametersQueryName obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON ViewObjectStorageBucketACLParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "ViewObjectStorageBucketACLParameters" (\obj -> ((GHC.Base.pure ViewObjectStorageBucketACLParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathBucket")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathClusterId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "queryName"))
+-- | Create a new 'ViewObjectStorageBucketACLParameters' with all required fields.
+mkViewObjectStorageBucketACLParameters :: Data.Text.Internal.Text -- ^ 'viewObjectStorageBucketACLParametersPathBucket'
+  -> Data.Text.Internal.Text -- ^ 'viewObjectStorageBucketACLParametersPathClusterId'
+  -> Data.Text.Internal.Text -- ^ 'viewObjectStorageBucketACLParametersQueryName'
+  -> ViewObjectStorageBucketACLParameters
+mkViewObjectStorageBucketACLParameters viewObjectStorageBucketACLParametersPathBucket viewObjectStorageBucketACLParametersPathClusterId viewObjectStorageBucketACLParametersQueryName = ViewObjectStorageBucketACLParameters{viewObjectStorageBucketACLParametersPathBucket = viewObjectStorageBucketACLParametersPathBucket,
+                                                                                                                                                                                                                             viewObjectStorageBucketACLParametersPathClusterId = viewObjectStorageBucketACLParametersPathClusterId,
+                                                                                                                                                                                                                             viewObjectStorageBucketACLParametersQueryName = viewObjectStorageBucketACLParametersQueryName}
 -- | Represents a response of the operation 'viewObjectStorageBucketACL'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'ViewObjectStorageBucketACLResponseError' is used.
-data ViewObjectStorageBucketACLResponse =                                                    
-   ViewObjectStorageBucketACLResponseError GHC.Base.String                                   -- ^ Means either no matching case available or a parse error
-  | ViewObjectStorageBucketACLResponse200 ViewObjectStorageBucketACLResponseBody200          -- ^ The Object\'s canned ACL and policy.
-  | ViewObjectStorageBucketACLResponseDefault ViewObjectStorageBucketACLResponseBodyDefault  -- ^ Error
+data ViewObjectStorageBucketACLResponse =
+   ViewObjectStorageBucketACLResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | ViewObjectStorageBucketACLResponse200 ViewObjectStorageBucketACLResponseBody200 -- ^ The Object\'s canned ACL and policy.
+  | ViewObjectStorageBucketACLResponseDefault ViewObjectStorageBucketACLResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema ViewObjectStorageBucketACLResponseBody200
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/object-acl.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ViewObjectStorageBucketACLResponseBody200 = ViewObjectStorageBucketACLResponseBody200 {
   -- | acl: The Access Control Level of the bucket, as a canned ACL string. For more fine-grained control of ACLs, use the S3 API directly.
-  viewObjectStorageBucketACLResponseBody200Acl :: (GHC.Base.Maybe ViewObjectStorageBucketACLResponseBody200Acl)
+  viewObjectStorageBucketACLResponseBody200Acl :: (GHC.Maybe.Maybe ViewObjectStorageBucketACLResponseBody200Acl')
   -- | acl_xml: The full XML of the object\'s ACL policy.
-  , viewObjectStorageBucketACLResponseBody200Acl_xml :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , viewObjectStorageBucketACLResponseBody200AclXml :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ViewObjectStorageBucketACLResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "acl" (viewObjectStorageBucketACLResponseBody200Acl obj) : (Data.Aeson..=) "acl_xml" (viewObjectStorageBucketACLResponseBody200Acl_xml obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "acl" (viewObjectStorageBucketACLResponseBody200Acl obj) GHC.Base.<> (Data.Aeson..=) "acl_xml" (viewObjectStorageBucketACLResponseBody200Acl_xml obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ViewObjectStorageBucketACLResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("acl" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLResponseBody200Acl obj : "acl_xml" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLResponseBody200AclXml obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("acl" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLResponseBody200Acl obj) GHC.Base.<> ("acl_xml" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLResponseBody200AclXml obj))
 instance Data.Aeson.Types.FromJSON.FromJSON ViewObjectStorageBucketACLResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ViewObjectStorageBucketACLResponseBody200" (\obj -> (GHC.Base.pure ViewObjectStorageBucketACLResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "acl")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "acl_xml"))
--- | Defines the enum schema ViewObjectStorageBucketACLResponseBody200Acl
+-- | Create a new 'ViewObjectStorageBucketACLResponseBody200' with all required fields.
+mkViewObjectStorageBucketACLResponseBody200 :: ViewObjectStorageBucketACLResponseBody200
+mkViewObjectStorageBucketACLResponseBody200 = ViewObjectStorageBucketACLResponseBody200{viewObjectStorageBucketACLResponseBody200Acl = GHC.Maybe.Nothing,
+                                                                                        viewObjectStorageBucketACLResponseBody200AclXml = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/object-acl.GET.responses.200.content.application\/json.schema.properties.acl@ in the specification.
 -- 
 -- The Access Control Level of the bucket, as a canned ACL string. For more fine-grained control of ACLs, use the S3 API directly.
-data ViewObjectStorageBucketACLResponseBody200Acl
-    = ViewObjectStorageBucketACLResponseBody200AclEnumOther Data.Aeson.Types.Internal.Value
-    | ViewObjectStorageBucketACLResponseBody200AclEnumTyped Data.Text.Internal.Text
-    | ViewObjectStorageBucketACLResponseBody200AclEnumString_authenticated_read
-    | ViewObjectStorageBucketACLResponseBody200AclEnumString_custom
-    | ViewObjectStorageBucketACLResponseBody200AclEnumString_private
-    | ViewObjectStorageBucketACLResponseBody200AclEnumString_public_read
-    | ViewObjectStorageBucketACLResponseBody200AclEnumString_public_read_write
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ViewObjectStorageBucketACLResponseBody200Acl
-    where toJSON (ViewObjectStorageBucketACLResponseBody200AclEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (ViewObjectStorageBucketACLResponseBody200AclEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (ViewObjectStorageBucketACLResponseBody200AclEnumString_authenticated_read) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "authenticated-read"
-          toJSON (ViewObjectStorageBucketACLResponseBody200AclEnumString_custom) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "custom"
-          toJSON (ViewObjectStorageBucketACLResponseBody200AclEnumString_private) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "private"
-          toJSON (ViewObjectStorageBucketACLResponseBody200AclEnumString_public_read) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "public-read"
-          toJSON (ViewObjectStorageBucketACLResponseBody200AclEnumString_public_read_write) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "public-read-write"
-instance Data.Aeson.FromJSON ViewObjectStorageBucketACLResponseBody200Acl
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "authenticated-read")
-                                          then ViewObjectStorageBucketACLResponseBody200AclEnumString_authenticated_read
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "custom")
-                                                then ViewObjectStorageBucketACLResponseBody200AclEnumString_custom
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "private")
-                                                      then ViewObjectStorageBucketACLResponseBody200AclEnumString_private
-                                                      else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "public-read")
-                                                            then ViewObjectStorageBucketACLResponseBody200AclEnumString_public_read
-                                                            else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "public-read-write")
-                                                                  then ViewObjectStorageBucketACLResponseBody200AclEnumString_public_read_write
-                                                                  else ViewObjectStorageBucketACLResponseBody200AclEnumOther val)
--- | Defines the data type for the schema ViewObjectStorageBucketACLResponseBodyDefault
+data ViewObjectStorageBucketACLResponseBody200Acl' =
+   ViewObjectStorageBucketACLResponseBody200Acl'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | ViewObjectStorageBucketACLResponseBody200Acl'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | ViewObjectStorageBucketACLResponseBody200Acl'EnumPrivate -- ^ Represents the JSON value @"private"@
+  | ViewObjectStorageBucketACLResponseBody200Acl'EnumPublicRead -- ^ Represents the JSON value @"public-read"@
+  | ViewObjectStorageBucketACLResponseBody200Acl'EnumAuthenticatedRead -- ^ Represents the JSON value @"authenticated-read"@
+  | ViewObjectStorageBucketACLResponseBody200Acl'EnumPublicReadWrite -- ^ Represents the JSON value @"public-read-write"@
+  | ViewObjectStorageBucketACLResponseBody200Acl'EnumCustom -- ^ Represents the JSON value @"custom"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON ViewObjectStorageBucketACLResponseBody200Acl'
+    where toJSON (ViewObjectStorageBucketACLResponseBody200Acl'Other val) = val
+          toJSON (ViewObjectStorageBucketACLResponseBody200Acl'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (ViewObjectStorageBucketACLResponseBody200Acl'EnumPrivate) = "private"
+          toJSON (ViewObjectStorageBucketACLResponseBody200Acl'EnumPublicRead) = "public-read"
+          toJSON (ViewObjectStorageBucketACLResponseBody200Acl'EnumAuthenticatedRead) = "authenticated-read"
+          toJSON (ViewObjectStorageBucketACLResponseBody200Acl'EnumPublicReadWrite) = "public-read-write"
+          toJSON (ViewObjectStorageBucketACLResponseBody200Acl'EnumCustom) = "custom"
+instance Data.Aeson.Types.FromJSON.FromJSON ViewObjectStorageBucketACLResponseBody200Acl'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "private" -> ViewObjectStorageBucketACLResponseBody200Acl'EnumPrivate
+                                            | val GHC.Classes.== "public-read" -> ViewObjectStorageBucketACLResponseBody200Acl'EnumPublicRead
+                                            | val GHC.Classes.== "authenticated-read" -> ViewObjectStorageBucketACLResponseBody200Acl'EnumAuthenticatedRead
+                                            | val GHC.Classes.== "public-read-write" -> ViewObjectStorageBucketACLResponseBody200Acl'EnumPublicReadWrite
+                                            | val GHC.Classes.== "custom" -> ViewObjectStorageBucketACLResponseBody200Acl'EnumCustom
+                                            | GHC.Base.otherwise -> ViewObjectStorageBucketACLResponseBody200Acl'Other val)
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ViewObjectStorageBucketACLResponseBodyDefault = ViewObjectStorageBucketACLResponseBodyDefault {
   -- | errors
-  viewObjectStorageBucketACLResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  viewObjectStorageBucketACLResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ViewObjectStorageBucketACLResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (viewObjectStorageBucketACLResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (viewObjectStorageBucketACLResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ViewObjectStorageBucketACLResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= viewObjectStorageBucketACLResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON ViewObjectStorageBucketACLResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ViewObjectStorageBucketACLResponseBodyDefault" (\obj -> GHC.Base.pure ViewObjectStorageBucketACLResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'ViewObjectStorageBucketACLResponseBodyDefault' with all required fields.
+mkViewObjectStorageBucketACLResponseBodyDefault :: ViewObjectStorageBucketACLResponseBodyDefault
+mkViewObjectStorageBucketACLResponseBodyDefault = ViewObjectStorageBucketACLResponseBodyDefault{viewObjectStorageBucketACLResponseBodyDefaultErrors = GHC.Maybe.Nothing}

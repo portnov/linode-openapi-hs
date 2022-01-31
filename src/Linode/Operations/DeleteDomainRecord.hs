@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation deleteDomainRecord
 module Linode.Operations.DeleteDomainRecord where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,76 +45,59 @@ import Linode.Types
 -- | > DELETE /domains/{domainId}/records/{recordId}
 -- 
 -- Deletes a Record on this Domain.
-deleteDomainRecord :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response DeleteDomainRecordResponse)) -- ^ Monad containing the result of the operation
-deleteDomainRecord config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteDomainRecordResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteDomainRecordResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                          DeleteDomainRecordResponseBody200)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteDomainRecordResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                            DeleteDomainRecordResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/domains/{domainId}/records/{recordId}") [])
--- | > DELETE /domains/{domainId}/records/{recordId}
+deleteDomainRecord :: forall m . Linode.Common.MonadHTTP m => DeleteDomainRecordParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response DeleteDomainRecordResponse) -- ^ Monadic computation which returns the result of the operation
+deleteDomainRecord parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteDomainRecordResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteDomainRecordResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                               Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteDomainRecordResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                 DeleteDomainRecordResponseBodyDefault)
+                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack ("/domains/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (deleteDomainRecordParametersPathDomainId parameters))) GHC.Base.++ ("/records/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (deleteDomainRecordParametersPathRecordId parameters))) GHC.Base.++ ""))))) GHC.Base.mempty)
+-- | Defines the object schema located at @paths.\/domains\/{domainId}\/records\/{recordId}.DELETE.parameters@ in the specification.
 -- 
--- The same as 'deleteDomainRecord' but returns the raw 'Data.ByteString.Char8.ByteString'
-deleteDomainRecordRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteDomainRecordRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/domains/{domainId}/records/{recordId}") [])
--- | > DELETE /domains/{domainId}/records/{recordId}
 -- 
--- Monadic version of 'deleteDomainRecord' (use with 'Linode.Common.runWithConfiguration')
-deleteDomainRecordM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response DeleteDomainRecordResponse))
-deleteDomainRecordM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either DeleteDomainRecordResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteDomainRecordResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                    DeleteDomainRecordResponseBody200)
-                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteDomainRecordResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                      DeleteDomainRecordResponseBodyDefault)
-                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/domains/{domainId}/records/{recordId}") [])
--- | > DELETE /domains/{domainId}/records/{recordId}
--- 
--- Monadic version of 'deleteDomainRecordRaw' (use with 'Linode.Common.runWithConfiguration')
-deleteDomainRecordRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteDomainRecordRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/domains/{domainId}/records/{recordId}") [])
+data DeleteDomainRecordParameters = DeleteDomainRecordParameters {
+  -- | pathDomainId: Represents the parameter named \'domainId\'
+  -- 
+  -- The ID of the Domain whose Record you are accessing.
+  deleteDomainRecordParametersPathDomainId :: GHC.Types.Int
+  -- | pathRecordId: Represents the parameter named \'recordId\'
+  -- 
+  -- The ID of the Record you are accessing.
+  , deleteDomainRecordParametersPathRecordId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON DeleteDomainRecordParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathDomainId" Data.Aeson.Types.ToJSON..= deleteDomainRecordParametersPathDomainId obj : "pathRecordId" Data.Aeson.Types.ToJSON..= deleteDomainRecordParametersPathRecordId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathDomainId" Data.Aeson.Types.ToJSON..= deleteDomainRecordParametersPathDomainId obj) GHC.Base.<> ("pathRecordId" Data.Aeson.Types.ToJSON..= deleteDomainRecordParametersPathRecordId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON DeleteDomainRecordParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteDomainRecordParameters" (\obj -> (GHC.Base.pure DeleteDomainRecordParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathDomainId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathRecordId"))
+-- | Create a new 'DeleteDomainRecordParameters' with all required fields.
+mkDeleteDomainRecordParameters :: GHC.Types.Int -- ^ 'deleteDomainRecordParametersPathDomainId'
+  -> GHC.Types.Int -- ^ 'deleteDomainRecordParametersPathRecordId'
+  -> DeleteDomainRecordParameters
+mkDeleteDomainRecordParameters deleteDomainRecordParametersPathDomainId deleteDomainRecordParametersPathRecordId = DeleteDomainRecordParameters{deleteDomainRecordParametersPathDomainId = deleteDomainRecordParametersPathDomainId,
+                                                                                                                                                deleteDomainRecordParametersPathRecordId = deleteDomainRecordParametersPathRecordId}
 -- | Represents a response of the operation 'deleteDomainRecord'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'DeleteDomainRecordResponseError' is used.
-data DeleteDomainRecordResponse =                                            
-   DeleteDomainRecordResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | DeleteDomainRecordResponse200 DeleteDomainRecordResponseBody200          -- ^ Record deleted successfully.
-  | DeleteDomainRecordResponseDefault DeleteDomainRecordResponseBodyDefault  -- ^ Error
+data DeleteDomainRecordResponse =
+   DeleteDomainRecordResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | DeleteDomainRecordResponse200 Data.Aeson.Types.Internal.Object -- ^ Record deleted successfully.
+  | DeleteDomainRecordResponseDefault DeleteDomainRecordResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema DeleteDomainRecordResponseBody200
--- 
--- 
-data DeleteDomainRecordResponseBody200 = DeleteDomainRecordResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteDomainRecordResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON DeleteDomainRecordResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteDomainRecordResponseBody200" (\obj -> GHC.Base.pure DeleteDomainRecordResponseBody200)
--- | Defines the data type for the schema DeleteDomainRecordResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data DeleteDomainRecordResponseBodyDefault = DeleteDomainRecordResponseBodyDefault {
   -- | errors
-  deleteDomainRecordResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  deleteDomainRecordResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteDomainRecordResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (deleteDomainRecordResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (deleteDomainRecordResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON DeleteDomainRecordResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= deleteDomainRecordResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= deleteDomainRecordResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON DeleteDomainRecordResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteDomainRecordResponseBodyDefault" (\obj -> GHC.Base.pure DeleteDomainRecordResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'DeleteDomainRecordResponseBodyDefault' with all required fields.
+mkDeleteDomainRecordResponseBodyDefault :: DeleteDomainRecordResponseBodyDefault
+mkDeleteDomainRecordResponseBodyDefault = DeleteDomainRecordResponseBodyDefault{deleteDomainRecordResponseBodyDefaultErrors = GHC.Maybe.Nothing}

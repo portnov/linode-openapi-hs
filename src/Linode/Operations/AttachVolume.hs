@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation attachVolume
 module Linode.Operations.AttachVolume where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,87 +45,59 @@ import Linode.Types
 -- | > POST /volumes/{volumeId}/attach
 -- 
 -- Attaches a Volume on your Account to an existing Linode on your Account. In order for this request to complete successfully, your User must have \`read_only\` or \`read_write\` permission to the Volume and \`read_write\` permission to the Linode. Additionally, the Volume and Linode must be located in the same Region.
-attachVolume :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> AttachVolumeRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response AttachVolumeResponse)) -- ^ Monad containing the result of the operation
-attachVolume config
-             body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either AttachVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> AttachVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                      Volume)
-                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> AttachVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                        AttachVolumeResponseBodyDefault)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/attach") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /volumes/{volumeId}/attach
--- 
--- The same as 'attachVolume' but returns the raw 'Data.ByteString.Char8.ByteString'
-attachVolumeRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Linode.Common.Configuration s ->
-                   AttachVolumeRequestBody ->
-                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-attachVolumeRaw config
-                body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/attach") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /volumes/{volumeId}/attach
--- 
--- Monadic version of 'attachVolume' (use with 'Linode.Common.runWithConfiguration')
-attachVolumeM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 AttachVolumeRequestBody ->
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response AttachVolumeResponse))
-attachVolumeM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either AttachVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> AttachVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                       Volume)
-                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> AttachVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                         AttachVolumeResponseBodyDefault)
-                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/attach") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /volumes/{volumeId}/attach
--- 
--- Monadic version of 'attachVolumeRaw' (use with 'Linode.Common.runWithConfiguration')
-attachVolumeRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    AttachVolumeRequestBody ->
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-attachVolumeRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/attach") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema attachVolumeRequestBody
+attachVolume :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ volumeId: ID of the Volume to attach.
+  -> AttachVolumeRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response AttachVolumeResponse) -- ^ Monadic computation which returns the result of the operation
+attachVolume volumeId
+             body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either AttachVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> AttachVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                       Volume)
+                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> AttachVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                         AttachVolumeResponseBodyDefault)
+                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/volumes/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel volumeId)) GHC.Base.++ "/attach"))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/volumes\/{volumeId}\/attach.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data AttachVolumeRequestBody = AttachVolumeRequestBody {
   -- | config_id: The ID of the Linode Config to include this Volume in. Must belong to the Linode referenced by \`linode_id\`. If not given, the last booted Config will be chosen.
-  attachVolumeRequestBodyConfig_id :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  attachVolumeRequestBodyConfigId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | linode_id: The ID of the Linode to attach the volume to.
-  , attachVolumeRequestBodyLinode_id :: GHC.Integer.Type.Integer
+  , attachVolumeRequestBodyLinodeId :: GHC.Types.Int
   -- | persist_across_boots: Defaults to true, if false is provided, the Volume will not be attached to the Linode Config. In this case more than 8 Volumes may be attached to a Linode if a Linode has 16GB of RAM or more. The number of volumes that can be attached is equal to the number of GB of RAM that the Linode has, up to a maximum of 64. \`config_id\` should not be passed if this is set to false and linode_id must be passed. The Linode must be running.
-  , attachVolumeRequestBodyPersist_across_boots :: (GHC.Base.Maybe GHC.Types.Bool)
+  , attachVolumeRequestBodyPersistAcrossBoots :: (GHC.Maybe.Maybe GHC.Types.Bool)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON AttachVolumeRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "config_id" (attachVolumeRequestBodyConfig_id obj) : (Data.Aeson..=) "linode_id" (attachVolumeRequestBodyLinode_id obj) : (Data.Aeson..=) "persist_across_boots" (attachVolumeRequestBodyPersist_across_boots obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "config_id" (attachVolumeRequestBodyConfig_id obj) GHC.Base.<> ((Data.Aeson..=) "linode_id" (attachVolumeRequestBodyLinode_id obj) GHC.Base.<> (Data.Aeson..=) "persist_across_boots" (attachVolumeRequestBodyPersist_across_boots obj)))
+instance Data.Aeson.Types.ToJSON.ToJSON AttachVolumeRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("config_id" Data.Aeson.Types.ToJSON..= attachVolumeRequestBodyConfigId obj : "linode_id" Data.Aeson.Types.ToJSON..= attachVolumeRequestBodyLinodeId obj : "persist_across_boots" Data.Aeson.Types.ToJSON..= attachVolumeRequestBodyPersistAcrossBoots obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("config_id" Data.Aeson.Types.ToJSON..= attachVolumeRequestBodyConfigId obj) GHC.Base.<> (("linode_id" Data.Aeson.Types.ToJSON..= attachVolumeRequestBodyLinodeId obj) GHC.Base.<> ("persist_across_boots" Data.Aeson.Types.ToJSON..= attachVolumeRequestBodyPersistAcrossBoots obj)))
 instance Data.Aeson.Types.FromJSON.FromJSON AttachVolumeRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "AttachVolumeRequestBody" (\obj -> ((GHC.Base.pure AttachVolumeRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "config_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "linode_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "persist_across_boots"))
+-- | Create a new 'AttachVolumeRequestBody' with all required fields.
+mkAttachVolumeRequestBody :: GHC.Types.Int -- ^ 'attachVolumeRequestBodyLinodeId'
+  -> AttachVolumeRequestBody
+mkAttachVolumeRequestBody attachVolumeRequestBodyLinodeId = AttachVolumeRequestBody{attachVolumeRequestBodyConfigId = GHC.Maybe.Nothing,
+                                                                                    attachVolumeRequestBodyLinodeId = attachVolumeRequestBodyLinodeId,
+                                                                                    attachVolumeRequestBodyPersistAcrossBoots = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'attachVolume'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'AttachVolumeResponseError' is used.
-data AttachVolumeResponse =                                      
-   AttachVolumeResponseError GHC.Base.String                     -- ^ Means either no matching case available or a parse error
-  | AttachVolumeResponse200 Volume                               -- ^ Volume was attached to a Linode.
-  | AttachVolumeResponseDefault AttachVolumeResponseBodyDefault  -- ^ Error
+data AttachVolumeResponse =
+   AttachVolumeResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | AttachVolumeResponse200 Volume -- ^ Volume was attached to a Linode.
+  | AttachVolumeResponseDefault AttachVolumeResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema AttachVolumeResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data AttachVolumeResponseBodyDefault = AttachVolumeResponseBodyDefault {
   -- | errors
-  attachVolumeResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  attachVolumeResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON AttachVolumeResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (attachVolumeResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (attachVolumeResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON AttachVolumeResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= attachVolumeResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= attachVolumeResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON AttachVolumeResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "AttachVolumeResponseBodyDefault" (\obj -> GHC.Base.pure AttachVolumeResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'AttachVolumeResponseBodyDefault' with all required fields.
+mkAttachVolumeResponseBodyDefault :: AttachVolumeResponseBodyDefault
+mkAttachVolumeResponseBodyDefault = AttachVolumeResponseBodyDefault{attachVolumeResponseBodyDefaultErrors = GHC.Maybe.Nothing}

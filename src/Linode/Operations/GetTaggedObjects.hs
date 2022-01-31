@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getTaggedObjects
 module Linode.Operations.GetTaggedObjects where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,138 +41,137 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /tags/{label}
 -- 
 -- Returns a paginated list of all objects you\'ve tagged with the requested Tag. This is a mixed collection of all object types.
-getTaggedObjects :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                      -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                      -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetTaggedObjectsResponse)) -- ^ Monad containing the result of the operation
-getTaggedObjects config
-                 page
-                 page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetTaggedObjectsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetTaggedObjectsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                       GetTaggedObjectsResponseBody200)
-                                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetTaggedObjectsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                         GetTaggedObjectsResponseBodyDefault)
-                                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/tags/{label}") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /tags/{label}
+getTaggedObjects :: forall m . Linode.Common.MonadHTTP m => GetTaggedObjectsParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetTaggedObjectsResponse) -- ^ Monadic computation which returns the result of the operation
+getTaggedObjects parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetTaggedObjectsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetTaggedObjectsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                         GetTaggedObjectsResponseBody200)
+                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetTaggedObjectsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                           GetTaggedObjectsResponseBodyDefault)
+                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/tags/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getTaggedObjectsParametersPathLabel parameters))) GHC.Base.++ ""))) [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getTaggedObjectsParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getTaggedObjectsParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/tags\/{label}.GET.parameters@ in the specification.
 -- 
--- The same as 'getTaggedObjects' but returns the raw 'Data.ByteString.Char8.ByteString'
-getTaggedObjectsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Linode.Common.Configuration s ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getTaggedObjectsRaw config
-                    page
-                    page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/tags/{label}") ((Data.Text.pack "page",
-                                                                                                                                                                                  Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                           Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /tags/{label}
 -- 
--- Monadic version of 'getTaggedObjects' (use with 'Linode.Common.runWithConfiguration')
-getTaggedObjectsM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response GetTaggedObjectsResponse))
-getTaggedObjectsM page
-                  page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetTaggedObjectsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetTaggedObjectsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                        GetTaggedObjectsResponseBody200)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetTaggedObjectsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                          GetTaggedObjectsResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/tags/{label}") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                           Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /tags/{label}
--- 
--- Monadic version of 'getTaggedObjectsRaw' (use with 'Linode.Common.runWithConfiguration')
-getTaggedObjectsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                        GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                        Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                           m
-                                                           (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getTaggedObjectsRawM page
-                     page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/tags/{label}") ((Data.Text.pack "page",
-                                                                                                                                                                             Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                      Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetTaggedObjectsParameters = GetTaggedObjectsParameters {
+  -- | pathLabel: Represents the parameter named \'label\'
+  getTaggedObjectsParametersPathLabel :: Data.Text.Internal.Text
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  , getTaggedObjectsParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getTaggedObjectsParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetTaggedObjectsParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathLabel" Data.Aeson.Types.ToJSON..= getTaggedObjectsParametersPathLabel obj : "queryPage" Data.Aeson.Types.ToJSON..= getTaggedObjectsParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getTaggedObjectsParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathLabel" Data.Aeson.Types.ToJSON..= getTaggedObjectsParametersPathLabel obj) GHC.Base.<> (("queryPage" Data.Aeson.Types.ToJSON..= getTaggedObjectsParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getTaggedObjectsParametersQueryPageSize obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetTaggedObjectsParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetTaggedObjectsParameters" (\obj -> ((GHC.Base.pure GetTaggedObjectsParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLabel")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetTaggedObjectsParameters' with all required fields.
+mkGetTaggedObjectsParameters :: Data.Text.Internal.Text -- ^ 'getTaggedObjectsParametersPathLabel'
+  -> GetTaggedObjectsParameters
+mkGetTaggedObjectsParameters getTaggedObjectsParametersPathLabel = GetTaggedObjectsParameters{getTaggedObjectsParametersPathLabel = getTaggedObjectsParametersPathLabel,
+                                                                                              getTaggedObjectsParametersQueryPage = GHC.Maybe.Nothing,
+                                                                                              getTaggedObjectsParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getTaggedObjects'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetTaggedObjectsResponseError' is used.
-data GetTaggedObjectsResponse =                                          
-   GetTaggedObjectsResponseError GHC.Base.String                         -- ^ Means either no matching case available or a parse error
-  | GetTaggedObjectsResponse200 GetTaggedObjectsResponseBody200          -- ^ A paginated list of objects, organized by type, that have been tagged with the requested Tag. 
-  | GetTaggedObjectsResponseDefault GetTaggedObjectsResponseBodyDefault  -- ^ Error
+data GetTaggedObjectsResponse =
+   GetTaggedObjectsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetTaggedObjectsResponse200 GetTaggedObjectsResponseBody200 -- ^ A paginated list of objects, organized by type, that have been tagged with the requested Tag. 
+  | GetTaggedObjectsResponseDefault GetTaggedObjectsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetTaggedObjectsResponseBody200
+-- | Defines the object schema located at @paths.\/tags\/{label}.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetTaggedObjectsResponseBody200 = GetTaggedObjectsResponseBody200 {
   -- | data
-  getTaggedObjectsResponseBody200Data :: (GHC.Base.Maybe ([] GetTaggedObjectsResponseBody200Data))
-  -- | page
-  , getTaggedObjectsResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getTaggedObjectsResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getTaggedObjectsResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getTaggedObjectsResponseBody200Data :: (GHC.Maybe.Maybe ([GetTaggedObjectsResponseBody200Data']))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getTaggedObjectsResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getTaggedObjectsResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getTaggedObjectsResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetTaggedObjectsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getTaggedObjectsResponseBody200Data obj) : (Data.Aeson..=) "page" (getTaggedObjectsResponseBody200Page obj) : (Data.Aeson..=) "pages" (getTaggedObjectsResponseBody200Pages obj) : (Data.Aeson..=) "results" (getTaggedObjectsResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getTaggedObjectsResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getTaggedObjectsResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getTaggedObjectsResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getTaggedObjectsResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetTaggedObjectsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetTaggedObjectsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetTaggedObjectsResponseBody200" (\obj -> (((GHC.Base.pure GetTaggedObjectsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetTaggedObjectsResponseBody200Data
+-- | Create a new 'GetTaggedObjectsResponseBody200' with all required fields.
+mkGetTaggedObjectsResponseBody200 :: GetTaggedObjectsResponseBody200
+mkGetTaggedObjectsResponseBody200 = GetTaggedObjectsResponseBody200{getTaggedObjectsResponseBody200Data = GHC.Maybe.Nothing,
+                                                                    getTaggedObjectsResponseBody200Page = GHC.Maybe.Nothing,
+                                                                    getTaggedObjectsResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                    getTaggedObjectsResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/tags\/{label}.GET.responses.200.content.application\/json.schema.properties.data.items@ in the specification.
 -- 
 -- 
-data GetTaggedObjectsResponseBody200Data = GetTaggedObjectsResponseBody200Data {
+data GetTaggedObjectsResponseBody200Data' = GetTaggedObjectsResponseBody200Data' {
   -- | data
-  getTaggedObjectsResponseBody200DataData :: (GHC.Base.Maybe GetTaggedObjectsResponseBody200DataDataVariants)
+  getTaggedObjectsResponseBody200Data'Data :: (GHC.Maybe.Maybe GetTaggedObjectsResponseBody200Data'Data'Variants)
   -- | type
-  , getTaggedObjectsResponseBody200DataType :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , getTaggedObjectsResponseBody200Data'Type :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetTaggedObjectsResponseBody200Data
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getTaggedObjectsResponseBody200DataData obj) : (Data.Aeson..=) "type" (getTaggedObjectsResponseBody200DataType obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getTaggedObjectsResponseBody200DataData obj) GHC.Base.<> (Data.Aeson..=) "type" (getTaggedObjectsResponseBody200DataType obj))
-instance Data.Aeson.Types.FromJSON.FromJSON GetTaggedObjectsResponseBody200Data
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetTaggedObjectsResponseBody200Data" (\obj -> (GHC.Base.pure GetTaggedObjectsResponseBody200Data GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "type"))
--- | Define the one-of schema GetTaggedObjectsResponseBody200DataData
+instance Data.Aeson.Types.ToJSON.ToJSON GetTaggedObjectsResponseBody200Data'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Data'Data obj : "type" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Data'Type obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Data'Data obj) GHC.Base.<> ("type" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBody200Data'Type obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetTaggedObjectsResponseBody200Data'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetTaggedObjectsResponseBody200Data'" (\obj -> (GHC.Base.pure GetTaggedObjectsResponseBody200Data' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "type"))
+-- | Create a new 'GetTaggedObjectsResponseBody200Data'' with all required fields.
+mkGetTaggedObjectsResponseBody200Data' :: GetTaggedObjectsResponseBody200Data'
+mkGetTaggedObjectsResponseBody200Data' = GetTaggedObjectsResponseBody200Data'{getTaggedObjectsResponseBody200Data'Data = GHC.Maybe.Nothing,
+                                                                              getTaggedObjectsResponseBody200Data'Type = GHC.Maybe.Nothing}
+-- | Defines the oneOf schema located at @paths.\/tags\/{label}.GET.responses.200.content.application\/json.schema.properties.data.items.properties.data.oneOf@ in the specification.
 -- 
 -- 
-data GetTaggedObjectsResponseBody200DataDataVariants
-    = GetTaggedObjectsResponseBody200DataDataDomain Domain
-    | GetTaggedObjectsResponseBody200DataDataLinode Linode
-    | GetTaggedObjectsResponseBody200DataDataNodeBalancer NodeBalancer
-    | GetTaggedObjectsResponseBody200DataDataVolume Volume
-    deriving (GHC.Show.Show, GHC.Classes.Eq, GHC.Generics.Generic)
-instance Data.Aeson.ToJSON GetTaggedObjectsResponseBody200DataDataVariants
-    where toJSON = Data.Aeson.Types.ToJSON.genericToJSON Data.Aeson.Types.Internal.defaultOptions{Data.Aeson.Types.Internal.sumEncoding = Data.Aeson.Types.Internal.UntaggedValue}
-instance Data.Aeson.FromJSON GetTaggedObjectsResponseBody200DataDataVariants
-    where parseJSON = Data.Aeson.Types.FromJSON.genericParseJSON Data.Aeson.Types.Internal.defaultOptions{Data.Aeson.Types.Internal.sumEncoding = Data.Aeson.Types.Internal.UntaggedValue}
--- | Defines the data type for the schema GetTaggedObjectsResponseBodyDefault
+data GetTaggedObjectsResponseBody200Data'Data'Variants =
+   GetTaggedObjectsResponseBody200Data'Data'Linode Linode
+  | GetTaggedObjectsResponseBody200Data'Data'Domain Domain
+  | GetTaggedObjectsResponseBody200Data'Data'Volume Volume
+  | GetTaggedObjectsResponseBody200Data'Data'NodeBalancer NodeBalancer
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetTaggedObjectsResponseBody200Data'Data'Variants
+    where toJSON (GetTaggedObjectsResponseBody200Data'Data'Linode a) = Data.Aeson.Types.ToJSON.toJSON a
+          toJSON (GetTaggedObjectsResponseBody200Data'Data'Domain a) = Data.Aeson.Types.ToJSON.toJSON a
+          toJSON (GetTaggedObjectsResponseBody200Data'Data'Volume a) = Data.Aeson.Types.ToJSON.toJSON a
+          toJSON (GetTaggedObjectsResponseBody200Data'Data'NodeBalancer a) = Data.Aeson.Types.ToJSON.toJSON a
+instance Data.Aeson.Types.FromJSON.FromJSON GetTaggedObjectsResponseBody200Data'Data'Variants
+    where parseJSON val = case (GetTaggedObjectsResponseBody200Data'Data'Linode Data.Functor.<$> Data.Aeson.Types.FromJSON.fromJSON val) GHC.Base.<|> ((GetTaggedObjectsResponseBody200Data'Data'Domain Data.Functor.<$> Data.Aeson.Types.FromJSON.fromJSON val) GHC.Base.<|> ((GetTaggedObjectsResponseBody200Data'Data'Volume Data.Functor.<$> Data.Aeson.Types.FromJSON.fromJSON val) GHC.Base.<|> ((GetTaggedObjectsResponseBody200Data'Data'NodeBalancer Data.Functor.<$> Data.Aeson.Types.FromJSON.fromJSON val) GHC.Base.<|> Data.Aeson.Types.Internal.Error "No variant matched"))) of
+                              Data.Aeson.Types.Internal.Success a -> GHC.Base.pure a
+                              Data.Aeson.Types.Internal.Error a -> Control.Monad.Fail.fail a
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetTaggedObjectsResponseBodyDefault = GetTaggedObjectsResponseBodyDefault {
   -- | errors
-  getTaggedObjectsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getTaggedObjectsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetTaggedObjectsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getTaggedObjectsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getTaggedObjectsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetTaggedObjectsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getTaggedObjectsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetTaggedObjectsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetTaggedObjectsResponseBodyDefault" (\obj -> GHC.Base.pure GetTaggedObjectsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetTaggedObjectsResponseBodyDefault' with all required fields.
+mkGetTaggedObjectsResponseBodyDefault :: GetTaggedObjectsResponseBodyDefault
+mkGetTaggedObjectsResponseBodyDefault = GetTaggedObjectsResponseBodyDefault{getTaggedObjectsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

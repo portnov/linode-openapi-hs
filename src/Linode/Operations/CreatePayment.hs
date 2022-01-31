@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createPayment
 module Linode.Operations.CreatePayment where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -49,88 +49,53 @@ import Linode.Types
 -- * The requested amount is charged to the default Payment Method if no \`payment_method_id\` is specified.
 -- 
 -- * A \`payment_submitted\` event is generated when a payment is successfully submitted.
-createPayment :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> PaymentRequest                                                                                                            -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreatePaymentResponse)) -- ^ Monad containing the result of the operation
-createPayment config
-              body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePaymentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                         Payment)
-                                                                                                                                                                            | (\status_2 -> Network.HTTP.Types.Status.statusCode status_2 GHC.Classes.== 202) (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentResponse202 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                         CreatePaymentResponseBody202)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                           CreatePaymentResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/payments
--- 
--- The same as 'createPayment' but returns the raw 'Data.ByteString.Char8.ByteString'
-createPaymentRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Linode.Common.Configuration s ->
-                    PaymentRequest ->
-                    m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPaymentRaw config
-                 body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/payments
--- 
--- Monadic version of 'createPayment' (use with 'Linode.Common.runWithConfiguration')
-createPaymentM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  PaymentRequest ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response CreatePaymentResponse))
-createPaymentM body = GHC.Base.fmap (GHC.Base.fmap (\response_3 -> GHC.Base.fmap (Data.Either.either CreatePaymentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_4 -> Network.HTTP.Types.Status.statusCode status_4 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                          Payment)
-                                                                                                                                                                             | (\status_5 -> Network.HTTP.Types.Status.statusCode status_5 GHC.Classes.== 202) (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentResponse202 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                          CreatePaymentResponseBody202)
-                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                            CreatePaymentResponseBodyDefault)
-                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_3) response_3)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/payments
--- 
--- Monadic version of 'createPaymentRaw' (use with 'Linode.Common.runWithConfiguration')
-createPaymentRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     PaymentRequest ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPaymentRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
+createPayment :: forall m . Linode.Common.MonadHTTP m => PaymentRequest -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreatePaymentResponse) -- ^ Monadic computation which returns the result of the operation
+createPayment body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePaymentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                          Payment)
+                                                                                                                                                             | (\status_2 -> Network.HTTP.Types.Status.statusCode status_2 GHC.Classes.== 202) (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentResponse202 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                          CreatePaymentResponseBody202)
+                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                            CreatePaymentResponseBodyDefault)
+                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
 -- | Represents a response of the operation 'createPayment'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreatePaymentResponseError' is used.
-data CreatePaymentResponse =                                       
-   CreatePaymentResponseError GHC.Base.String                      -- ^ Means either no matching case available or a parse error
-  | CreatePaymentResponse200 Payment                               -- ^ Payment submitted successfully.
-  | CreatePaymentResponse202 CreatePaymentResponseBody202          -- ^ Accepted with warning.  A warnings array is included with the standard 200 response body. 
-  | CreatePaymentResponseDefault CreatePaymentResponseBodyDefault  -- ^ Error
+data CreatePaymentResponse =
+   CreatePaymentResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreatePaymentResponse200 Payment -- ^ Payment submitted successfully.
+  | CreatePaymentResponse202 CreatePaymentResponseBody202 -- ^ Accepted with warning.  A warnings array is included with the standard 200 response body. 
+  | CreatePaymentResponseDefault CreatePaymentResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreatePaymentResponseBody202
+-- | Defines the object schema located at @components.responses.AcceptedResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePaymentResponseBody202 = CreatePaymentResponseBody202 {
   -- | warnings
-  createPaymentResponseBody202Warnings :: (GHC.Base.Maybe ([] WarningObject))
+  createPaymentResponseBody202Warnings :: (GHC.Maybe.Maybe ([WarningObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePaymentResponseBody202
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "warnings" (createPaymentResponseBody202Warnings obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "warnings" (createPaymentResponseBody202Warnings obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePaymentResponseBody202
+    where toJSON obj = Data.Aeson.Types.Internal.object ("warnings" Data.Aeson.Types.ToJSON..= createPaymentResponseBody202Warnings obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("warnings" Data.Aeson.Types.ToJSON..= createPaymentResponseBody202Warnings obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePaymentResponseBody202
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePaymentResponseBody202" (\obj -> GHC.Base.pure CreatePaymentResponseBody202 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "warnings"))
--- | Defines the data type for the schema CreatePaymentResponseBodyDefault
+-- | Create a new 'CreatePaymentResponseBody202' with all required fields.
+mkCreatePaymentResponseBody202 :: CreatePaymentResponseBody202
+mkCreatePaymentResponseBody202 = CreatePaymentResponseBody202{createPaymentResponseBody202Warnings = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePaymentResponseBodyDefault = CreatePaymentResponseBodyDefault {
   -- | errors
-  createPaymentResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createPaymentResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePaymentResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createPaymentResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createPaymentResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePaymentResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createPaymentResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createPaymentResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePaymentResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePaymentResponseBodyDefault" (\obj -> GHC.Base.pure CreatePaymentResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreatePaymentResponseBodyDefault' with all required fields.
+mkCreatePaymentResponseBodyDefault :: CreatePaymentResponseBodyDefault
+mkCreatePaymentResponseBodyDefault = CreatePaymentResponseBodyDefault{createPaymentResponseBodyDefaultErrors = GHC.Maybe.Nothing}

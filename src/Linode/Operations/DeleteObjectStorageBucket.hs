@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation deleteObjectStorageBucket
 module Linode.Operations.DeleteObjectStorageBucket where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -54,76 +54,59 @@ import Linode.Types
 -- 
 -- This endpoint is available for convenience. It is recommended that instead you
 -- use the more [fully-featured S3 API](https:\/\/docs.ceph.com\/en\/latest\/radosgw\/s3\/bucketops\/\#delete-bucket) directly.
-deleteObjectStorageBucket :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response DeleteObjectStorageBucketResponse)) -- ^ Monad containing the result of the operation
-deleteObjectStorageBucket config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteObjectStorageBucketResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteObjectStorageBucketResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                               DeleteObjectStorageBucketResponseBody200)
-                                                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteObjectStorageBucketResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                 DeleteObjectStorageBucketResponseBodyDefault)
-                                                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}") [])
--- | > DELETE /object-storage/buckets/{clusterId}/{bucket}
+deleteObjectStorageBucket :: forall m . Linode.Common.MonadHTTP m => DeleteObjectStorageBucketParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response DeleteObjectStorageBucketResponse) -- ^ Monadic computation which returns the result of the operation
+deleteObjectStorageBucket parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteObjectStorageBucketResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteObjectStorageBucketResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteObjectStorageBucketResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                      DeleteObjectStorageBucketResponseBodyDefault)
+                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack (("/object-storage/buckets/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (deleteObjectStorageBucketParametersPathClusterId parameters))) GHC.Base.++ "/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (deleteObjectStorageBucketParametersPathBucket parameters))) GHC.Base.++ ""))) GHC.Base.mempty)
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}.DELETE.parameters@ in the specification.
 -- 
--- The same as 'deleteObjectStorageBucket' but returns the raw 'Data.ByteString.Char8.ByteString'
-deleteObjectStorageBucketRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                              Linode.Common.SecurityScheme s) =>
-                                Linode.Common.Configuration s ->
-                                m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteObjectStorageBucketRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}") [])
--- | > DELETE /object-storage/buckets/{clusterId}/{bucket}
 -- 
--- Monadic version of 'deleteObjectStorageBucket' (use with 'Linode.Common.runWithConfiguration')
-deleteObjectStorageBucketM :: forall m s . (Linode.Common.MonadHTTP m,
-                                            Linode.Common.SecurityScheme s) =>
-                              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                 m
-                                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                     (Network.HTTP.Client.Types.Response DeleteObjectStorageBucketResponse))
-deleteObjectStorageBucketM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either DeleteObjectStorageBucketResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteObjectStorageBucketResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                         DeleteObjectStorageBucketResponseBody200)
-                                                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteObjectStorageBucketResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                           DeleteObjectStorageBucketResponseBodyDefault)
-                                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}") [])
--- | > DELETE /object-storage/buckets/{clusterId}/{bucket}
--- 
--- Monadic version of 'deleteObjectStorageBucketRaw' (use with 'Linode.Common.runWithConfiguration')
-deleteObjectStorageBucketRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                               Linode.Common.SecurityScheme s) =>
-                                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                    m
-                                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteObjectStorageBucketRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}") [])
+data DeleteObjectStorageBucketParameters = DeleteObjectStorageBucketParameters {
+  -- | pathBucket: Represents the parameter named \'bucket\'
+  -- 
+  -- The bucket name.
+  deleteObjectStorageBucketParametersPathBucket :: Data.Text.Internal.Text
+  -- | pathClusterId: Represents the parameter named \'clusterId\'
+  -- 
+  -- The ID of the cluster this bucket exists in.
+  , deleteObjectStorageBucketParametersPathClusterId :: Data.Text.Internal.Text
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON DeleteObjectStorageBucketParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathBucket" Data.Aeson.Types.ToJSON..= deleteObjectStorageBucketParametersPathBucket obj : "pathClusterId" Data.Aeson.Types.ToJSON..= deleteObjectStorageBucketParametersPathClusterId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathBucket" Data.Aeson.Types.ToJSON..= deleteObjectStorageBucketParametersPathBucket obj) GHC.Base.<> ("pathClusterId" Data.Aeson.Types.ToJSON..= deleteObjectStorageBucketParametersPathClusterId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON DeleteObjectStorageBucketParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteObjectStorageBucketParameters" (\obj -> (GHC.Base.pure DeleteObjectStorageBucketParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathBucket")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathClusterId"))
+-- | Create a new 'DeleteObjectStorageBucketParameters' with all required fields.
+mkDeleteObjectStorageBucketParameters :: Data.Text.Internal.Text -- ^ 'deleteObjectStorageBucketParametersPathBucket'
+  -> Data.Text.Internal.Text -- ^ 'deleteObjectStorageBucketParametersPathClusterId'
+  -> DeleteObjectStorageBucketParameters
+mkDeleteObjectStorageBucketParameters deleteObjectStorageBucketParametersPathBucket deleteObjectStorageBucketParametersPathClusterId = DeleteObjectStorageBucketParameters{deleteObjectStorageBucketParametersPathBucket = deleteObjectStorageBucketParametersPathBucket,
+                                                                                                                                                                           deleteObjectStorageBucketParametersPathClusterId = deleteObjectStorageBucketParametersPathClusterId}
 -- | Represents a response of the operation 'deleteObjectStorageBucket'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'DeleteObjectStorageBucketResponseError' is used.
-data DeleteObjectStorageBucketResponse =                                                   
-   DeleteObjectStorageBucketResponseError GHC.Base.String                                  -- ^ Means either no matching case available or a parse error
-  | DeleteObjectStorageBucketResponse200 DeleteObjectStorageBucketResponseBody200          -- ^ Bucket deleted successfully.
-  | DeleteObjectStorageBucketResponseDefault DeleteObjectStorageBucketResponseBodyDefault  -- ^ Error
+data DeleteObjectStorageBucketResponse =
+   DeleteObjectStorageBucketResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | DeleteObjectStorageBucketResponse200 Data.Aeson.Types.Internal.Object -- ^ Bucket deleted successfully.
+  | DeleteObjectStorageBucketResponseDefault DeleteObjectStorageBucketResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema DeleteObjectStorageBucketResponseBody200
--- 
--- 
-data DeleteObjectStorageBucketResponseBody200 = DeleteObjectStorageBucketResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteObjectStorageBucketResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON DeleteObjectStorageBucketResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteObjectStorageBucketResponseBody200" (\obj -> GHC.Base.pure DeleteObjectStorageBucketResponseBody200)
--- | Defines the data type for the schema DeleteObjectStorageBucketResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data DeleteObjectStorageBucketResponseBodyDefault = DeleteObjectStorageBucketResponseBodyDefault {
   -- | errors
-  deleteObjectStorageBucketResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  deleteObjectStorageBucketResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteObjectStorageBucketResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (deleteObjectStorageBucketResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (deleteObjectStorageBucketResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON DeleteObjectStorageBucketResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= deleteObjectStorageBucketResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= deleteObjectStorageBucketResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON DeleteObjectStorageBucketResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteObjectStorageBucketResponseBodyDefault" (\obj -> GHC.Base.pure DeleteObjectStorageBucketResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'DeleteObjectStorageBucketResponseBodyDefault' with all required fields.
+mkDeleteObjectStorageBucketResponseBodyDefault :: DeleteObjectStorageBucketResponseBodyDefault
+mkDeleteObjectStorageBucketResponseBodyDefault = DeleteObjectStorageBucketResponseBodyDefault{deleteObjectStorageBucketResponseBodyDefaultErrors = GHC.Maybe.Nothing}

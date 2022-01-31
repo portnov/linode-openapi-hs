@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation cloneVolume
 module Linode.Operations.CloneVolume where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,89 +41,65 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > POST /volumes/{volumeId}/clone
 -- 
 -- Creates a Volume on your Account. In order for this request to complete successfully, your User must have the \`add_volumes\` grant. The new Volume will have the same size and data as the source Volume. Creating a new Volume will incur a charge on your Account.
 -- * Only Volumes with a \`status\` of \"active\" can be cloned.
-cloneVolume :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CloneVolumeRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CloneVolumeResponse)) -- ^ Monad containing the result of the operation
-cloneVolume config
-            body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CloneVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CloneVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                   Volume)
-                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CloneVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                     CloneVolumeResponseBodyDefault)
-                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/clone") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /volumes/{volumeId}/clone
--- 
--- The same as 'cloneVolume' but returns the raw 'Data.ByteString.Char8.ByteString'
-cloneVolumeRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  Linode.Common.Configuration s ->
-                  CloneVolumeRequestBody ->
-                  m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-cloneVolumeRaw config
-               body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/clone") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /volumes/{volumeId}/clone
--- 
--- Monadic version of 'cloneVolume' (use with 'Linode.Common.runWithConfiguration')
-cloneVolumeM :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                CloneVolumeRequestBody ->
-                Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                   m
-                                                   (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                       (Network.HTTP.Client.Types.Response CloneVolumeResponse))
-cloneVolumeM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CloneVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CloneVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                    Volume)
-                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CloneVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                      CloneVolumeResponseBodyDefault)
-                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/clone") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /volumes/{volumeId}/clone
--- 
--- Monadic version of 'cloneVolumeRaw' (use with 'Linode.Common.runWithConfiguration')
-cloneVolumeRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   CloneVolumeRequestBody ->
-                   Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                      m
-                                                      (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-cloneVolumeRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/volumes/{volumeId}/clone") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema cloneVolumeRequestBody
+cloneVolume :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ volumeId: ID of the Volume to clone.
+  -> CloneVolumeRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CloneVolumeResponse) -- ^ Monadic computation which returns the result of the operation
+cloneVolume volumeId
+            body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CloneVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CloneVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                    Volume)
+                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CloneVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                      CloneVolumeResponseBodyDefault)
+                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/volumes/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel volumeId)) GHC.Base.++ "/clone"))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/volumes\/{volumeId}\/clone.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CloneVolumeRequestBody = CloneVolumeRequestBody {
-  -- | label
-  cloneVolumeRequestBodyLabel :: Volume_properties_label
+  -- | label: The Volume\'s label is for display purposes only.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maximum length of 32
+  -- * Minimum length of 1
+  -- * Must match pattern \'^[a-zA-Z]((?!--|__)[a-zA-Z0-9-_])+\$\'
+  cloneVolumeRequestBodyLabel :: VolumePropertiesLabel
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CloneVolumeRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "label" (cloneVolumeRequestBodyLabel obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "label" (cloneVolumeRequestBodyLabel obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CloneVolumeRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("label" Data.Aeson.Types.ToJSON..= cloneVolumeRequestBodyLabel obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("label" Data.Aeson.Types.ToJSON..= cloneVolumeRequestBodyLabel obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CloneVolumeRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CloneVolumeRequestBody" (\obj -> GHC.Base.pure CloneVolumeRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "label"))
+-- | Create a new 'CloneVolumeRequestBody' with all required fields.
+mkCloneVolumeRequestBody :: VolumePropertiesLabel -- ^ 'cloneVolumeRequestBodyLabel'
+  -> CloneVolumeRequestBody
+mkCloneVolumeRequestBody cloneVolumeRequestBodyLabel = CloneVolumeRequestBody{cloneVolumeRequestBodyLabel = cloneVolumeRequestBodyLabel}
 -- | Represents a response of the operation 'cloneVolume'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CloneVolumeResponseError' is used.
-data CloneVolumeResponse =                                     
-   CloneVolumeResponseError GHC.Base.String                    -- ^ Means either no matching case available or a parse error
-  | CloneVolumeResponse200 Volume                              -- ^ Clone started.
-  | CloneVolumeResponseDefault CloneVolumeResponseBodyDefault  -- ^ Error
+data CloneVolumeResponse =
+   CloneVolumeResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CloneVolumeResponse200 Volume -- ^ Clone started.
+  | CloneVolumeResponseDefault CloneVolumeResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CloneVolumeResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CloneVolumeResponseBodyDefault = CloneVolumeResponseBodyDefault {
   -- | errors
-  cloneVolumeResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  cloneVolumeResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CloneVolumeResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (cloneVolumeResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (cloneVolumeResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CloneVolumeResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= cloneVolumeResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= cloneVolumeResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CloneVolumeResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CloneVolumeResponseBodyDefault" (\obj -> GHC.Base.pure CloneVolumeResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CloneVolumeResponseBodyDefault' with all required fields.
+mkCloneVolumeResponseBodyDefault :: CloneVolumeResponseBodyDefault
+mkCloneVolumeResponseBodyDefault = CloneVolumeResponseBodyDefault{cloneVolumeResponseBodyDefaultErrors = GHC.Maybe.Nothing}

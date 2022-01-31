@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation deleteClient
 module Linode.Operations.DeleteClient where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,76 +45,34 @@ import Linode.Types
 -- | > DELETE /account/oauth-clients/{clientId}
 -- 
 -- Deletes an OAuth Client registered with Linode. The Client ID and Client secret will no longer be accepted by \<a target=\"_top\" href=\"https:\/\/login.linode.com\">https:\/\/login.linode.com\<\/a>, and all tokens issued to this client will be invalidated (meaning that if your application was using a token, it will no longer work).
-deleteClient :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response DeleteClientResponse)) -- ^ Monad containing the result of the operation
-deleteClient config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteClientResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteClientResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                        DeleteClientResponseBody200)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteClientResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                          DeleteClientResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/account/oauth-clients/{clientId}") [])
--- | > DELETE /account/oauth-clients/{clientId}
--- 
--- The same as 'deleteClient' but returns the raw 'Data.ByteString.Char8.ByteString'
-deleteClientRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Linode.Common.Configuration s ->
-                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteClientRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/account/oauth-clients/{clientId}") [])
--- | > DELETE /account/oauth-clients/{clientId}
--- 
--- Monadic version of 'deleteClient' (use with 'Linode.Common.runWithConfiguration')
-deleteClientM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response DeleteClientResponse))
-deleteClientM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either DeleteClientResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteClientResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                  DeleteClientResponseBody200)
-                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteClientResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                    DeleteClientResponseBodyDefault)
-                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/account/oauth-clients/{clientId}") [])
--- | > DELETE /account/oauth-clients/{clientId}
--- 
--- Monadic version of 'deleteClientRaw' (use with 'Linode.Common.runWithConfiguration')
-deleteClientRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteClientRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack "/account/oauth-clients/{clientId}") [])
+deleteClient :: forall m . Linode.Common.MonadHTTP m => Data.Text.Internal.Text -- ^ clientId: The OAuth Client ID to look up.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response DeleteClientResponse) -- ^ Monadic computation which returns the result of the operation
+deleteClient clientId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteClientResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteClientResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                           Data.Aeson.Types.Internal.Object)
+                                                                                                                                                               | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteClientResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                             DeleteClientResponseBodyDefault)
+                                                                                                                                                               | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "DELETE") (Data.Text.pack ("/account/oauth-clients/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel clientId)) GHC.Base.++ ""))) GHC.Base.mempty)
 -- | Represents a response of the operation 'deleteClient'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'DeleteClientResponseError' is used.
-data DeleteClientResponse =                                      
-   DeleteClientResponseError GHC.Base.String                     -- ^ Means either no matching case available or a parse error
-  | DeleteClientResponse200 DeleteClientResponseBody200          -- ^ Client deleted successfully.
-  | DeleteClientResponseDefault DeleteClientResponseBodyDefault  -- ^ Error
+data DeleteClientResponse =
+   DeleteClientResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | DeleteClientResponse200 Data.Aeson.Types.Internal.Object -- ^ Client deleted successfully.
+  | DeleteClientResponseDefault DeleteClientResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema DeleteClientResponseBody200
--- 
--- 
-data DeleteClientResponseBody200 = DeleteClientResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteClientResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON DeleteClientResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteClientResponseBody200" (\obj -> GHC.Base.pure DeleteClientResponseBody200)
--- | Defines the data type for the schema DeleteClientResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data DeleteClientResponseBodyDefault = DeleteClientResponseBodyDefault {
   -- | errors
-  deleteClientResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  deleteClientResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteClientResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (deleteClientResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (deleteClientResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON DeleteClientResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= deleteClientResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= deleteClientResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON DeleteClientResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteClientResponseBodyDefault" (\obj -> GHC.Base.pure DeleteClientResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'DeleteClientResponseBodyDefault' with all required fields.
+mkDeleteClientResponseBodyDefault :: DeleteClientResponseBodyDefault
+mkDeleteClientResponseBodyDefault = DeleteClientResponseBodyDefault{deleteClientResponseBodyDefaultErrors = GHC.Maybe.Nothing}

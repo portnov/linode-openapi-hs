@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getProfileLogins
 module Linode.Operations.GetProfileLogins where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,88 +41,62 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /profile/logins
 -- 
 -- Returns a collection of successful account logins from this user during the last 90 days.
-getProfileLogins :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetProfileLoginsResponse)) -- ^ Monad containing the result of the operation
-getProfileLogins config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetProfileLoginsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetProfileLoginsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                    GetProfileLoginsResponseBody200)
-                                                                                                                                                                                    | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetProfileLoginsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                      GetProfileLoginsResponseBodyDefault)
-                                                                                                                                                                                    | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/logins") [])
--- | > GET /profile/logins
--- 
--- The same as 'getProfileLogins' but returns the raw 'Data.ByteString.Char8.ByteString'
-getProfileLoginsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Linode.Common.Configuration s ->
-                       m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getProfileLoginsRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/logins") [])
--- | > GET /profile/logins
--- 
--- Monadic version of 'getProfileLogins' (use with 'Linode.Common.runWithConfiguration')
-getProfileLoginsM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response GetProfileLoginsResponse))
-getProfileLoginsM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetProfileLoginsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetProfileLoginsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                              GetProfileLoginsResponseBody200)
-                                                                                                                                                                              | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetProfileLoginsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                GetProfileLoginsResponseBodyDefault)
-                                                                                                                                                                              | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/logins") [])
--- | > GET /profile/logins
--- 
--- Monadic version of 'getProfileLoginsRaw' (use with 'Linode.Common.runWithConfiguration')
-getProfileLoginsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                           m
-                                                           (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getProfileLoginsRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/logins") [])
+getProfileLogins :: forall m . Linode.Common.MonadHTTP m => Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetProfileLoginsResponse) -- ^ Monadic computation which returns the result of the operation
+getProfileLogins = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetProfileLoginsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetProfileLoginsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                              GetProfileLoginsResponseBody200)
+                                                                                                                                                              | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetProfileLoginsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                GetProfileLoginsResponseBodyDefault)
+                                                                                                                                                              | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/logins") GHC.Base.mempty)
 -- | Represents a response of the operation 'getProfileLogins'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetProfileLoginsResponseError' is used.
-data GetProfileLoginsResponse =                                          
-   GetProfileLoginsResponseError GHC.Base.String                         -- ^ Means either no matching case available or a parse error
-  | GetProfileLoginsResponse200 GetProfileLoginsResponseBody200          -- ^ An array of successful account logins from this user during the last 90 days. 
-  | GetProfileLoginsResponseDefault GetProfileLoginsResponseBodyDefault  -- ^ Error
+data GetProfileLoginsResponse =
+   GetProfileLoginsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetProfileLoginsResponse200 GetProfileLoginsResponseBody200 -- ^ An array of successful account logins from this user during the last 90 days. 
+  | GetProfileLoginsResponseDefault GetProfileLoginsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetProfileLoginsResponseBody200
+-- | Defines the object schema located at @paths.\/profile\/logins.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetProfileLoginsResponseBody200 = GetProfileLoginsResponseBody200 {
   -- | data
-  getProfileLoginsResponseBody200Data :: (GHC.Base.Maybe ([] Login))
-  -- | page
-  , getProfileLoginsResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getProfileLoginsResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getProfileLoginsResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getProfileLoginsResponseBody200Data :: (GHC.Maybe.Maybe ([Login]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getProfileLoginsResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getProfileLoginsResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getProfileLoginsResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetProfileLoginsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getProfileLoginsResponseBody200Data obj) : (Data.Aeson..=) "page" (getProfileLoginsResponseBody200Page obj) : (Data.Aeson..=) "pages" (getProfileLoginsResponseBody200Pages obj) : (Data.Aeson..=) "results" (getProfileLoginsResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getProfileLoginsResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getProfileLoginsResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getProfileLoginsResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getProfileLoginsResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetProfileLoginsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetProfileLoginsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetProfileLoginsResponseBody200" (\obj -> (((GHC.Base.pure GetProfileLoginsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetProfileLoginsResponseBodyDefault
+-- | Create a new 'GetProfileLoginsResponseBody200' with all required fields.
+mkGetProfileLoginsResponseBody200 :: GetProfileLoginsResponseBody200
+mkGetProfileLoginsResponseBody200 = GetProfileLoginsResponseBody200{getProfileLoginsResponseBody200Data = GHC.Maybe.Nothing,
+                                                                    getProfileLoginsResponseBody200Page = GHC.Maybe.Nothing,
+                                                                    getProfileLoginsResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                    getProfileLoginsResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetProfileLoginsResponseBodyDefault = GetProfileLoginsResponseBodyDefault {
   -- | errors
-  getProfileLoginsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getProfileLoginsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetProfileLoginsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getProfileLoginsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getProfileLoginsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetProfileLoginsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getProfileLoginsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetProfileLoginsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetProfileLoginsResponseBodyDefault" (\obj -> GHC.Base.pure GetProfileLoginsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetProfileLoginsResponseBodyDefault' with all required fields.
+mkGetProfileLoginsResponseBodyDefault :: GetProfileLoginsResponseBodyDefault
+mkGetProfileLoginsResponseBodyDefault = GetProfileLoginsResponseBodyDefault{getProfileLoginsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

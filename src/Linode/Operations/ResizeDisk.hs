@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation resizeDisk
 module Linode.Operations.ResizeDisk where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -53,53 +53,41 @@ import Linode.Types
 -- 
 -- If you are resizing the Disk to a smaller size, it cannot be made smaller
 -- than what is required by the total size of the files current on the Disk.
-resizeDisk :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> ResizeDiskRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response ResizeDiskResponse)) -- ^ Monad containing the result of the operation
-resizeDisk config
-           body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ResizeDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ResizeDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                ResizeDiskResponseBody200)
-                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ResizeDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                  ResizeDiskResponseBodyDefault)
-                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/resize") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/disks/{diskId}/resize
+resizeDisk :: forall m . Linode.Common.MonadHTTP m => ResizeDiskParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> ResizeDiskRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response ResizeDiskResponse) -- ^ Monadic computation which returns the result of the operation
+resizeDisk parameters
+           body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ResizeDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ResizeDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                 Data.Aeson.Types.Internal.Object)
+                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ResizeDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                   ResizeDiskResponseBodyDefault)
+                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack (("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (resizeDiskParametersPathLinodeId parameters))) GHC.Base.++ "/disks/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (resizeDiskParametersPathDiskId parameters))) GHC.Base.++ "/resize"))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/disks\/{diskId}\/resize.POST.parameters@ in the specification.
 -- 
--- The same as 'resizeDisk' but returns the raw 'Data.ByteString.Char8.ByteString'
-resizeDiskRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Linode.Common.Configuration s ->
-                 ResizeDiskRequestBody ->
-                 m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-resizeDiskRaw config
-              body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/resize") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/disks/{diskId}/resize
 -- 
--- Monadic version of 'resizeDisk' (use with 'Linode.Common.runWithConfiguration')
-resizeDiskM :: forall m s . (Linode.Common.MonadHTTP m,
-                             Linode.Common.SecurityScheme s) =>
-               ResizeDiskRequestBody ->
-               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                  m
-                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                      (Network.HTTP.Client.Types.Response ResizeDiskResponse))
-resizeDiskM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either ResizeDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ResizeDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                 ResizeDiskResponseBody200)
-                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ResizeDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                   ResizeDiskResponseBodyDefault)
-                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/resize") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/disks/{diskId}/resize
--- 
--- Monadic version of 'resizeDiskRaw' (use with 'Linode.Common.runWithConfiguration')
-resizeDiskRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  ResizeDiskRequestBody ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-resizeDiskRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/resize") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema resizeDiskRequestBody
+data ResizeDiskParameters = ResizeDiskParameters {
+  -- | pathDiskId: Represents the parameter named \'diskId\'
+  -- 
+  -- ID of the Disk to look up.
+  resizeDiskParametersPathDiskId :: GHC.Types.Int
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- ID of the Linode to look up.
+  , resizeDiskParametersPathLinodeId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON ResizeDiskParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathDiskId" Data.Aeson.Types.ToJSON..= resizeDiskParametersPathDiskId obj : "pathLinodeId" Data.Aeson.Types.ToJSON..= resizeDiskParametersPathLinodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathDiskId" Data.Aeson.Types.ToJSON..= resizeDiskParametersPathDiskId obj) GHC.Base.<> ("pathLinodeId" Data.Aeson.Types.ToJSON..= resizeDiskParametersPathLinodeId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON ResizeDiskParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "ResizeDiskParameters" (\obj -> (GHC.Base.pure ResizeDiskParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathDiskId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId"))
+-- | Create a new 'ResizeDiskParameters' with all required fields.
+mkResizeDiskParameters :: GHC.Types.Int -- ^ 'resizeDiskParametersPathDiskId'
+  -> GHC.Types.Int -- ^ 'resizeDiskParametersPathLinodeId'
+  -> ResizeDiskParameters
+mkResizeDiskParameters resizeDiskParametersPathDiskId resizeDiskParametersPathLinodeId = ResizeDiskParameters{resizeDiskParametersPathDiskId = resizeDiskParametersPathDiskId,
+                                                                                                              resizeDiskParametersPathLinodeId = resizeDiskParametersPathLinodeId}
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/disks\/{diskId}\/resize.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ResizeDiskRequestBody = ResizeDiskRequestBody {
@@ -109,44 +97,39 @@ data ResizeDiskRequestBody = ResizeDiskRequestBody {
   -- Constraints:
   -- 
   -- * Minimum  of 1.0
-  resizeDiskRequestBodySize :: GHC.Integer.Type.Integer
+  resizeDiskRequestBodySize :: GHC.Types.Int
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ResizeDiskRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "size" (resizeDiskRequestBodySize obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "size" (resizeDiskRequestBodySize obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ResizeDiskRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("size" Data.Aeson.Types.ToJSON..= resizeDiskRequestBodySize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("size" Data.Aeson.Types.ToJSON..= resizeDiskRequestBodySize obj)
 instance Data.Aeson.Types.FromJSON.FromJSON ResizeDiskRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ResizeDiskRequestBody" (\obj -> GHC.Base.pure ResizeDiskRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "size"))
+-- | Create a new 'ResizeDiskRequestBody' with all required fields.
+mkResizeDiskRequestBody :: GHC.Types.Int -- ^ 'resizeDiskRequestBodySize'
+  -> ResizeDiskRequestBody
+mkResizeDiskRequestBody resizeDiskRequestBodySize = ResizeDiskRequestBody{resizeDiskRequestBodySize = resizeDiskRequestBodySize}
 -- | Represents a response of the operation 'resizeDisk'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'ResizeDiskResponseError' is used.
-data ResizeDiskResponse =                                    
-   ResizeDiskResponseError GHC.Base.String                   -- ^ Means either no matching case available or a parse error
-  | ResizeDiskResponse200 ResizeDiskResponseBody200          -- ^ Resize started.
-  | ResizeDiskResponseDefault ResizeDiskResponseBodyDefault  -- ^ Error
+data ResizeDiskResponse =
+   ResizeDiskResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | ResizeDiskResponse200 Data.Aeson.Types.Internal.Object -- ^ Resize started.
+  | ResizeDiskResponseDefault ResizeDiskResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema ResizeDiskResponseBody200
--- 
--- 
-data ResizeDiskResponseBody200 = ResizeDiskResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ResizeDiskResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON ResizeDiskResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "ResizeDiskResponseBody200" (\obj -> GHC.Base.pure ResizeDiskResponseBody200)
--- | Defines the data type for the schema ResizeDiskResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ResizeDiskResponseBodyDefault = ResizeDiskResponseBodyDefault {
   -- | errors
-  resizeDiskResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  resizeDiskResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ResizeDiskResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (resizeDiskResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (resizeDiskResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ResizeDiskResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= resizeDiskResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= resizeDiskResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON ResizeDiskResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ResizeDiskResponseBodyDefault" (\obj -> GHC.Base.pure ResizeDiskResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'ResizeDiskResponseBodyDefault' with all required fields.
+mkResizeDiskResponseBodyDefault :: ResizeDiskResponseBodyDefault
+mkResizeDiskResponseBodyDefault = ResizeDiskResponseBodyDefault{resizeDiskResponseBodyDefaultErrors = GHC.Maybe.Nothing}

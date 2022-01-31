@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation updateVolume
 module Linode.Operations.UpdateVolume where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,69 +41,31 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > PUT /volumes/{volumeId}
 -- 
 -- Updates a Volume that you have permission to \`read_write\`.
-updateVolume :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> UpdateVolumeRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response UpdateVolumeResponse)) -- ^ Monad containing the result of the operation
-updateVolume config
-             body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                      Volume)
-                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                        UpdateVolumeResponseBodyDefault)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/volumes/{volumeId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /volumes/{volumeId}
--- 
--- The same as 'updateVolume' but returns the raw 'Data.ByteString.Char8.ByteString'
-updateVolumeRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Linode.Common.Configuration s ->
-                   UpdateVolumeRequestBody ->
-                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateVolumeRaw config
-                body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/volumes/{volumeId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /volumes/{volumeId}
--- 
--- Monadic version of 'updateVolume' (use with 'Linode.Common.runWithConfiguration')
-updateVolumeM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 UpdateVolumeRequestBody ->
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response UpdateVolumeResponse))
-updateVolumeM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either UpdateVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                       Volume)
-                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                         UpdateVolumeResponseBodyDefault)
-                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/volumes/{volumeId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /volumes/{volumeId}
--- 
--- Monadic version of 'updateVolumeRaw' (use with 'Linode.Common.runWithConfiguration')
-updateVolumeRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    UpdateVolumeRequestBody ->
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateVolumeRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/volumes/{volumeId}") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema updateVolumeRequestBody
+updateVolume :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ volumeId: ID of the Volume to look up.
+  -> UpdateVolumeRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response UpdateVolumeResponse) -- ^ Monadic computation which returns the result of the operation
+updateVolume volumeId
+             body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateVolumeResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateVolumeResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                       Volume)
+                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateVolumeResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                         UpdateVolumeResponseBodyDefault)
+                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack ("/volumes/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel volumeId)) GHC.Base.++ ""))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/volumes\/{volumeId}.PUT.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data UpdateVolumeRequestBody = UpdateVolumeRequestBody {
   -- | created: When this Volume was created.
-  updateVolumeRequestBodyCreated :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  updateVolumeRequestBodyCreated :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | filesystem_path: The full filesystem path for the Volume based on the Volume\'s label. Path is \/dev\/disk\/by-id\/scsi-0Linode_Volume_ + Volume label.
-  , updateVolumeRequestBodyFilesystem_path :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , updateVolumeRequestBodyFilesystemPath :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | hardware_type: The storage type of this Volume.
-  , updateVolumeRequestBodyHardware_type :: (GHC.Base.Maybe UpdateVolumeRequestBodyHardware_type)
+  , updateVolumeRequestBodyHardwareType :: (GHC.Maybe.Maybe UpdateVolumeRequestBodyHardwareType')
   -- | id: The unique ID of this Volume.
-  , updateVolumeRequestBodyId :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , updateVolumeRequestBodyId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | label: The Volume\'s label is for display purposes only.
   -- 
   -- 
@@ -112,20 +74,20 @@ data UpdateVolumeRequestBody = UpdateVolumeRequestBody {
   -- * Maximum length of 32
   -- * Minimum length of 1
   -- * Must match pattern \'^[a-zA-Z]((?!--|__)[a-zA-Z0-9-_])+\$\'
-  , updateVolumeRequestBodyLabel :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , updateVolumeRequestBodyLabel :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | linode_id: If a Volume is attached to a specific Linode, the ID of that Linode will be displayed here.
-  , updateVolumeRequestBodyLinode_id :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , updateVolumeRequestBodyLinodeId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | linode_label: If a Volume is attached to a specific Linode, the label of that Linode will be displayed here.
-  , updateVolumeRequestBodyLinode_label :: (GHC.Base.Maybe Data.Text.Internal.Text)
-  -- | region
-  , updateVolumeRequestBodyRegion :: (GHC.Base.Maybe Region_properties_id)
+  , updateVolumeRequestBodyLinodeLabel :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
+  -- | region: The unique ID of this Region.
+  , updateVolumeRequestBodyRegion :: (GHC.Maybe.Maybe RegionPropertiesId)
   -- | size: The Volume\'s size, in GiB.
   -- 
   -- 
   -- Constraints:
   -- 
   -- * Maxium  of 10240.0
-  , updateVolumeRequestBodySize :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , updateVolumeRequestBodySize :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | status: The current status of the volume.  Can be one of:
   -- 
   --   * \`creating\` - the Volume is being created and is not yet available
@@ -135,39 +97,51 @@ data UpdateVolumeRequestBody = UpdateVolumeRequestBody {
   --     its current capacity.
   --   * \`contact_support\` - there is a problem with your Volume. Please
   --     [open a Support Ticket](\/docs\/api\/support\/\#support-ticket-open) to resolve the issue.
-  , updateVolumeRequestBodyStatus :: (GHC.Base.Maybe UpdateVolumeRequestBodyStatus)
+  , updateVolumeRequestBodyStatus :: (GHC.Maybe.Maybe UpdateVolumeRequestBodyStatus')
   -- | tags: An array of Tags applied to this object.  Tags are for organizational purposes only.
-  , updateVolumeRequestBodyTags :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  , updateVolumeRequestBodyTags :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   -- | updated: When this Volume was last updated.
-  , updateVolumeRequestBodyUpdated :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , updateVolumeRequestBodyUpdated :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateVolumeRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "created" (updateVolumeRequestBodyCreated obj) : (Data.Aeson..=) "filesystem_path" (updateVolumeRequestBodyFilesystem_path obj) : (Data.Aeson..=) "hardware_type" (updateVolumeRequestBodyHardware_type obj) : (Data.Aeson..=) "id" (updateVolumeRequestBodyId obj) : (Data.Aeson..=) "label" (updateVolumeRequestBodyLabel obj) : (Data.Aeson..=) "linode_id" (updateVolumeRequestBodyLinode_id obj) : (Data.Aeson..=) "linode_label" (updateVolumeRequestBodyLinode_label obj) : (Data.Aeson..=) "region" (updateVolumeRequestBodyRegion obj) : (Data.Aeson..=) "size" (updateVolumeRequestBodySize obj) : (Data.Aeson..=) "status" (updateVolumeRequestBodyStatus obj) : (Data.Aeson..=) "tags" (updateVolumeRequestBodyTags obj) : (Data.Aeson..=) "updated" (updateVolumeRequestBodyUpdated obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "created" (updateVolumeRequestBodyCreated obj) GHC.Base.<> ((Data.Aeson..=) "filesystem_path" (updateVolumeRequestBodyFilesystem_path obj) GHC.Base.<> ((Data.Aeson..=) "hardware_type" (updateVolumeRequestBodyHardware_type obj) GHC.Base.<> ((Data.Aeson..=) "id" (updateVolumeRequestBodyId obj) GHC.Base.<> ((Data.Aeson..=) "label" (updateVolumeRequestBodyLabel obj) GHC.Base.<> ((Data.Aeson..=) "linode_id" (updateVolumeRequestBodyLinode_id obj) GHC.Base.<> ((Data.Aeson..=) "linode_label" (updateVolumeRequestBodyLinode_label obj) GHC.Base.<> ((Data.Aeson..=) "region" (updateVolumeRequestBodyRegion obj) GHC.Base.<> ((Data.Aeson..=) "size" (updateVolumeRequestBodySize obj) GHC.Base.<> ((Data.Aeson..=) "status" (updateVolumeRequestBodyStatus obj) GHC.Base.<> ((Data.Aeson..=) "tags" (updateVolumeRequestBodyTags obj) GHC.Base.<> (Data.Aeson..=) "updated" (updateVolumeRequestBodyUpdated obj))))))))))))
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateVolumeRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("created" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyCreated obj : "filesystem_path" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyFilesystemPath obj : "hardware_type" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyHardwareType obj : "id" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyId obj : "label" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyLabel obj : "linode_id" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyLinodeId obj : "linode_label" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyLinodeLabel obj : "region" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyRegion obj : "size" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodySize obj : "status" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyStatus obj : "tags" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyTags obj : "updated" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyUpdated obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("created" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyCreated obj) GHC.Base.<> (("filesystem_path" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyFilesystemPath obj) GHC.Base.<> (("hardware_type" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyHardwareType obj) GHC.Base.<> (("id" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyId obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyLabel obj) GHC.Base.<> (("linode_id" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyLinodeId obj) GHC.Base.<> (("linode_label" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyLinodeLabel obj) GHC.Base.<> (("region" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyRegion obj) GHC.Base.<> (("size" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodySize obj) GHC.Base.<> (("status" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyStatus obj) GHC.Base.<> (("tags" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyTags obj) GHC.Base.<> ("updated" Data.Aeson.Types.ToJSON..= updateVolumeRequestBodyUpdated obj))))))))))))
 instance Data.Aeson.Types.FromJSON.FromJSON UpdateVolumeRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "UpdateVolumeRequestBody" (\obj -> (((((((((((GHC.Base.pure UpdateVolumeRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "created")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "filesystem_path")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "hardware_type")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "linode_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "linode_label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "region")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "size")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "status")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "tags")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "updated"))
--- | Defines the enum schema updateVolumeRequestBodyHardware_type
+-- | Create a new 'UpdateVolumeRequestBody' with all required fields.
+mkUpdateVolumeRequestBody :: UpdateVolumeRequestBody
+mkUpdateVolumeRequestBody = UpdateVolumeRequestBody{updateVolumeRequestBodyCreated = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyFilesystemPath = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyHardwareType = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyId = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyLabel = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyLinodeId = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyLinodeLabel = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyRegion = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodySize = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyStatus = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyTags = GHC.Maybe.Nothing,
+                                                    updateVolumeRequestBodyUpdated = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/volumes\/{volumeId}.PUT.requestBody.content.application\/json.schema.allOf.properties.hardware_type@ in the specification.
 -- 
 -- The storage type of this Volume.
-data UpdateVolumeRequestBodyHardware_type
-    = UpdateVolumeRequestBodyHardware_typeEnumOther Data.Aeson.Types.Internal.Value
-    | UpdateVolumeRequestBodyHardware_typeEnumTyped Data.Text.Internal.Text
-    | UpdateVolumeRequestBodyHardware_typeEnumString_hdd
-    | UpdateVolumeRequestBodyHardware_typeEnumString_nvme
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateVolumeRequestBodyHardware_type
-    where toJSON (UpdateVolumeRequestBodyHardware_typeEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (UpdateVolumeRequestBodyHardware_typeEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (UpdateVolumeRequestBodyHardware_typeEnumString_hdd) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "hdd"
-          toJSON (UpdateVolumeRequestBodyHardware_typeEnumString_nvme) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "nvme"
-instance Data.Aeson.FromJSON UpdateVolumeRequestBodyHardware_type
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "hdd")
-                                          then UpdateVolumeRequestBodyHardware_typeEnumString_hdd
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "nvme")
-                                                then UpdateVolumeRequestBodyHardware_typeEnumString_nvme
-                                                else UpdateVolumeRequestBodyHardware_typeEnumOther val)
--- | Defines the enum schema updateVolumeRequestBodyStatus
+data UpdateVolumeRequestBodyHardwareType' =
+   UpdateVolumeRequestBodyHardwareType'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | UpdateVolumeRequestBodyHardwareType'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | UpdateVolumeRequestBodyHardwareType'EnumHdd -- ^ Represents the JSON value @"hdd"@
+  | UpdateVolumeRequestBodyHardwareType'EnumNvme -- ^ Represents the JSON value @"nvme"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateVolumeRequestBodyHardwareType'
+    where toJSON (UpdateVolumeRequestBodyHardwareType'Other val) = val
+          toJSON (UpdateVolumeRequestBodyHardwareType'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (UpdateVolumeRequestBodyHardwareType'EnumHdd) = "hdd"
+          toJSON (UpdateVolumeRequestBodyHardwareType'EnumNvme) = "nvme"
+instance Data.Aeson.Types.FromJSON.FromJSON UpdateVolumeRequestBodyHardwareType'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "hdd" -> UpdateVolumeRequestBodyHardwareType'EnumHdd
+                                            | val GHC.Classes.== "nvme" -> UpdateVolumeRequestBodyHardwareType'EnumNvme
+                                            | GHC.Base.otherwise -> UpdateVolumeRequestBodyHardwareType'Other val)
+-- | Defines the enum schema located at @paths.\/volumes\/{volumeId}.PUT.requestBody.content.application\/json.schema.allOf.properties.status@ in the specification.
 -- 
 -- The current status of the volume.  Can be one of:
 -- 
@@ -178,49 +152,48 @@ instance Data.Aeson.FromJSON UpdateVolumeRequestBodyHardware_type
 --     its current capacity.
 --   * \`contact_support\` - there is a problem with your Volume. Please
 --     [open a Support Ticket](\/docs\/api\/support\/\#support-ticket-open) to resolve the issue.
-data UpdateVolumeRequestBodyStatus
-    = UpdateVolumeRequestBodyStatusEnumOther Data.Aeson.Types.Internal.Value
-    | UpdateVolumeRequestBodyStatusEnumTyped Data.Text.Internal.Text
-    | UpdateVolumeRequestBodyStatusEnumString_active
-    | UpdateVolumeRequestBodyStatusEnumString_contact_support
-    | UpdateVolumeRequestBodyStatusEnumString_creating
-    | UpdateVolumeRequestBodyStatusEnumString_resizing
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateVolumeRequestBodyStatus
-    where toJSON (UpdateVolumeRequestBodyStatusEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (UpdateVolumeRequestBodyStatusEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (UpdateVolumeRequestBodyStatusEnumString_active) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "active"
-          toJSON (UpdateVolumeRequestBodyStatusEnumString_contact_support) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "contact_support"
-          toJSON (UpdateVolumeRequestBodyStatusEnumString_creating) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "creating"
-          toJSON (UpdateVolumeRequestBodyStatusEnumString_resizing) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "resizing"
-instance Data.Aeson.FromJSON UpdateVolumeRequestBodyStatus
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "active")
-                                          then UpdateVolumeRequestBodyStatusEnumString_active
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "contact_support")
-                                                then UpdateVolumeRequestBodyStatusEnumString_contact_support
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "creating")
-                                                      then UpdateVolumeRequestBodyStatusEnumString_creating
-                                                      else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "resizing")
-                                                            then UpdateVolumeRequestBodyStatusEnumString_resizing
-                                                            else UpdateVolumeRequestBodyStatusEnumOther val)
+data UpdateVolumeRequestBodyStatus' =
+   UpdateVolumeRequestBodyStatus'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | UpdateVolumeRequestBodyStatus'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | UpdateVolumeRequestBodyStatus'EnumCreating -- ^ Represents the JSON value @"creating"@
+  | UpdateVolumeRequestBodyStatus'EnumActive -- ^ Represents the JSON value @"active"@
+  | UpdateVolumeRequestBodyStatus'EnumResizing -- ^ Represents the JSON value @"resizing"@
+  | UpdateVolumeRequestBodyStatus'EnumContactSupport -- ^ Represents the JSON value @"contact_support"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateVolumeRequestBodyStatus'
+    where toJSON (UpdateVolumeRequestBodyStatus'Other val) = val
+          toJSON (UpdateVolumeRequestBodyStatus'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (UpdateVolumeRequestBodyStatus'EnumCreating) = "creating"
+          toJSON (UpdateVolumeRequestBodyStatus'EnumActive) = "active"
+          toJSON (UpdateVolumeRequestBodyStatus'EnumResizing) = "resizing"
+          toJSON (UpdateVolumeRequestBodyStatus'EnumContactSupport) = "contact_support"
+instance Data.Aeson.Types.FromJSON.FromJSON UpdateVolumeRequestBodyStatus'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "creating" -> UpdateVolumeRequestBodyStatus'EnumCreating
+                                            | val GHC.Classes.== "active" -> UpdateVolumeRequestBodyStatus'EnumActive
+                                            | val GHC.Classes.== "resizing" -> UpdateVolumeRequestBodyStatus'EnumResizing
+                                            | val GHC.Classes.== "contact_support" -> UpdateVolumeRequestBodyStatus'EnumContactSupport
+                                            | GHC.Base.otherwise -> UpdateVolumeRequestBodyStatus'Other val)
 -- | Represents a response of the operation 'updateVolume'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'UpdateVolumeResponseError' is used.
-data UpdateVolumeResponse =                                      
-   UpdateVolumeResponseError GHC.Base.String                     -- ^ Means either no matching case available or a parse error
-  | UpdateVolumeResponse200 Volume                               -- ^ The updated Volume.
-  | UpdateVolumeResponseDefault UpdateVolumeResponseBodyDefault  -- ^ Error
+data UpdateVolumeResponse =
+   UpdateVolumeResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | UpdateVolumeResponse200 Volume -- ^ The updated Volume.
+  | UpdateVolumeResponseDefault UpdateVolumeResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema UpdateVolumeResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data UpdateVolumeResponseBodyDefault = UpdateVolumeResponseBodyDefault {
   -- | errors
-  updateVolumeResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  updateVolumeResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateVolumeResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (updateVolumeResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (updateVolumeResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateVolumeResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= updateVolumeResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= updateVolumeResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON UpdateVolumeResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "UpdateVolumeResponseBodyDefault" (\obj -> GHC.Base.pure UpdateVolumeResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'UpdateVolumeResponseBodyDefault' with all required fields.
+mkUpdateVolumeResponseBodyDefault :: UpdateVolumeResponseBodyDefault
+mkUpdateVolumeResponseBodyDefault = UpdateVolumeResponseBodyDefault{updateVolumeResponseBodyDefaultErrors = GHC.Maybe.Nothing}

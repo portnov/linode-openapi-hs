@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation cloneLinodeDisk
 module Linode.Operations.CloneLinodeDisk where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,64 +45,59 @@ import Linode.Types
 -- | > POST /linode/instances/{linodeId}/disks/{diskId}/clone
 -- 
 -- Copies a disk, byte-for-byte, into a new Disk belonging to the same Linode. The Linode must have enough storage space available to accept a new Disk of the same size as this one or this operation will fail.
-cloneLinodeDisk :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CloneLinodeDiskResponse)) -- ^ Monad containing the result of the operation
-cloneLinodeDisk config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CloneLinodeDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CloneLinodeDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                 Disk)
-                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CloneLinodeDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                   CloneLinodeDiskResponseBodyDefault)
-                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/clone") [])
--- | > POST /linode/instances/{linodeId}/disks/{diskId}/clone
+cloneLinodeDisk :: forall m . Linode.Common.MonadHTTP m => CloneLinodeDiskParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CloneLinodeDiskResponse) -- ^ Monadic computation which returns the result of the operation
+cloneLinodeDisk parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CloneLinodeDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CloneLinodeDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                      Disk)
+                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CloneLinodeDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                        CloneLinodeDiskResponseBodyDefault)
+                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack (("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (cloneLinodeDiskParametersPathLinodeId parameters))) GHC.Base.++ "/disks/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (cloneLinodeDiskParametersPathDiskId parameters))) GHC.Base.++ "/clone"))) GHC.Base.mempty)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/disks\/{diskId}\/clone.POST.parameters@ in the specification.
 -- 
--- The same as 'cloneLinodeDisk' but returns the raw 'Data.ByteString.Char8.ByteString'
-cloneLinodeDiskRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      Linode.Common.Configuration s ->
-                      m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-cloneLinodeDiskRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/clone") [])
--- | > POST /linode/instances/{linodeId}/disks/{diskId}/clone
 -- 
--- Monadic version of 'cloneLinodeDisk' (use with 'Linode.Common.runWithConfiguration')
-cloneLinodeDiskM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response CloneLinodeDiskResponse))
-cloneLinodeDiskM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CloneLinodeDiskResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CloneLinodeDiskResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                           Disk)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CloneLinodeDiskResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                             CloneLinodeDiskResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/clone") [])
--- | > POST /linode/instances/{linodeId}/disks/{diskId}/clone
--- 
--- Monadic version of 'cloneLinodeDiskRaw' (use with 'Linode.Common.runWithConfiguration')
-cloneLinodeDiskRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-cloneLinodeDiskRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/disks/{diskId}/clone") [])
+data CloneLinodeDiskParameters = CloneLinodeDiskParameters {
+  -- | pathDiskId: Represents the parameter named \'diskId\'
+  -- 
+  -- ID of the Disk to clone.
+  cloneLinodeDiskParametersPathDiskId :: GHC.Types.Int
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- ID of the Linode to look up.
+  , cloneLinodeDiskParametersPathLinodeId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CloneLinodeDiskParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathDiskId" Data.Aeson.Types.ToJSON..= cloneLinodeDiskParametersPathDiskId obj : "pathLinodeId" Data.Aeson.Types.ToJSON..= cloneLinodeDiskParametersPathLinodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathDiskId" Data.Aeson.Types.ToJSON..= cloneLinodeDiskParametersPathDiskId obj) GHC.Base.<> ("pathLinodeId" Data.Aeson.Types.ToJSON..= cloneLinodeDiskParametersPathLinodeId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON CloneLinodeDiskParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CloneLinodeDiskParameters" (\obj -> (GHC.Base.pure CloneLinodeDiskParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathDiskId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId"))
+-- | Create a new 'CloneLinodeDiskParameters' with all required fields.
+mkCloneLinodeDiskParameters :: GHC.Types.Int -- ^ 'cloneLinodeDiskParametersPathDiskId'
+  -> GHC.Types.Int -- ^ 'cloneLinodeDiskParametersPathLinodeId'
+  -> CloneLinodeDiskParameters
+mkCloneLinodeDiskParameters cloneLinodeDiskParametersPathDiskId cloneLinodeDiskParametersPathLinodeId = CloneLinodeDiskParameters{cloneLinodeDiskParametersPathDiskId = cloneLinodeDiskParametersPathDiskId,
+                                                                                                                                  cloneLinodeDiskParametersPathLinodeId = cloneLinodeDiskParametersPathLinodeId}
 -- | Represents a response of the operation 'cloneLinodeDisk'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CloneLinodeDiskResponseError' is used.
-data CloneLinodeDiskResponse =                                         
-   CloneLinodeDiskResponseError GHC.Base.String                        -- ^ Means either no matching case available or a parse error
-  | CloneLinodeDiskResponse200 Disk                                    -- ^ Disk clone initiated.
-  | CloneLinodeDiskResponseDefault CloneLinodeDiskResponseBodyDefault  -- ^ Error
+data CloneLinodeDiskResponse =
+   CloneLinodeDiskResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CloneLinodeDiskResponse200 Disk -- ^ Disk clone initiated.
+  | CloneLinodeDiskResponseDefault CloneLinodeDiskResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CloneLinodeDiskResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CloneLinodeDiskResponseBodyDefault = CloneLinodeDiskResponseBodyDefault {
   -- | errors
-  cloneLinodeDiskResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  cloneLinodeDiskResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CloneLinodeDiskResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (cloneLinodeDiskResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (cloneLinodeDiskResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CloneLinodeDiskResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= cloneLinodeDiskResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= cloneLinodeDiskResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CloneLinodeDiskResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CloneLinodeDiskResponseBodyDefault" (\obj -> GHC.Base.pure CloneLinodeDiskResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CloneLinodeDiskResponseBodyDefault' with all required fields.
+mkCloneLinodeDiskResponseBodyDefault :: CloneLinodeDiskResponseBodyDefault
+mkCloneLinodeDiskResponseBodyDefault = CloneLinodeDiskResponseBodyDefault{cloneLinodeDiskResponseBodyDefaultErrors = GHC.Maybe.Nothing}

@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getPayments
 module Linode.Operations.GetPayments where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,96 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /account/payments
 -- 
 -- Returns a paginated list of Payments made on this Account.
-getPayments :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                 -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                 -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetPaymentsResponse)) -- ^ Monad containing the result of the operation
-getPayments config
-            page
-            page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetPaymentsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                        GetPaymentsResponseBody200)
-                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                          GetPaymentsResponseBodyDefault)
-                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/payments") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/payments
+getPayments :: forall m . Linode.Common.MonadHTTP m => GetPaymentsParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetPaymentsResponse) -- ^ Monadic computation which returns the result of the operation
+getPayments parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetPaymentsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                          GetPaymentsResponseBody200)
+                                                                                                                                                               | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                            GetPaymentsResponseBodyDefault)
+                                                                                                                                                               | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/payments") [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getPaymentsParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                    Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getPaymentsParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/account\/payments.GET.parameters@ in the specification.
 -- 
--- The same as 'getPayments' but returns the raw 'Data.ByteString.Char8.ByteString'
-getPaymentsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  Linode.Common.Configuration s ->
-                  GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                  GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                  m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getPaymentsRaw config
-               page
-               page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/payments") ((Data.Text.pack "page",
-                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/payments
 -- 
--- Monadic version of 'getPayments' (use with 'Linode.Common.runWithConfiguration')
-getPaymentsM :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                   m
-                                                   (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                       (Network.HTTP.Client.Types.Response GetPaymentsResponse))
-getPaymentsM page
-             page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetPaymentsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                         GetPaymentsResponseBody200)
-                                                                                                                                                                              | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetPaymentsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                           GetPaymentsResponseBodyDefault)
-                                                                                                                                                                              | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/payments") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/payments
--- 
--- Monadic version of 'getPaymentsRaw' (use with 'Linode.Common.runWithConfiguration')
-getPaymentsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                   GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                   Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                      m
-                                                      (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getPaymentsRawM page
-                page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/payments") ((Data.Text.pack "page",
-                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetPaymentsParameters = GetPaymentsParameters {
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  getPaymentsParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getPaymentsParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetPaymentsParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("queryPage" Data.Aeson.Types.ToJSON..= getPaymentsParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getPaymentsParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("queryPage" Data.Aeson.Types.ToJSON..= getPaymentsParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getPaymentsParametersQueryPageSize obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetPaymentsParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetPaymentsParameters" (\obj -> (GHC.Base.pure GetPaymentsParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetPaymentsParameters' with all required fields.
+mkGetPaymentsParameters :: GetPaymentsParameters
+mkGetPaymentsParameters = GetPaymentsParameters{getPaymentsParametersQueryPage = GHC.Maybe.Nothing,
+                                                getPaymentsParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getPayments'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetPaymentsResponseError' is used.
-data GetPaymentsResponse =                                     
-   GetPaymentsResponseError GHC.Base.String                    -- ^ Means either no matching case available or a parse error
-  | GetPaymentsResponse200 GetPaymentsResponseBody200          -- ^ Returns a paginated list of Payment objects.
-  | GetPaymentsResponseDefault GetPaymentsResponseBodyDefault  -- ^ Error
+data GetPaymentsResponse =
+   GetPaymentsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetPaymentsResponse200 GetPaymentsResponseBody200 -- ^ Returns a paginated list of Payment objects.
+  | GetPaymentsResponseDefault GetPaymentsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetPaymentsResponseBody200
+-- | Defines the object schema located at @paths.\/account\/payments.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetPaymentsResponseBody200 = GetPaymentsResponseBody200 {
   -- | data
-  getPaymentsResponseBody200Data :: (GHC.Base.Maybe ([] Payment))
-  -- | page
-  , getPaymentsResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getPaymentsResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getPaymentsResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getPaymentsResponseBody200Data :: (GHC.Maybe.Maybe ([Payment]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getPaymentsResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getPaymentsResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getPaymentsResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetPaymentsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getPaymentsResponseBody200Data obj) : (Data.Aeson..=) "page" (getPaymentsResponseBody200Page obj) : (Data.Aeson..=) "pages" (getPaymentsResponseBody200Pages obj) : (Data.Aeson..=) "results" (getPaymentsResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getPaymentsResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getPaymentsResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getPaymentsResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getPaymentsResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetPaymentsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getPaymentsResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getPaymentsResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getPaymentsResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getPaymentsResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getPaymentsResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getPaymentsResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getPaymentsResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getPaymentsResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetPaymentsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetPaymentsResponseBody200" (\obj -> (((GHC.Base.pure GetPaymentsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetPaymentsResponseBodyDefault
+-- | Create a new 'GetPaymentsResponseBody200' with all required fields.
+mkGetPaymentsResponseBody200 :: GetPaymentsResponseBody200
+mkGetPaymentsResponseBody200 = GetPaymentsResponseBody200{getPaymentsResponseBody200Data = GHC.Maybe.Nothing,
+                                                          getPaymentsResponseBody200Page = GHC.Maybe.Nothing,
+                                                          getPaymentsResponseBody200Pages = GHC.Maybe.Nothing,
+                                                          getPaymentsResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetPaymentsResponseBodyDefault = GetPaymentsResponseBodyDefault {
   -- | errors
-  getPaymentsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getPaymentsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetPaymentsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getPaymentsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getPaymentsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetPaymentsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getPaymentsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getPaymentsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetPaymentsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetPaymentsResponseBodyDefault" (\obj -> GHC.Base.pure GetPaymentsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetPaymentsResponseBodyDefault' with all required fields.
+mkGetPaymentsResponseBodyDefault :: GetPaymentsResponseBodyDefault
+mkGetPaymentsResponseBodyDefault = GetPaymentsResponseBodyDefault{getPaymentsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

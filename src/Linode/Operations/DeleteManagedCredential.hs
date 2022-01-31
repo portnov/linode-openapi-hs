@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation deleteManagedCredential
 module Linode.Operations.DeleteManagedCredential where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,76 +45,34 @@ import Linode.Types
 -- | > POST /managed/credentials/{credentialId}/revoke
 -- 
 -- Deletes a Managed Credential.  Linode special forces will no longer have access to this Credential when attempting to resolve issues.
-deleteManagedCredential :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response DeleteManagedCredentialResponse)) -- ^ Monad containing the result of the operation
-deleteManagedCredential config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteManagedCredentialResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteManagedCredentialResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                         DeleteManagedCredentialResponseBody200)
-                                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteManagedCredentialResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                           DeleteManagedCredentialResponseBodyDefault)
-                                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/managed/credentials/{credentialId}/revoke") [])
--- | > POST /managed/credentials/{credentialId}/revoke
--- 
--- The same as 'deleteManagedCredential' but returns the raw 'Data.ByteString.Char8.ByteString'
-deleteManagedCredentialRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                            Linode.Common.SecurityScheme s) =>
-                              Linode.Common.Configuration s ->
-                              m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                    (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteManagedCredentialRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/managed/credentials/{credentialId}/revoke") [])
--- | > POST /managed/credentials/{credentialId}/revoke
--- 
--- Monadic version of 'deleteManagedCredential' (use with 'Linode.Common.runWithConfiguration')
-deleteManagedCredentialM :: forall m s . (Linode.Common.MonadHTTP m,
-                                          Linode.Common.SecurityScheme s) =>
-                            Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                               m
-                                                               (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                   (Network.HTTP.Client.Types.Response DeleteManagedCredentialResponse))
-deleteManagedCredentialM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either DeleteManagedCredentialResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteManagedCredentialResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                   DeleteManagedCredentialResponseBody200)
-                                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteManagedCredentialResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                     DeleteManagedCredentialResponseBodyDefault)
-                                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/managed/credentials/{credentialId}/revoke") [])
--- | > POST /managed/credentials/{credentialId}/revoke
--- 
--- Monadic version of 'deleteManagedCredentialRaw' (use with 'Linode.Common.runWithConfiguration')
-deleteManagedCredentialRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                             Linode.Common.SecurityScheme s) =>
-                               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                  m
-                                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-deleteManagedCredentialRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/managed/credentials/{credentialId}/revoke") [])
+deleteManagedCredential :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ credentialId: The ID of the Credential to access.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response DeleteManagedCredentialResponse) -- ^ Monadic computation which returns the result of the operation
+deleteManagedCredential credentialId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either DeleteManagedCredentialResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> DeleteManagedCredentialResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                                Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> DeleteManagedCredentialResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                  DeleteManagedCredentialResponseBodyDefault)
+                                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/managed/credentials/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel credentialId)) GHC.Base.++ "/revoke"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'deleteManagedCredential'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'DeleteManagedCredentialResponseError' is used.
-data DeleteManagedCredentialResponse =                                                 
-   DeleteManagedCredentialResponseError GHC.Base.String                                -- ^ Means either no matching case available or a parse error
-  | DeleteManagedCredentialResponse200 DeleteManagedCredentialResponseBody200          -- ^ Credential deleted successfully.
-  | DeleteManagedCredentialResponseDefault DeleteManagedCredentialResponseBodyDefault  -- ^ Error
+data DeleteManagedCredentialResponse =
+   DeleteManagedCredentialResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | DeleteManagedCredentialResponse200 Data.Aeson.Types.Internal.Object -- ^ Credential deleted successfully.
+  | DeleteManagedCredentialResponseDefault DeleteManagedCredentialResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema DeleteManagedCredentialResponseBody200
--- 
--- 
-data DeleteManagedCredentialResponseBody200 = DeleteManagedCredentialResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteManagedCredentialResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON DeleteManagedCredentialResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteManagedCredentialResponseBody200" (\obj -> GHC.Base.pure DeleteManagedCredentialResponseBody200)
--- | Defines the data type for the schema DeleteManagedCredentialResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data DeleteManagedCredentialResponseBodyDefault = DeleteManagedCredentialResponseBodyDefault {
   -- | errors
-  deleteManagedCredentialResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  deleteManagedCredentialResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON DeleteManagedCredentialResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (deleteManagedCredentialResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (deleteManagedCredentialResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON DeleteManagedCredentialResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= deleteManagedCredentialResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= deleteManagedCredentialResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON DeleteManagedCredentialResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "DeleteManagedCredentialResponseBodyDefault" (\obj -> GHC.Base.pure DeleteManagedCredentialResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'DeleteManagedCredentialResponseBodyDefault' with all required fields.
+mkDeleteManagedCredentialResponseBodyDefault :: DeleteManagedCredentialResponseBodyDefault
+mkDeleteManagedCredentialResponseBodyDefault = DeleteManagedCredentialResponseBodyDefault{deleteManagedCredentialResponseBodyDefaultErrors = GHC.Maybe.Nothing}

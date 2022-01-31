@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getIPv6Ranges
 module Linode.Operations.GetIPv6Ranges where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,7 +41,6 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /networking/ipv6/ranges
 -- 
@@ -53,105 +52,92 @@ import Linode.ManualTypes
 --   * Your Linode is responsible for routing individual addresses in the range, or handling traffic for all the addresses in the range.
 -- 
 --   * Access the IPv6 Range Create ([POST \/networking\/ipv6\/ranges](\/docs\/api\/networking\/\#ipv6-range-create)) endpoint to add a \`\/64\` or \`\/56\` block of IPv6 addresses to your account.
-getIPv6Ranges :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                   -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                   -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetIPv6RangesResponse)) -- ^ Monad containing the result of the operation
-getIPv6Ranges config
-              page
-              page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetIPv6RangesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetIPv6RangesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                              GetIPv6RangesResponseBody200)
-                                                                                                                                                                                 | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetIPv6RangesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                GetIPv6RangesResponseBodyDefault)
-                                                                                                                                                                                 | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/ipv6/ranges") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                    Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /networking/ipv6/ranges
+getIPv6Ranges :: forall m . Linode.Common.MonadHTTP m => GetIPv6RangesParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetIPv6RangesResponse) -- ^ Monadic computation which returns the result of the operation
+getIPv6Ranges parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetIPv6RangesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetIPv6RangesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                GetIPv6RangesResponseBody200)
+                                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetIPv6RangesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                  GetIPv6RangesResponseBodyDefault)
+                                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/ipv6/ranges") [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getIPv6RangesParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                              Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getIPv6RangesParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/networking\/ipv6\/ranges.GET.parameters@ in the specification.
 -- 
--- The same as 'getIPv6Ranges' but returns the raw 'Data.ByteString.Char8.ByteString'
-getIPv6RangesRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Linode.Common.Configuration s ->
-                    GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                    GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                    m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getIPv6RangesRaw config
-                 page
-                 page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/ipv6/ranges") ((Data.Text.pack "page",
-                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                  Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /networking/ipv6/ranges
 -- 
--- Monadic version of 'getIPv6Ranges' (use with 'Linode.Common.runWithConfiguration')
-getIPv6RangesM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                  GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response GetIPv6RangesResponse))
-getIPv6RangesM page
-               page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetIPv6RangesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetIPv6RangesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                               GetIPv6RangesResponseBody200)
-                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetIPv6RangesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                 GetIPv6RangesResponseBodyDefault)
-                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/ipv6/ranges") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                               Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /networking/ipv6/ranges
--- 
--- Monadic version of 'getIPv6RangesRaw' (use with 'Linode.Common.runWithConfiguration')
-getIPv6RangesRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getIPv6RangesRawM page
-                  page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/networking/ipv6/ranges") ((Data.Text.pack "page",
-                                                                                                                                                                                    Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                             Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetIPv6RangesParameters = GetIPv6RangesParameters {
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  getIPv6RangesParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getIPv6RangesParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetIPv6RangesParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("queryPage" Data.Aeson.Types.ToJSON..= getIPv6RangesParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getIPv6RangesParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("queryPage" Data.Aeson.Types.ToJSON..= getIPv6RangesParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getIPv6RangesParametersQueryPageSize obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetIPv6RangesParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetIPv6RangesParameters" (\obj -> (GHC.Base.pure GetIPv6RangesParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetIPv6RangesParameters' with all required fields.
+mkGetIPv6RangesParameters :: GetIPv6RangesParameters
+mkGetIPv6RangesParameters = GetIPv6RangesParameters{getIPv6RangesParametersQueryPage = GHC.Maybe.Nothing,
+                                                    getIPv6RangesParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getIPv6Ranges'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetIPv6RangesResponseError' is used.
-data GetIPv6RangesResponse =                                       
-   GetIPv6RangesResponseError GHC.Base.String                      -- ^ Means either no matching case available or a parse error
-  | GetIPv6RangesResponse200 GetIPv6RangesResponseBody200          -- ^ The IPv6 ranges on your Account.
-  | GetIPv6RangesResponseDefault GetIPv6RangesResponseBodyDefault  -- ^ Error
+data GetIPv6RangesResponse =
+   GetIPv6RangesResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetIPv6RangesResponse200 GetIPv6RangesResponseBody200 -- ^ The IPv6 ranges on your Account.
+  | GetIPv6RangesResponseDefault GetIPv6RangesResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetIPv6RangesResponseBody200
+-- | Defines the object schema located at @paths.\/networking\/ipv6\/ranges.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetIPv6RangesResponseBody200 = GetIPv6RangesResponseBody200 {
   -- | data
-  getIPv6RangesResponseBody200Data :: (GHC.Base.Maybe ([] IPv6Range))
-  -- | page
-  , getIPv6RangesResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getIPv6RangesResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getIPv6RangesResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getIPv6RangesResponseBody200Data :: (GHC.Maybe.Maybe ([IPv6Range]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getIPv6RangesResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getIPv6RangesResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getIPv6RangesResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetIPv6RangesResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getIPv6RangesResponseBody200Data obj) : (Data.Aeson..=) "page" (getIPv6RangesResponseBody200Page obj) : (Data.Aeson..=) "pages" (getIPv6RangesResponseBody200Pages obj) : (Data.Aeson..=) "results" (getIPv6RangesResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getIPv6RangesResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getIPv6RangesResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getIPv6RangesResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getIPv6RangesResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetIPv6RangesResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetIPv6RangesResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetIPv6RangesResponseBody200" (\obj -> (((GHC.Base.pure GetIPv6RangesResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetIPv6RangesResponseBodyDefault
+-- | Create a new 'GetIPv6RangesResponseBody200' with all required fields.
+mkGetIPv6RangesResponseBody200 :: GetIPv6RangesResponseBody200
+mkGetIPv6RangesResponseBody200 = GetIPv6RangesResponseBody200{getIPv6RangesResponseBody200Data = GHC.Maybe.Nothing,
+                                                              getIPv6RangesResponseBody200Page = GHC.Maybe.Nothing,
+                                                              getIPv6RangesResponseBody200Pages = GHC.Maybe.Nothing,
+                                                              getIPv6RangesResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetIPv6RangesResponseBodyDefault = GetIPv6RangesResponseBodyDefault {
   -- | errors
-  getIPv6RangesResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getIPv6RangesResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetIPv6RangesResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getIPv6RangesResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getIPv6RangesResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetIPv6RangesResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getIPv6RangesResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetIPv6RangesResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetIPv6RangesResponseBodyDefault" (\obj -> GHC.Base.pure GetIPv6RangesResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetIPv6RangesResponseBodyDefault' with all required fields.
+mkGetIPv6RangesResponseBodyDefault :: GetIPv6RangesResponseBodyDefault
+mkGetIPv6RangesResponseBodyDefault = GetIPv6RangesResponseBodyDefault{getIPv6RangesResponseBodyDefaultErrors = GHC.Maybe.Nothing}

@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation shutdownLinodeInstance
 module Linode.Operations.ShutdownLinodeInstance where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,76 +45,34 @@ import Linode.Types
 -- | > POST /linode/instances/{linodeId}/shutdown
 -- 
 -- Shuts down a Linode you have permission to modify. If any actions are currently running or queued, those actions must be completed first before you can initiate a shutdown.
-shutdownLinodeInstance :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response ShutdownLinodeInstanceResponse)) -- ^ Monad containing the result of the operation
-shutdownLinodeInstance config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ShutdownLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ShutdownLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      ShutdownLinodeInstanceResponseBody200)
-                                                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ShutdownLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                        ShutdownLinodeInstanceResponseBodyDefault)
-                                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/shutdown") [])
--- | > POST /linode/instances/{linodeId}/shutdown
--- 
--- The same as 'shutdownLinodeInstance' but returns the raw 'Data.ByteString.Char8.ByteString'
-shutdownLinodeInstanceRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                           Linode.Common.SecurityScheme s) =>
-                             Linode.Common.Configuration s ->
-                             m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                   (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-shutdownLinodeInstanceRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/shutdown") [])
--- | > POST /linode/instances/{linodeId}/shutdown
--- 
--- Monadic version of 'shutdownLinodeInstance' (use with 'Linode.Common.runWithConfiguration')
-shutdownLinodeInstanceM :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                              m
-                                                              (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                  (Network.HTTP.Client.Types.Response ShutdownLinodeInstanceResponse))
-shutdownLinodeInstanceM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either ShutdownLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ShutdownLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                ShutdownLinodeInstanceResponseBody200)
-                                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ShutdownLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                  ShutdownLinodeInstanceResponseBodyDefault)
-                                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/shutdown") [])
--- | > POST /linode/instances/{linodeId}/shutdown
--- 
--- Monadic version of 'shutdownLinodeInstanceRaw' (use with 'Linode.Common.runWithConfiguration')
-shutdownLinodeInstanceRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                            Linode.Common.SecurityScheme s) =>
-                              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                 m
-                                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                     (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-shutdownLinodeInstanceRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/shutdown") [])
+shutdownLinodeInstance :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ linodeId: ID of the Linode to shutdown.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response ShutdownLinodeInstanceResponse) -- ^ Monadic computation which returns the result of the operation
+shutdownLinodeInstance linodeId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ShutdownLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ShutdownLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                         Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ShutdownLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                           ShutdownLinodeInstanceResponseBodyDefault)
+                                                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel linodeId)) GHC.Base.++ "/shutdown"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'shutdownLinodeInstance'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'ShutdownLinodeInstanceResponseError' is used.
-data ShutdownLinodeInstanceResponse =                                                
-   ShutdownLinodeInstanceResponseError GHC.Base.String                               -- ^ Means either no matching case available or a parse error
-  | ShutdownLinodeInstanceResponse200 ShutdownLinodeInstanceResponseBody200          -- ^ Shutdown started.
-  | ShutdownLinodeInstanceResponseDefault ShutdownLinodeInstanceResponseBodyDefault  -- ^ Error
+data ShutdownLinodeInstanceResponse =
+   ShutdownLinodeInstanceResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | ShutdownLinodeInstanceResponse200 Data.Aeson.Types.Internal.Object -- ^ Shutdown started.
+  | ShutdownLinodeInstanceResponseDefault ShutdownLinodeInstanceResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema ShutdownLinodeInstanceResponseBody200
--- 
--- 
-data ShutdownLinodeInstanceResponseBody200 = ShutdownLinodeInstanceResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ShutdownLinodeInstanceResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON ShutdownLinodeInstanceResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "ShutdownLinodeInstanceResponseBody200" (\obj -> GHC.Base.pure ShutdownLinodeInstanceResponseBody200)
--- | Defines the data type for the schema ShutdownLinodeInstanceResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ShutdownLinodeInstanceResponseBodyDefault = ShutdownLinodeInstanceResponseBodyDefault {
   -- | errors
-  shutdownLinodeInstanceResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  shutdownLinodeInstanceResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ShutdownLinodeInstanceResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (shutdownLinodeInstanceResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (shutdownLinodeInstanceResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ShutdownLinodeInstanceResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= shutdownLinodeInstanceResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= shutdownLinodeInstanceResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON ShutdownLinodeInstanceResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ShutdownLinodeInstanceResponseBodyDefault" (\obj -> GHC.Base.pure ShutdownLinodeInstanceResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'ShutdownLinodeInstanceResponseBodyDefault' with all required fields.
+mkShutdownLinodeInstanceResponseBodyDefault :: ShutdownLinodeInstanceResponseBodyDefault
+mkShutdownLinodeInstanceResponseBodyDefault = ShutdownLinodeInstanceResponseBodyDefault{shutdownLinodeInstanceResponseBodyDefaultErrors = GHC.Maybe.Nothing}

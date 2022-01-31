@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getDomainZone
 module Linode.Operations.GetDomainZone where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,77 +45,50 @@ import Linode.Types
 -- | > GET /domains/{domainId}/zone-file
 -- 
 -- Returns the zone file for the last rendered zone for the specified domain.
-getDomainZone :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetDomainZoneResponse)) -- ^ Monad containing the result of the operation
-getDomainZone config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetDomainZoneResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetDomainZoneResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                           GetDomainZoneResponseBody200)
-                                                                                                                                                                              | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetDomainZoneResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                             GetDomainZoneResponseBodyDefault)
-                                                                                                                                                                              | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/domains/{domainId}/zone-file") [])
--- | > GET /domains/{domainId}/zone-file
--- 
--- The same as 'getDomainZone' but returns the raw 'Data.ByteString.Char8.ByteString'
-getDomainZoneRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Linode.Common.Configuration s ->
-                    m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getDomainZoneRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/domains/{domainId}/zone-file") [])
--- | > GET /domains/{domainId}/zone-file
--- 
--- Monadic version of 'getDomainZone' (use with 'Linode.Common.runWithConfiguration')
-getDomainZoneM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response GetDomainZoneResponse))
-getDomainZoneM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetDomainZoneResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetDomainZoneResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                     GetDomainZoneResponseBody200)
-                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetDomainZoneResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                       GetDomainZoneResponseBodyDefault)
-                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/domains/{domainId}/zone-file") [])
--- | > GET /domains/{domainId}/zone-file
--- 
--- Monadic version of 'getDomainZoneRaw' (use with 'Linode.Common.runWithConfiguration')
-getDomainZoneRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getDomainZoneRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/domains/{domainId}/zone-file") [])
+getDomainZone :: forall m . Linode.Common.MonadHTTP m => Data.Text.Internal.Text -- ^ domainId: ID of the Domain.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetDomainZoneResponse) -- ^ Monadic computation which returns the result of the operation
+getDomainZone domainId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetDomainZoneResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetDomainZoneResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                              GetDomainZoneResponseBody200)
+                                                                                                                                                                 | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetDomainZoneResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                GetDomainZoneResponseBodyDefault)
+                                                                                                                                                                 | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/domains/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel domainId)) GHC.Base.++ "/zone-file"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'getDomainZone'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetDomainZoneResponseError' is used.
-data GetDomainZoneResponse =                                       
-   GetDomainZoneResponseError GHC.Base.String                      -- ^ Means either no matching case available or a parse error
-  | GetDomainZoneResponse200 GetDomainZoneResponseBody200          -- ^ An array containing the lines of the domain zone file. 
-  | GetDomainZoneResponseDefault GetDomainZoneResponseBodyDefault  -- ^ Error
+data GetDomainZoneResponse =
+   GetDomainZoneResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetDomainZoneResponse200 GetDomainZoneResponseBody200 -- ^ An array containing the lines of the domain zone file. 
+  | GetDomainZoneResponseDefault GetDomainZoneResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetDomainZoneResponseBody200
+-- | Defines the object schema located at @paths.\/domains\/{domainId}\/zone-file.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetDomainZoneResponseBody200 = GetDomainZoneResponseBody200 {
   -- | zone_file: The lines of the zone file for the last rendered zone for this domain.
-  getDomainZoneResponseBody200Zone_file :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  getDomainZoneResponseBody200ZoneFile :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetDomainZoneResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "zone_file" (getDomainZoneResponseBody200Zone_file obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "zone_file" (getDomainZoneResponseBody200Zone_file obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetDomainZoneResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("zone_file" Data.Aeson.Types.ToJSON..= getDomainZoneResponseBody200ZoneFile obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("zone_file" Data.Aeson.Types.ToJSON..= getDomainZoneResponseBody200ZoneFile obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetDomainZoneResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetDomainZoneResponseBody200" (\obj -> GHC.Base.pure GetDomainZoneResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "zone_file"))
--- | Defines the data type for the schema GetDomainZoneResponseBodyDefault
+-- | Create a new 'GetDomainZoneResponseBody200' with all required fields.
+mkGetDomainZoneResponseBody200 :: GetDomainZoneResponseBody200
+mkGetDomainZoneResponseBody200 = GetDomainZoneResponseBody200{getDomainZoneResponseBody200ZoneFile = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetDomainZoneResponseBodyDefault = GetDomainZoneResponseBodyDefault {
   -- | errors
-  getDomainZoneResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getDomainZoneResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetDomainZoneResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getDomainZoneResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getDomainZoneResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetDomainZoneResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getDomainZoneResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getDomainZoneResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetDomainZoneResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetDomainZoneResponseBodyDefault" (\obj -> GHC.Base.pure GetDomainZoneResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetDomainZoneResponseBodyDefault' with all required fields.
+mkGetDomainZoneResponseBodyDefault :: GetDomainZoneResponseBodyDefault
+mkGetDomainZoneResponseBodyDefault = GetDomainZoneResponseBodyDefault{getDomainZoneResponseBodyDefaultErrors = GHC.Maybe.Nothing}

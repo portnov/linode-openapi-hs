@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getLinodeDisks
 module Linode.Operations.GetLinodeDisks where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,102 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /linode/instances/{linodeId}/disks
 -- 
 -- View Disk information for Disks associated with this Linode.
-getLinodeDisks :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                    -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                    -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetLinodeDisksResponse)) -- ^ Monad containing the result of the operation
-getLinodeDisks config
-               page
-               page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLinodeDisksResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeDisksResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                 GetLinodeDisksResponseBody200)
-                                                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeDisksResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                   GetLinodeDisksResponseBodyDefault)
-                                                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/disks") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /linode/instances/{linodeId}/disks
+getLinodeDisks :: forall m . Linode.Common.MonadHTTP m => GetLinodeDisksParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetLinodeDisksResponse) -- ^ Monadic computation which returns the result of the operation
+getLinodeDisks parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLinodeDisksResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeDisksResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                   GetLinodeDisksResponseBody200)
+                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeDisksResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                     GetLinodeDisksResponseBodyDefault)
+                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getLinodeDisksParametersPathLinodeId parameters))) GHC.Base.++ "/disks"))) [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getLinodeDisksParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getLinodeDisksParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/disks.GET.parameters@ in the specification.
 -- 
--- The same as 'getLinodeDisks' but returns the raw 'Data.ByteString.Char8.ByteString'
-getLinodeDisksRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     Linode.Common.Configuration s ->
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLinodeDisksRaw config
-                  page
-                  page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/disks") ((Data.Text.pack "page",
-                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                              Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /linode/instances/{linodeId}/disks
 -- 
--- Monadic version of 'getLinodeDisks' (use with 'Linode.Common.runWithConfiguration')
-getLinodeDisksM :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                   GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                   Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                      m
-                                                      (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                          (Network.HTTP.Client.Types.Response GetLinodeDisksResponse))
-getLinodeDisksM page
-                page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetLinodeDisksResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeDisksResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                  GetLinodeDisksResponseBody200)
-                                                                                                                                                                                    | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeDisksResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                    GetLinodeDisksResponseBodyDefault)
-                                                                                                                                                                                    | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/disks") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /linode/instances/{linodeId}/disks
--- 
--- Monadic version of 'getLinodeDisksRaw' (use with 'Linode.Common.runWithConfiguration')
-getLinodeDisksRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                      GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                      Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                         m
-                                                         (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLinodeDisksRawM page
-                   page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/disks") ((Data.Text.pack "page",
-                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetLinodeDisksParameters = GetLinodeDisksParameters {
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- ID of the Linode to look up.
+  getLinodeDisksParametersPathLinodeId :: GHC.Types.Int
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  , getLinodeDisksParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getLinodeDisksParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeDisksParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathLinodeId" Data.Aeson.Types.ToJSON..= getLinodeDisksParametersPathLinodeId obj : "queryPage" Data.Aeson.Types.ToJSON..= getLinodeDisksParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getLinodeDisksParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathLinodeId" Data.Aeson.Types.ToJSON..= getLinodeDisksParametersPathLinodeId obj) GHC.Base.<> (("queryPage" Data.Aeson.Types.ToJSON..= getLinodeDisksParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getLinodeDisksParametersQueryPageSize obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeDisksParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeDisksParameters" (\obj -> ((GHC.Base.pure GetLinodeDisksParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetLinodeDisksParameters' with all required fields.
+mkGetLinodeDisksParameters :: GHC.Types.Int -- ^ 'getLinodeDisksParametersPathLinodeId'
+  -> GetLinodeDisksParameters
+mkGetLinodeDisksParameters getLinodeDisksParametersPathLinodeId = GetLinodeDisksParameters{getLinodeDisksParametersPathLinodeId = getLinodeDisksParametersPathLinodeId,
+                                                                                           getLinodeDisksParametersQueryPage = GHC.Maybe.Nothing,
+                                                                                           getLinodeDisksParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getLinodeDisks'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetLinodeDisksResponseError' is used.
-data GetLinodeDisksResponse =                                        
-   GetLinodeDisksResponseError GHC.Base.String                       -- ^ Means either no matching case available or a parse error
-  | GetLinodeDisksResponse200 GetLinodeDisksResponseBody200          -- ^ Returns a paginated list of disks associated with this Linode.
-  | GetLinodeDisksResponseDefault GetLinodeDisksResponseBodyDefault  -- ^ Error
+data GetLinodeDisksResponse =
+   GetLinodeDisksResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetLinodeDisksResponse200 GetLinodeDisksResponseBody200 -- ^ Returns a paginated list of disks associated with this Linode.
+  | GetLinodeDisksResponseDefault GetLinodeDisksResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetLinodeDisksResponseBody200
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/disks.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLinodeDisksResponseBody200 = GetLinodeDisksResponseBody200 {
   -- | data
-  getLinodeDisksResponseBody200Data :: (GHC.Base.Maybe ([] Disk))
-  -- | page
-  , getLinodeDisksResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getLinodeDisksResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getLinodeDisksResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getLinodeDisksResponseBody200Data :: (GHC.Maybe.Maybe ([Disk]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getLinodeDisksResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getLinodeDisksResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getLinodeDisksResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeDisksResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getLinodeDisksResponseBody200Data obj) : (Data.Aeson..=) "page" (getLinodeDisksResponseBody200Page obj) : (Data.Aeson..=) "pages" (getLinodeDisksResponseBody200Pages obj) : (Data.Aeson..=) "results" (getLinodeDisksResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getLinodeDisksResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getLinodeDisksResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getLinodeDisksResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getLinodeDisksResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeDisksResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeDisksResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeDisksResponseBody200" (\obj -> (((GHC.Base.pure GetLinodeDisksResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetLinodeDisksResponseBodyDefault
+-- | Create a new 'GetLinodeDisksResponseBody200' with all required fields.
+mkGetLinodeDisksResponseBody200 :: GetLinodeDisksResponseBody200
+mkGetLinodeDisksResponseBody200 = GetLinodeDisksResponseBody200{getLinodeDisksResponseBody200Data = GHC.Maybe.Nothing,
+                                                                getLinodeDisksResponseBody200Page = GHC.Maybe.Nothing,
+                                                                getLinodeDisksResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                getLinodeDisksResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLinodeDisksResponseBodyDefault = GetLinodeDisksResponseBodyDefault {
   -- | errors
-  getLinodeDisksResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getLinodeDisksResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeDisksResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getLinodeDisksResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getLinodeDisksResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeDisksResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getLinodeDisksResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeDisksResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeDisksResponseBodyDefault" (\obj -> GHC.Base.pure GetLinodeDisksResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetLinodeDisksResponseBodyDefault' with all required fields.
+mkGetLinodeDisksResponseBodyDefault :: GetLinodeDisksResponseBodyDefault
+mkGetLinodeDisksResponseBodyDefault = GetLinodeDisksResponseBodyDefault{getLinodeDisksResponseBodyDefaultErrors = GHC.Maybe.Nothing}

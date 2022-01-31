@@ -1,0 +1,13 @@
+module Linode.Types.FirewallDevicesPropertiesEntity where
+import Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Types.Internal
+data FirewallDevicesPropertiesEntity
+instance Show FirewallDevicesPropertiesEntity
+instance Eq FirewallDevicesPropertiesEntity
+instance FromJSON FirewallDevicesPropertiesEntity
+instance ToJSON FirewallDevicesPropertiesEntity
+data FirewallDevicesPropertiesEntityType'
+instance Show FirewallDevicesPropertiesEntityType'
+instance Eq FirewallDevicesPropertiesEntityType'
+instance FromJSON FirewallDevicesPropertiesEntityType'
+instance ToJSON FirewallDevicesPropertiesEntityType'

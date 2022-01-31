@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation cancelAccount
 module Linode.Operations.CancelAccount where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,127 +45,101 @@ import Linode.Types
 -- | > POST /account/cancel
 -- 
 -- Cancels an active Linode account. This action will cause Linode to attempt to charge the credit card on file for the remaining balance. An error will occur if Linode fails to charge the credit card on file. Restricted users will not be able to cancel an account.
-cancelAccount :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CancelAccountRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CancelAccountResponse)) -- ^ Monad containing the result of the operation
-cancelAccount config
-              body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CancelAccountResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CancelAccountResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                         CancelAccountResponseBody200)
-                                                                                                                                                                            | (\status_2 -> Network.HTTP.Types.Status.statusCode status_2 GHC.Classes.== 409) (Network.HTTP.Client.Types.responseStatus response) -> CancelAccountResponse409 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                         CancelAccountResponseBody409)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CancelAccountResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                           CancelAccountResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/cancel") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/cancel
--- 
--- The same as 'cancelAccount' but returns the raw 'Data.ByteString.Char8.ByteString'
-cancelAccountRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Linode.Common.Configuration s ->
-                    CancelAccountRequestBody ->
-                    m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-cancelAccountRaw config
-                 body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/cancel") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/cancel
--- 
--- Monadic version of 'cancelAccount' (use with 'Linode.Common.runWithConfiguration')
-cancelAccountM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  CancelAccountRequestBody ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response CancelAccountResponse))
-cancelAccountM body = GHC.Base.fmap (GHC.Base.fmap (\response_3 -> GHC.Base.fmap (Data.Either.either CancelAccountResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_4 -> Network.HTTP.Types.Status.statusCode status_4 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CancelAccountResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                          CancelAccountResponseBody200)
-                                                                                                                                                                             | (\status_5 -> Network.HTTP.Types.Status.statusCode status_5 GHC.Classes.== 409) (Network.HTTP.Client.Types.responseStatus response) -> CancelAccountResponse409 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                          CancelAccountResponseBody409)
-                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CancelAccountResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                            CancelAccountResponseBodyDefault)
-                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_3) response_3)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/cancel") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/cancel
--- 
--- Monadic version of 'cancelAccountRaw' (use with 'Linode.Common.runWithConfiguration')
-cancelAccountRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     CancelAccountRequestBody ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-cancelAccountRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/cancel") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema cancelAccountRequestBody
+cancelAccount :: forall m . Linode.Common.MonadHTTP m => CancelAccountRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CancelAccountResponse) -- ^ Monadic computation which returns the result of the operation
+cancelAccount body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CancelAccountResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CancelAccountResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                          CancelAccountResponseBody200)
+                                                                                                                                                             | (\status_2 -> Network.HTTP.Types.Status.statusCode status_2 GHC.Classes.== 409) (Network.HTTP.Client.Types.responseStatus response) -> CancelAccountResponse409 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                          CancelAccountResponseBody409)
+                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CancelAccountResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                            CancelAccountResponseBodyDefault)
+                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/cancel") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/account\/cancel.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CancelAccountRequestBody = CancelAccountRequestBody {
   -- | comments: Any reason for cancelling the account, and any other comments you might have about your Linode service.
-  cancelAccountRequestBodyComments :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  cancelAccountRequestBodyComments :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CancelAccountRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "comments" (cancelAccountRequestBodyComments obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "comments" (cancelAccountRequestBodyComments obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CancelAccountRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("comments" Data.Aeson.Types.ToJSON..= cancelAccountRequestBodyComments obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("comments" Data.Aeson.Types.ToJSON..= cancelAccountRequestBodyComments obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CancelAccountRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CancelAccountRequestBody" (\obj -> GHC.Base.pure CancelAccountRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "comments"))
+-- | Create a new 'CancelAccountRequestBody' with all required fields.
+mkCancelAccountRequestBody :: CancelAccountRequestBody
+mkCancelAccountRequestBody = CancelAccountRequestBody{cancelAccountRequestBodyComments = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'cancelAccount'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CancelAccountResponseError' is used.
-data CancelAccountResponse =                                       
-   CancelAccountResponseError GHC.Base.String                      -- ^ Means either no matching case available or a parse error
-  | CancelAccountResponse200 CancelAccountResponseBody200          -- ^ Account cancelled
-  | CancelAccountResponse409 CancelAccountResponseBody409          -- ^ Could not charge the credit card on file
-  | CancelAccountResponseDefault CancelAccountResponseBodyDefault  -- ^ Error
+data CancelAccountResponse =
+   CancelAccountResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CancelAccountResponse200 CancelAccountResponseBody200 -- ^ Account cancelled
+  | CancelAccountResponse409 CancelAccountResponseBody409 -- ^ Could not charge the credit card on file
+  | CancelAccountResponseDefault CancelAccountResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CancelAccountResponseBody200
+-- | Defines the object schema located at @paths.\/account\/cancel.POST.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CancelAccountResponseBody200 = CancelAccountResponseBody200 {
-  -- | survey_link: A link to Linodes exit survey.
-  cancelAccountResponseBody200Survey_link :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  -- | survey_link: A link to Linode\'s exit survey.
+  cancelAccountResponseBody200SurveyLink :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CancelAccountResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "survey_link" (cancelAccountResponseBody200Survey_link obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "survey_link" (cancelAccountResponseBody200Survey_link obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CancelAccountResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("survey_link" Data.Aeson.Types.ToJSON..= cancelAccountResponseBody200SurveyLink obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("survey_link" Data.Aeson.Types.ToJSON..= cancelAccountResponseBody200SurveyLink obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CancelAccountResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CancelAccountResponseBody200" (\obj -> GHC.Base.pure CancelAccountResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "survey_link"))
--- | Defines the data type for the schema CancelAccountResponseBody409
+-- | Create a new 'CancelAccountResponseBody200' with all required fields.
+mkCancelAccountResponseBody200 :: CancelAccountResponseBody200
+mkCancelAccountResponseBody200 = CancelAccountResponseBody200{cancelAccountResponseBody200SurveyLink = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/account\/cancel.POST.responses.409.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CancelAccountResponseBody409 = CancelAccountResponseBody409 {
   -- | errors
-  cancelAccountResponseBody409Errors :: (GHC.Base.Maybe ([] CancelAccountResponseBody409Errors))
+  cancelAccountResponseBody409Errors :: (GHC.Maybe.Maybe ([CancelAccountResponseBody409Errors']))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CancelAccountResponseBody409
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (cancelAccountResponseBody409Errors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (cancelAccountResponseBody409Errors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CancelAccountResponseBody409
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= cancelAccountResponseBody409Errors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= cancelAccountResponseBody409Errors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CancelAccountResponseBody409
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CancelAccountResponseBody409" (\obj -> GHC.Base.pure CancelAccountResponseBody409 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
--- | Defines the data type for the schema CancelAccountResponseBody409Errors
+-- | Create a new 'CancelAccountResponseBody409' with all required fields.
+mkCancelAccountResponseBody409 :: CancelAccountResponseBody409
+mkCancelAccountResponseBody409 = CancelAccountResponseBody409{cancelAccountResponseBody409Errors = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/account\/cancel.POST.responses.409.content.application\/json.schema.properties.errors.items@ in the specification.
 -- 
 -- 
-data CancelAccountResponseBody409Errors = CancelAccountResponseBody409Errors {
+data CancelAccountResponseBody409Errors' = CancelAccountResponseBody409Errors' {
   -- | reason: A string explaining that the account could not be cancelled because there is an outstanding balance on the account that must be paid first.
-  cancelAccountResponseBody409ErrorsReason :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  cancelAccountResponseBody409Errors'Reason :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CancelAccountResponseBody409Errors
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "reason" (cancelAccountResponseBody409ErrorsReason obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "reason" (cancelAccountResponseBody409ErrorsReason obj))
-instance Data.Aeson.Types.FromJSON.FromJSON CancelAccountResponseBody409Errors
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CancelAccountResponseBody409Errors" (\obj -> GHC.Base.pure CancelAccountResponseBody409Errors GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "reason"))
--- | Defines the data type for the schema CancelAccountResponseBodyDefault
+instance Data.Aeson.Types.ToJSON.ToJSON CancelAccountResponseBody409Errors'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("reason" Data.Aeson.Types.ToJSON..= cancelAccountResponseBody409Errors'Reason obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("reason" Data.Aeson.Types.ToJSON..= cancelAccountResponseBody409Errors'Reason obj)
+instance Data.Aeson.Types.FromJSON.FromJSON CancelAccountResponseBody409Errors'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CancelAccountResponseBody409Errors'" (\obj -> GHC.Base.pure CancelAccountResponseBody409Errors' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "reason"))
+-- | Create a new 'CancelAccountResponseBody409Errors'' with all required fields.
+mkCancelAccountResponseBody409Errors' :: CancelAccountResponseBody409Errors'
+mkCancelAccountResponseBody409Errors' = CancelAccountResponseBody409Errors'{cancelAccountResponseBody409Errors'Reason = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CancelAccountResponseBodyDefault = CancelAccountResponseBodyDefault {
   -- | errors
-  cancelAccountResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  cancelAccountResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CancelAccountResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (cancelAccountResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (cancelAccountResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CancelAccountResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= cancelAccountResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= cancelAccountResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CancelAccountResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CancelAccountResponseBodyDefault" (\obj -> GHC.Base.pure CancelAccountResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CancelAccountResponseBodyDefault' with all required fields.
+mkCancelAccountResponseBodyDefault :: CancelAccountResponseBodyDefault
+mkCancelAccountResponseBodyDefault = CancelAccountResponseBodyDefault{cancelAccountResponseBodyDefaultErrors = GHC.Maybe.Nothing}

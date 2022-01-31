@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation mutateLinodeInstance
 module Linode.Operations.MutateLinodeInstance where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -46,95 +46,52 @@ import Linode.Types
 -- 
 -- Linodes created with now-deprecated Types are entitled to a free upgrade to the next generation. A mutating Linode will be allocated any new resources the upgraded Type provides, and will be subsequently restarted if it was currently running.
 -- If any actions are currently running or queued, those actions must be completed first before you can initiate a mutate.
-mutateLinodeInstance :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe MutateLinodeInstanceRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response MutateLinodeInstanceResponse)) -- ^ Monad containing the result of the operation
-mutateLinodeInstance config
-                     body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either MutateLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> MutateLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                              MutateLinodeInstanceResponseBody200)
-                                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> MutateLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                MutateLinodeInstanceResponseBodyDefault)
-                                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/mutate") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/mutate
--- 
--- The same as 'mutateLinodeInstance' but returns the raw 'Data.ByteString.Char8.ByteString'
-mutateLinodeInstanceRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           Linode.Common.Configuration s ->
-                           GHC.Base.Maybe MutateLinodeInstanceRequestBody ->
-                           m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-mutateLinodeInstanceRaw config
-                        body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/mutate") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/mutate
--- 
--- Monadic version of 'mutateLinodeInstance' (use with 'Linode.Common.runWithConfiguration')
-mutateLinodeInstanceM :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         GHC.Base.Maybe MutateLinodeInstanceRequestBody ->
-                         Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                            m
-                                                            (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                (Network.HTTP.Client.Types.Response MutateLinodeInstanceResponse))
-mutateLinodeInstanceM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either MutateLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> MutateLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                               MutateLinodeInstanceResponseBody200)
-                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> MutateLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                 MutateLinodeInstanceResponseBodyDefault)
-                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/mutate") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/mutate
--- 
--- Monadic version of 'mutateLinodeInstanceRaw' (use with 'Linode.Common.runWithConfiguration')
-mutateLinodeInstanceRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                          Linode.Common.SecurityScheme s) =>
-                            GHC.Base.Maybe MutateLinodeInstanceRequestBody ->
-                            Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                               m
-                                                               (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                   (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-mutateLinodeInstanceRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/mutate") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema mutateLinodeInstanceRequestBody
+mutateLinodeInstance :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ linodeId: ID of the Linode to mutate.
+  -> GHC.Maybe.Maybe MutateLinodeInstanceRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response MutateLinodeInstanceResponse) -- ^ Monadic computation which returns the result of the operation
+mutateLinodeInstance linodeId
+                     body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either MutateLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> MutateLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                               Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> MutateLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                 MutateLinodeInstanceResponseBodyDefault)
+                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel linodeId)) GHC.Base.++ "/mutate"))) GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/mutate.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data MutateLinodeInstanceRequestBody = MutateLinodeInstanceRequestBody {
   -- | allow_auto_disk_resize: Automatically resize disks when resizing a Linode. When resizing down to a smaller plan your Linode\'s data must fit within the smaller disk size.
-  mutateLinodeInstanceRequestBodyAllow_auto_disk_resize :: (GHC.Base.Maybe GHC.Types.Bool)
+  mutateLinodeInstanceRequestBodyAllowAutoDiskResize :: (GHC.Maybe.Maybe GHC.Types.Bool)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON MutateLinodeInstanceRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "allow_auto_disk_resize" (mutateLinodeInstanceRequestBodyAllow_auto_disk_resize obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "allow_auto_disk_resize" (mutateLinodeInstanceRequestBodyAllow_auto_disk_resize obj))
+instance Data.Aeson.Types.ToJSON.ToJSON MutateLinodeInstanceRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("allow_auto_disk_resize" Data.Aeson.Types.ToJSON..= mutateLinodeInstanceRequestBodyAllowAutoDiskResize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("allow_auto_disk_resize" Data.Aeson.Types.ToJSON..= mutateLinodeInstanceRequestBodyAllowAutoDiskResize obj)
 instance Data.Aeson.Types.FromJSON.FromJSON MutateLinodeInstanceRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "MutateLinodeInstanceRequestBody" (\obj -> GHC.Base.pure MutateLinodeInstanceRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "allow_auto_disk_resize"))
+-- | Create a new 'MutateLinodeInstanceRequestBody' with all required fields.
+mkMutateLinodeInstanceRequestBody :: MutateLinodeInstanceRequestBody
+mkMutateLinodeInstanceRequestBody = MutateLinodeInstanceRequestBody{mutateLinodeInstanceRequestBodyAllowAutoDiskResize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'mutateLinodeInstance'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'MutateLinodeInstanceResponseError' is used.
-data MutateLinodeInstanceResponse =                                              
-   MutateLinodeInstanceResponseError GHC.Base.String                             -- ^ Means either no matching case available or a parse error
-  | MutateLinodeInstanceResponse200 MutateLinodeInstanceResponseBody200          -- ^ Mutate started.
-  | MutateLinodeInstanceResponseDefault MutateLinodeInstanceResponseBodyDefault  -- ^ Error
+data MutateLinodeInstanceResponse =
+   MutateLinodeInstanceResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | MutateLinodeInstanceResponse200 Data.Aeson.Types.Internal.Object -- ^ Mutate started.
+  | MutateLinodeInstanceResponseDefault MutateLinodeInstanceResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema MutateLinodeInstanceResponseBody200
--- 
--- 
-data MutateLinodeInstanceResponseBody200 = MutateLinodeInstanceResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON MutateLinodeInstanceResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON MutateLinodeInstanceResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "MutateLinodeInstanceResponseBody200" (\obj -> GHC.Base.pure MutateLinodeInstanceResponseBody200)
--- | Defines the data type for the schema MutateLinodeInstanceResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data MutateLinodeInstanceResponseBodyDefault = MutateLinodeInstanceResponseBodyDefault {
   -- | errors
-  mutateLinodeInstanceResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  mutateLinodeInstanceResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON MutateLinodeInstanceResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (mutateLinodeInstanceResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (mutateLinodeInstanceResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON MutateLinodeInstanceResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= mutateLinodeInstanceResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= mutateLinodeInstanceResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON MutateLinodeInstanceResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "MutateLinodeInstanceResponseBodyDefault" (\obj -> GHC.Base.pure MutateLinodeInstanceResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'MutateLinodeInstanceResponseBodyDefault' with all required fields.
+mkMutateLinodeInstanceResponseBodyDefault :: MutateLinodeInstanceResponseBodyDefault
+mkMutateLinodeInstanceResponseBodyDefault = MutateLinodeInstanceResponseBodyDefault{mutateLinodeInstanceResponseBodyDefaultErrors = GHC.Maybe.Nothing}

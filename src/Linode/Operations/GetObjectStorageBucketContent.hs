@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getObjectStorageBucketContent
 module Linode.Operations.GetObjectStorageBucketContent where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -52,123 +52,103 @@ import Linode.Types
 -- 
 -- This endpoint is available for convenience. It is recommended that instead you
 -- use the more [fully-featured S3 API](https:\/\/docs.ceph.com\/en\/latest\/radosgw\/s3\/objectops\/\#get-object) directly.
-getObjectStorageBucketContent :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe Data.Text.Internal.Text                                                                                                    -- ^ marker: The \"marker\" for this request, which can be used to paginate through large buckets. Its value should be the value of the \`next_marker\` property returned with the last page. Listing bucket contents *does not* support arbitrary page access. See the \`next_marker\` property in the responses section for more details. 
-  -> GHC.Base.Maybe Data.Text.Internal.Text                                                                                                    -- ^ delimiter: The delimiter for object names; if given, object names will be returned up to the first occurrence of this character. This is most commonly used with the \`\/\` character to allow bucket transversal in a manner similar to a filesystem, however any delimiter may be used. Use in conjunction with \`prefix\` to see object names past the first occurrence of the delimiter. 
-  -> GHC.Base.Maybe Data.Text.Internal.Text                                                                                                    -- ^ prefix: Filters objects returned to only those whose name start with the given prefix. Commonly used in conjunction with \`delimiter\` to allow transversal of bucket contents in a manner similar to a filesystem. 
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                                   -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetObjectStorageBucketContentResponse)) -- ^ Monad containing the result of the operation
-getObjectStorageBucketContent config
-                              marker
-                              delimiter
-                              prefix
-                              page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetObjectStorageBucketContentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetObjectStorageBucketContentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              GetObjectStorageBucketContentResponseBody200)
-                                                                                                                                                                                                                 | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetObjectStorageBucketContentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                GetObjectStorageBucketContentResponseBodyDefault)
-                                                                                                                                                                                                                 | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-list") ((Data.Text.pack "marker",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> marker) : ((Data.Text.pack "delimiter",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> delimiter) : ((Data.Text.pack "prefix",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              Linode.Common.stringifyModel Data.Functor.<$> prefix) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))))
--- | > GET /object-storage/buckets/{clusterId}/{bucket}/object-list
+getObjectStorageBucketContent :: forall m . Linode.Common.MonadHTTP m => GetObjectStorageBucketContentParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetObjectStorageBucketContentResponse) -- ^ Monadic computation which returns the result of the operation
+getObjectStorageBucketContent parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetObjectStorageBucketContentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetObjectStorageBucketContentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                GetObjectStorageBucketContentResponseBody200)
+                                                                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetObjectStorageBucketContentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                  GetObjectStorageBucketContentResponseBodyDefault)
+                                                                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack (("/object-storage/buckets/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getObjectStorageBucketContentParametersPathClusterId parameters))) GHC.Base.++ "/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getObjectStorageBucketContentParametersPathBucket parameters))) GHC.Base.++ "/object-list"))) [Linode.Common.QueryParameter (Data.Text.pack "delimiter") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getObjectStorageBucketContentParametersQueryDelimiter parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           Linode.Common.QueryParameter (Data.Text.pack "marker") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getObjectStorageBucketContentParametersQueryMarker parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getObjectStorageBucketContentParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           Linode.Common.QueryParameter (Data.Text.pack "prefix") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getObjectStorageBucketContentParametersQueryPrefix parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/object-list.GET.parameters@ in the specification.
 -- 
--- The same as 'getObjectStorageBucketContent' but returns the raw 'Data.ByteString.Char8.ByteString'
-getObjectStorageBucketContentRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                                  Linode.Common.SecurityScheme s) =>
-                                    Linode.Common.Configuration s ->
-                                    GHC.Base.Maybe Data.Text.Internal.Text ->
-                                    GHC.Base.Maybe Data.Text.Internal.Text ->
-                                    GHC.Base.Maybe Data.Text.Internal.Text ->
-                                    GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                                    m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                          (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getObjectStorageBucketContentRaw config
-                                 marker
-                                 delimiter
-                                 prefix
-                                 page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-list") ((Data.Text.pack "marker",
-                                                                                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> marker) : ((Data.Text.pack "delimiter",
-                                                                                                                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> delimiter) : ((Data.Text.pack "prefix",
-                                                                                                                                                                                                                                                                                                                                                                   Linode.Common.stringifyModel Data.Functor.<$> prefix) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                              Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))))
--- | > GET /object-storage/buckets/{clusterId}/{bucket}/object-list
 -- 
--- Monadic version of 'getObjectStorageBucketContent' (use with 'Linode.Common.runWithConfiguration')
-getObjectStorageBucketContentM :: forall m s . (Linode.Common.MonadHTTP m,
-                                                Linode.Common.SecurityScheme s) =>
-                                  GHC.Base.Maybe Data.Text.Internal.Text ->
-                                  GHC.Base.Maybe Data.Text.Internal.Text ->
-                                  GHC.Base.Maybe Data.Text.Internal.Text ->
-                                  GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                     m
-                                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                         (Network.HTTP.Client.Types.Response GetObjectStorageBucketContentResponse))
-getObjectStorageBucketContentM marker
-                               delimiter
-                               prefix
-                               page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetObjectStorageBucketContentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetObjectStorageBucketContentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                               GetObjectStorageBucketContentResponseBody200)
-                                                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetObjectStorageBucketContentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                 GetObjectStorageBucketContentResponseBodyDefault)
-                                                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-list") ((Data.Text.pack "marker",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> marker) : ((Data.Text.pack "delimiter",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           Linode.Common.stringifyModel Data.Functor.<$> delimiter) : ((Data.Text.pack "prefix",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> prefix) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))))
--- | > GET /object-storage/buckets/{clusterId}/{bucket}/object-list
--- 
--- Monadic version of 'getObjectStorageBucketContentRaw' (use with 'Linode.Common.runWithConfiguration')
-getObjectStorageBucketContentRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                                   Linode.Common.SecurityScheme s) =>
-                                     GHC.Base.Maybe Data.Text.Internal.Text ->
-                                     GHC.Base.Maybe Data.Text.Internal.Text ->
-                                     GHC.Base.Maybe Data.Text.Internal.Text ->
-                                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                        m
-                                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getObjectStorageBucketContentRawM marker
-                                  delimiter
-                                  prefix
-                                  page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/object-storage/buckets/{clusterId}/{bucket}/object-list") ((Data.Text.pack "marker",
-                                                                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> marker) : ((Data.Text.pack "delimiter",
-                                                                                                                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> delimiter) : ((Data.Text.pack "prefix",
-                                                                                                                                                                                                                                                                                                                                                              Linode.Common.stringifyModel Data.Functor.<$> prefix) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))))
+data GetObjectStorageBucketContentParameters = GetObjectStorageBucketContentParameters {
+  -- | pathBucket: Represents the parameter named \'bucket\'
+  -- 
+  -- The bucket name.
+  getObjectStorageBucketContentParametersPathBucket :: Data.Text.Internal.Text
+  -- | pathClusterId: Represents the parameter named \'clusterId\'
+  -- 
+  -- The ID of the cluster this bucket exists in.
+  , getObjectStorageBucketContentParametersPathClusterId :: Data.Text.Internal.Text
+  -- | queryDelimiter: Represents the parameter named \'delimiter\'
+  -- 
+  -- The delimiter for object names; if given, object names will be returned up to the first occurrence of this character. This is most commonly used with the \`\/\` character to allow bucket transversal in a manner similar to a filesystem, however any delimiter may be used. Use in conjunction with \`prefix\` to see object names past the first occurrence of the delimiter.
+  , getObjectStorageBucketContentParametersQueryDelimiter :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
+  -- | queryMarker: Represents the parameter named \'marker\'
+  -- 
+  -- The \"marker\" for this request, which can be used to paginate through large buckets. Its value should be the value of the \`next_marker\` property returned with the last page. Listing bucket contents *does not* support arbitrary page access. See the \`next_marker\` property in the responses section for more details.
+  , getObjectStorageBucketContentParametersQueryMarker :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getObjectStorageBucketContentParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPrefix: Represents the parameter named \'prefix\'
+  -- 
+  -- Filters objects returned to only those whose name start with the given prefix. Commonly used in conjunction with \`delimiter\` to allow transversal of bucket contents in a manner similar to a filesystem.
+  , getObjectStorageBucketContentParametersQueryPrefix :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetObjectStorageBucketContentParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathBucket" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersPathBucket obj : "pathClusterId" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersPathClusterId obj : "queryDelimiter" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersQueryDelimiter obj : "queryMarker" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersQueryMarker obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersQueryPageSize obj : "queryPrefix" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersQueryPrefix obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathBucket" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersPathBucket obj) GHC.Base.<> (("pathClusterId" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersPathClusterId obj) GHC.Base.<> (("queryDelimiter" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersQueryDelimiter obj) GHC.Base.<> (("queryMarker" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersQueryMarker obj) GHC.Base.<> (("queryPage_size" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersQueryPageSize obj) GHC.Base.<> ("queryPrefix" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentParametersQueryPrefix obj))))))
+instance Data.Aeson.Types.FromJSON.FromJSON GetObjectStorageBucketContentParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetObjectStorageBucketContentParameters" (\obj -> (((((GHC.Base.pure GetObjectStorageBucketContentParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathBucket")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathClusterId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryDelimiter")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryMarker")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPrefix"))
+-- | Create a new 'GetObjectStorageBucketContentParameters' with all required fields.
+mkGetObjectStorageBucketContentParameters :: Data.Text.Internal.Text -- ^ 'getObjectStorageBucketContentParametersPathBucket'
+  -> Data.Text.Internal.Text -- ^ 'getObjectStorageBucketContentParametersPathClusterId'
+  -> GetObjectStorageBucketContentParameters
+mkGetObjectStorageBucketContentParameters getObjectStorageBucketContentParametersPathBucket getObjectStorageBucketContentParametersPathClusterId = GetObjectStorageBucketContentParameters{getObjectStorageBucketContentParametersPathBucket = getObjectStorageBucketContentParametersPathBucket,
+                                                                                                                                                                                           getObjectStorageBucketContentParametersPathClusterId = getObjectStorageBucketContentParametersPathClusterId,
+                                                                                                                                                                                           getObjectStorageBucketContentParametersQueryDelimiter = GHC.Maybe.Nothing,
+                                                                                                                                                                                           getObjectStorageBucketContentParametersQueryMarker = GHC.Maybe.Nothing,
+                                                                                                                                                                                           getObjectStorageBucketContentParametersQueryPageSize = GHC.Maybe.Nothing,
+                                                                                                                                                                                           getObjectStorageBucketContentParametersQueryPrefix = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getObjectStorageBucketContent'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetObjectStorageBucketContentResponseError' is used.
-data GetObjectStorageBucketContentResponse =                                                       
-   GetObjectStorageBucketContentResponseError GHC.Base.String                                      -- ^ Means either no matching case available or a parse error
-  | GetObjectStorageBucketContentResponse200 GetObjectStorageBucketContentResponseBody200          -- ^ One page of the requested bucket\'s contents.
-  | GetObjectStorageBucketContentResponseDefault GetObjectStorageBucketContentResponseBodyDefault  -- ^ Error
+data GetObjectStorageBucketContentResponse =
+   GetObjectStorageBucketContentResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetObjectStorageBucketContentResponse200 GetObjectStorageBucketContentResponseBody200 -- ^ One page of the requested bucket\'s contents.
+  | GetObjectStorageBucketContentResponseDefault GetObjectStorageBucketContentResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetObjectStorageBucketContentResponseBody200
+-- | Defines the object schema located at @paths.\/object-storage\/buckets\/{clusterId}\/{bucket}\/object-list.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetObjectStorageBucketContentResponseBody200 = GetObjectStorageBucketContentResponseBody200 {
   -- | data: This page of objects in the bucket.
-  getObjectStorageBucketContentResponseBody200Data :: (GHC.Base.Maybe ([] ObjectStorageObject))
+  getObjectStorageBucketContentResponseBody200Data :: (GHC.Maybe.Maybe ([ObjectStorageObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetObjectStorageBucketContentResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getObjectStorageBucketContentResponseBody200Data obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getObjectStorageBucketContentResponseBody200Data obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetObjectStorageBucketContentResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentResponseBody200Data obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("data" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentResponseBody200Data obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetObjectStorageBucketContentResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetObjectStorageBucketContentResponseBody200" (\obj -> GHC.Base.pure GetObjectStorageBucketContentResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data"))
--- | Defines the data type for the schema GetObjectStorageBucketContentResponseBodyDefault
+-- | Create a new 'GetObjectStorageBucketContentResponseBody200' with all required fields.
+mkGetObjectStorageBucketContentResponseBody200 :: GetObjectStorageBucketContentResponseBody200
+mkGetObjectStorageBucketContentResponseBody200 = GetObjectStorageBucketContentResponseBody200{getObjectStorageBucketContentResponseBody200Data = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetObjectStorageBucketContentResponseBodyDefault = GetObjectStorageBucketContentResponseBodyDefault {
   -- | errors
-  getObjectStorageBucketContentResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getObjectStorageBucketContentResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetObjectStorageBucketContentResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getObjectStorageBucketContentResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getObjectStorageBucketContentResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetObjectStorageBucketContentResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getObjectStorageBucketContentResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetObjectStorageBucketContentResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetObjectStorageBucketContentResponseBodyDefault" (\obj -> GHC.Base.pure GetObjectStorageBucketContentResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetObjectStorageBucketContentResponseBodyDefault' with all required fields.
+mkGetObjectStorageBucketContentResponseBodyDefault :: GetObjectStorageBucketContentResponseBodyDefault
+mkGetObjectStorageBucketContentResponseBodyDefault = GetObjectStorageBucketContentResponseBodyDefault{getObjectStorageBucketContentResponseBodyDefaultErrors = GHC.Maybe.Nothing}

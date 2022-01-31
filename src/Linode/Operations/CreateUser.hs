@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createUser
 module Linode.Operations.CreateUser where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -47,60 +47,21 @@ import Linode.Types
 -- Creates a User on your Account. Once created, a confirmation message containing password creation and login instructions is sent to the User\'s email address.
 -- 
 -- The User\'s account access is determined by whether or not they are restricted, and what grants they have been given.
-createUser :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe CreateUserRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateUserResponse)) -- ^ Monad containing the result of the operation
-createUser config
-           body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateUserResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateUserResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                User)
-                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateUserResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                  CreateUserResponseBodyDefault)
-                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/users") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/users
--- 
--- The same as 'createUser' but returns the raw 'Data.ByteString.Char8.ByteString'
-createUserRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Linode.Common.Configuration s ->
-                 GHC.Base.Maybe CreateUserRequestBody ->
-                 m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createUserRaw config
-              body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/users") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/users
--- 
--- Monadic version of 'createUser' (use with 'Linode.Common.runWithConfiguration')
-createUserM :: forall m s . (Linode.Common.MonadHTTP m,
-                             Linode.Common.SecurityScheme s) =>
-               GHC.Base.Maybe CreateUserRequestBody ->
-               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                  m
-                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                      (Network.HTTP.Client.Types.Response CreateUserResponse))
-createUserM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateUserResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateUserResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                 User)
-                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateUserResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                   CreateUserResponseBodyDefault)
-                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/users") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/users
--- 
--- Monadic version of 'createUserRaw' (use with 'Linode.Common.runWithConfiguration')
-createUserRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  GHC.Base.Maybe CreateUserRequestBody ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createUserRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/users") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createUserRequestBody
+createUser :: forall m . Linode.Common.MonadHTTP m => GHC.Maybe.Maybe CreateUserRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateUserResponse) -- ^ Monadic computation which returns the result of the operation
+createUser body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateUserResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateUserResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                 User)
+                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateUserResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                   CreateUserResponseBodyDefault)
+                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/users") GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/account\/users.POST.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data CreateUserRequestBody = CreateUserRequestBody {
   -- | email: The email address for the User. Linode sends emails to this address for account management communications. May be used for other communications as configured.
-  createUserRequestBodyEmail :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  createUserRequestBodyEmail :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | restricted: If true, the User must be granted access to perform actions or access entities on this Account. See User Grants View ([GET \/account\/users\/{username}\/grants](\/docs\/api\/account\/\#users-grants-view)) for details on how to configure grants for a restricted User.
-  , createUserRequestBodyRestricted :: (GHC.Base.Maybe GHC.Types.Bool)
+  , createUserRequestBodyRestricted :: (GHC.Maybe.Maybe GHC.Types.Bool)
   -- | ssh_keys: A list of SSH Key labels added by this User.
   -- 
   -- Users can add keys with the SSH Key Add ([POST \/profile\/sshkeys](\/docs\/api\/profile\/\#ssh-key-add)) command.
@@ -110,9 +71,9 @@ data CreateUserRequestBody = CreateUserRequestBody {
   -- - Linode Create ([POST \/linode\/instances](\/docs\/api\/linode-instances\/\#linode-create))
   -- - Linode Rebuild ([POST \/linode\/instances\/{linodeId}\/rebuild](\/docs\/api\/linode-instances\/\#linode-rebuild))
   -- - Disk Create ([POST \/linode\/instances\/{linodeId}\/disks](\/docs\/api\/linode-instances\/\#disk-create))
-  , createUserRequestBodySsh_keys :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  , createUserRequestBodySshKeys :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   -- | tfa_enabled: A boolean value indicating if the User has Two Factor Authentication (TFA) enabled. See the Create Two Factor Secret ([POST \/profile\/tfa-enable](\/docs\/api\/profile\/\#two-factor-secret-create)) endpoint to enable TFA.
-  , createUserRequestBodyTfa_enabled :: (GHC.Base.Maybe GHC.Types.Bool)
+  , createUserRequestBodyTfaEnabled :: (GHC.Maybe.Maybe GHC.Types.Bool)
   -- | username: The User\'s username. This is used for logging in, and may also be displayed alongside actions the User performs (for example, in Events or public StackScripts).
   -- 
   -- 
@@ -121,32 +82,42 @@ data CreateUserRequestBody = CreateUserRequestBody {
   -- * Maximum length of 32
   -- * Minimum length of 3
   -- * Must match pattern \'^[a-zA-Z0-9]((?![_-]{2,})[a-zA-Z0-9-_])+[a-zA-Z0-9]\$\'
-  , createUserRequestBodyUsername :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createUserRequestBodyUsername :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateUserRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "email" (createUserRequestBodyEmail obj) : (Data.Aeson..=) "restricted" (createUserRequestBodyRestricted obj) : (Data.Aeson..=) "ssh_keys" (createUserRequestBodySsh_keys obj) : (Data.Aeson..=) "tfa_enabled" (createUserRequestBodyTfa_enabled obj) : (Data.Aeson..=) "username" (createUserRequestBodyUsername obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "email" (createUserRequestBodyEmail obj) GHC.Base.<> ((Data.Aeson..=) "restricted" (createUserRequestBodyRestricted obj) GHC.Base.<> ((Data.Aeson..=) "ssh_keys" (createUserRequestBodySsh_keys obj) GHC.Base.<> ((Data.Aeson..=) "tfa_enabled" (createUserRequestBodyTfa_enabled obj) GHC.Base.<> (Data.Aeson..=) "username" (createUserRequestBodyUsername obj)))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateUserRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("email" Data.Aeson.Types.ToJSON..= createUserRequestBodyEmail obj : "restricted" Data.Aeson.Types.ToJSON..= createUserRequestBodyRestricted obj : "ssh_keys" Data.Aeson.Types.ToJSON..= createUserRequestBodySshKeys obj : "tfa_enabled" Data.Aeson.Types.ToJSON..= createUserRequestBodyTfaEnabled obj : "username" Data.Aeson.Types.ToJSON..= createUserRequestBodyUsername obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("email" Data.Aeson.Types.ToJSON..= createUserRequestBodyEmail obj) GHC.Base.<> (("restricted" Data.Aeson.Types.ToJSON..= createUserRequestBodyRestricted obj) GHC.Base.<> (("ssh_keys" Data.Aeson.Types.ToJSON..= createUserRequestBodySshKeys obj) GHC.Base.<> (("tfa_enabled" Data.Aeson.Types.ToJSON..= createUserRequestBodyTfaEnabled obj) GHC.Base.<> ("username" Data.Aeson.Types.ToJSON..= createUserRequestBodyUsername obj)))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateUserRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateUserRequestBody" (\obj -> ((((GHC.Base.pure CreateUserRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "email")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "restricted")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ssh_keys")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "tfa_enabled")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "username"))
+-- | Create a new 'CreateUserRequestBody' with all required fields.
+mkCreateUserRequestBody :: CreateUserRequestBody
+mkCreateUserRequestBody = CreateUserRequestBody{createUserRequestBodyEmail = GHC.Maybe.Nothing,
+                                                createUserRequestBodyRestricted = GHC.Maybe.Nothing,
+                                                createUserRequestBodySshKeys = GHC.Maybe.Nothing,
+                                                createUserRequestBodyTfaEnabled = GHC.Maybe.Nothing,
+                                                createUserRequestBodyUsername = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'createUser'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateUserResponseError' is used.
-data CreateUserResponse =                                    
-   CreateUserResponseError GHC.Base.String                   -- ^ Means either no matching case available or a parse error
-  | CreateUserResponse200 User                               -- ^ New User created successfully.
-  | CreateUserResponseDefault CreateUserResponseBodyDefault  -- ^ Error
+data CreateUserResponse =
+   CreateUserResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateUserResponse200 User -- ^ New User created successfully.
+  | CreateUserResponseDefault CreateUserResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateUserResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateUserResponseBodyDefault = CreateUserResponseBodyDefault {
   -- | errors
-  createUserResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createUserResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateUserResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createUserResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createUserResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateUserResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createUserResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createUserResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateUserResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateUserResponseBodyDefault" (\obj -> GHC.Base.pure CreateUserResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateUserResponseBodyDefault' with all required fields.
+mkCreateUserResponseBodyDefault :: CreateUserResponseBodyDefault
+mkCreateUserResponseBodyDefault = CreateUserResponseBodyDefault{createUserResponseBodyDefaultErrors = GHC.Maybe.Nothing}

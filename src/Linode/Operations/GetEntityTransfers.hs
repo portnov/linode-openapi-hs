@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getEntityTransfers
 module Linode.Operations.GetEntityTransfers where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,96 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /account/entity-transfers
 -- 
 -- **DEPRECATED**. Please use [Service Transfers List](\/docs\/api\/account\/\#service-transfers-list).
-getEntityTransfers :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                        -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                        -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetEntityTransfersResponse)) -- ^ Monad containing the result of the operation
-getEntityTransfers config
-                   page
-                   page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetEntityTransfersResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetEntityTransfersResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                             GetEntityTransfersResponseBody200)
-                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetEntityTransfersResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                               GetEntityTransfersResponseBodyDefault)
-                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/entity-transfers") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/entity-transfers
+getEntityTransfers :: forall m . Linode.Common.MonadHTTP m => GetEntityTransfersParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetEntityTransfersResponse) -- ^ Monadic computation which returns the result of the operation
+getEntityTransfers parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetEntityTransfersResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetEntityTransfersResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                               GetEntityTransfersResponseBody200)
+                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetEntityTransfersResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                 GetEntityTransfersResponseBodyDefault)
+                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/entity-transfers") [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getEntityTransfersParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                          Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getEntityTransfersParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/account\/entity-transfers.GET.parameters@ in the specification.
 -- 
--- The same as 'getEntityTransfers' but returns the raw 'Data.ByteString.Char8.ByteString'
-getEntityTransfersRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                         GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getEntityTransfersRaw config
-                      page
-                      page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/entity-transfers") ((Data.Text.pack "page",
-                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/entity-transfers
 -- 
--- Monadic version of 'getEntityTransfers' (use with 'Linode.Common.runWithConfiguration')
-getEntityTransfersM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response GetEntityTransfersResponse))
-getEntityTransfersM page
-                    page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetEntityTransfersResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetEntityTransfersResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                              GetEntityTransfersResponseBody200)
-                                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetEntityTransfersResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                GetEntityTransfersResponseBodyDefault)
-                                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/entity-transfers") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                           Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/entity-transfers
--- 
--- Monadic version of 'getEntityTransfersRaw' (use with 'Linode.Common.runWithConfiguration')
-getEntityTransfersRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                          GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getEntityTransfersRawM page
-                       page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/entity-transfers") ((Data.Text.pack "page",
-                                                                                                                                                                                           Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                    Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetEntityTransfersParameters = GetEntityTransfersParameters {
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  getEntityTransfersParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getEntityTransfersParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetEntityTransfersParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("queryPage" Data.Aeson.Types.ToJSON..= getEntityTransfersParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getEntityTransfersParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("queryPage" Data.Aeson.Types.ToJSON..= getEntityTransfersParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getEntityTransfersParametersQueryPageSize obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetEntityTransfersParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetEntityTransfersParameters" (\obj -> (GHC.Base.pure GetEntityTransfersParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetEntityTransfersParameters' with all required fields.
+mkGetEntityTransfersParameters :: GetEntityTransfersParameters
+mkGetEntityTransfersParameters = GetEntityTransfersParameters{getEntityTransfersParametersQueryPage = GHC.Maybe.Nothing,
+                                                              getEntityTransfersParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getEntityTransfers'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetEntityTransfersResponseError' is used.
-data GetEntityTransfersResponse =                                            
-   GetEntityTransfersResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | GetEntityTransfersResponse200 GetEntityTransfersResponseBody200          -- ^ Returns a paginated list of Entity Transfer objects containing the details of all transfers that have been created and accepted by this account. 
-  | GetEntityTransfersResponseDefault GetEntityTransfersResponseBodyDefault  -- ^ Error
+data GetEntityTransfersResponse =
+   GetEntityTransfersResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetEntityTransfersResponse200 GetEntityTransfersResponseBody200 -- ^ Returns a paginated list of Entity Transfer objects containing the details of all transfers that have been created and accepted by this account. 
+  | GetEntityTransfersResponseDefault GetEntityTransfersResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetEntityTransfersResponseBody200
+-- | Defines the object schema located at @paths.\/account\/entity-transfers.GET.responses.200.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data GetEntityTransfersResponseBody200 = GetEntityTransfersResponseBody200 {
   -- | data
-  getEntityTransfersResponseBody200Data :: (GHC.Base.Maybe ([] EntityTransfer))
+  getEntityTransfersResponseBody200Data :: (GHC.Maybe.Maybe ([EntityTransfer]))
   -- | page: The current [page](\/docs\/api\/\#pagination).
-  , getEntityTransfersResponseBody200Page :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , getEntityTransfersResponseBody200Page :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
-  , getEntityTransfersResponseBody200Pages :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , getEntityTransfersResponseBody200Pages :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | results: The total number of results.
-  , getEntityTransfersResponseBody200Results :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , getEntityTransfersResponseBody200Results :: (GHC.Maybe.Maybe GHC.Types.Int)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetEntityTransfersResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getEntityTransfersResponseBody200Data obj) : (Data.Aeson..=) "page" (getEntityTransfersResponseBody200Page obj) : (Data.Aeson..=) "pages" (getEntityTransfersResponseBody200Pages obj) : (Data.Aeson..=) "results" (getEntityTransfersResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getEntityTransfersResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getEntityTransfersResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getEntityTransfersResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getEntityTransfersResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetEntityTransfersResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetEntityTransfersResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetEntityTransfersResponseBody200" (\obj -> (((GHC.Base.pure GetEntityTransfersResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetEntityTransfersResponseBodyDefault
+-- | Create a new 'GetEntityTransfersResponseBody200' with all required fields.
+mkGetEntityTransfersResponseBody200 :: GetEntityTransfersResponseBody200
+mkGetEntityTransfersResponseBody200 = GetEntityTransfersResponseBody200{getEntityTransfersResponseBody200Data = GHC.Maybe.Nothing,
+                                                                        getEntityTransfersResponseBody200Page = GHC.Maybe.Nothing,
+                                                                        getEntityTransfersResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                        getEntityTransfersResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetEntityTransfersResponseBodyDefault = GetEntityTransfersResponseBodyDefault {
   -- | errors
-  getEntityTransfersResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getEntityTransfersResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetEntityTransfersResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getEntityTransfersResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getEntityTransfersResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetEntityTransfersResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getEntityTransfersResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetEntityTransfersResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetEntityTransfersResponseBodyDefault" (\obj -> GHC.Base.pure GetEntityTransfersResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetEntityTransfersResponseBodyDefault' with all required fields.
+mkGetEntityTransfersResponseBodyDefault :: GetEntityTransfersResponseBodyDefault
+mkGetEntityTransfersResponseBodyDefault = GetEntityTransfersResponseBodyDefault{getEntityTransfersResponseBodyDefaultErrors = GHC.Maybe.Nothing}

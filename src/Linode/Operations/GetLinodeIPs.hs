@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getLinodeIPs
 module Linode.Operations.GetLinodeIPs where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,120 +41,104 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /linode/instances/{linodeId}/ips
 -- 
 -- Returns networking information for a single Linode.
-getLinodeIPs :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetLinodeIPsResponse)) -- ^ Monad containing the result of the operation
-getLinodeIPs config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLinodeIPsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeIPsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                        GetLinodeIPsResponseBody200)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeIPsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                          GetLinodeIPsResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/ips") [])
--- | > GET /linode/instances/{linodeId}/ips
--- 
--- The same as 'getLinodeIPs' but returns the raw 'Data.ByteString.Char8.ByteString'
-getLinodeIPsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   Linode.Common.Configuration s ->
-                   m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLinodeIPsRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/ips") [])
--- | > GET /linode/instances/{linodeId}/ips
--- 
--- Monadic version of 'getLinodeIPs' (use with 'Linode.Common.runWithConfiguration')
-getLinodeIPsM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response GetLinodeIPsResponse))
-getLinodeIPsM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetLinodeIPsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeIPsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                  GetLinodeIPsResponseBody200)
-                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeIPsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                    GetLinodeIPsResponseBodyDefault)
-                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/ips") [])
--- | > GET /linode/instances/{linodeId}/ips
--- 
--- Monadic version of 'getLinodeIPsRaw' (use with 'Linode.Common.runWithConfiguration')
-getLinodeIPsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLinodeIPsRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/ips") [])
+getLinodeIPs :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ linodeId: ID of the Linode to look up.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetLinodeIPsResponse) -- ^ Monadic computation which returns the result of the operation
+getLinodeIPs linodeId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLinodeIPsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeIPsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                           GetLinodeIPsResponseBody200)
+                                                                                                                                                               | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeIPsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                             GetLinodeIPsResponseBodyDefault)
+                                                                                                                                                               | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel linodeId)) GHC.Base.++ "/ips"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'getLinodeIPs'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetLinodeIPsResponseError' is used.
-data GetLinodeIPsResponse =                                      
-   GetLinodeIPsResponseError GHC.Base.String                     -- ^ Means either no matching case available or a parse error
-  | GetLinodeIPsResponse200 GetLinodeIPsResponseBody200          -- ^ Requested Linode\'s networking configuration.
-  | GetLinodeIPsResponseDefault GetLinodeIPsResponseBodyDefault  -- ^ Error
+data GetLinodeIPsResponse =
+   GetLinodeIPsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetLinodeIPsResponse200 GetLinodeIPsResponseBody200 -- ^ Requested Linode\'s networking configuration.
+  | GetLinodeIPsResponseDefault GetLinodeIPsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetLinodeIPsResponseBody200
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/ips.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLinodeIPsResponseBody200 = GetLinodeIPsResponseBody200 {
   -- | ipv4: Information about this Linode\'s IPv4 addresses.
-  getLinodeIPsResponseBody200Ipv4 :: (GHC.Base.Maybe GetLinodeIPsResponseBody200Ipv4)
+  getLinodeIPsResponseBody200Ipv4 :: (GHC.Maybe.Maybe GetLinodeIPsResponseBody200Ipv4')
   -- | ipv6: Information about this Linode\'s IPv6 addresses.
-  , getLinodeIPsResponseBody200Ipv6 :: (GHC.Base.Maybe GetLinodeIPsResponseBody200Ipv6)
+  , getLinodeIPsResponseBody200Ipv6 :: (GHC.Maybe.Maybe GetLinodeIPsResponseBody200Ipv6')
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeIPsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "ipv4" (getLinodeIPsResponseBody200Ipv4 obj) : (Data.Aeson..=) "ipv6" (getLinodeIPsResponseBody200Ipv6 obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "ipv4" (getLinodeIPsResponseBody200Ipv4 obj) GHC.Base.<> (Data.Aeson..=) "ipv6" (getLinodeIPsResponseBody200Ipv6 obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeIPsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("ipv4" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4 obj : "ipv6" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv6 obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("ipv4" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4 obj) GHC.Base.<> ("ipv6" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv6 obj))
 instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeIPsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeIPsResponseBody200" (\obj -> (GHC.Base.pure GetLinodeIPsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ipv4")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ipv6"))
--- | Defines the data type for the schema GetLinodeIPsResponseBody200Ipv4
+-- | Create a new 'GetLinodeIPsResponseBody200' with all required fields.
+mkGetLinodeIPsResponseBody200 :: GetLinodeIPsResponseBody200
+mkGetLinodeIPsResponseBody200 = GetLinodeIPsResponseBody200{getLinodeIPsResponseBody200Ipv4 = GHC.Maybe.Nothing,
+                                                            getLinodeIPsResponseBody200Ipv6 = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/ips.GET.responses.200.content.application\/json.schema.properties.ipv4@ in the specification.
 -- 
 -- Information about this Linode\'s IPv4 addresses.
-data GetLinodeIPsResponseBody200Ipv4 = GetLinodeIPsResponseBody200Ipv4 {
+data GetLinodeIPsResponseBody200Ipv4' = GetLinodeIPsResponseBody200Ipv4' {
   -- | private: A list of private IP Address objects belonging to this Linode.
-  getLinodeIPsResponseBody200Ipv4Private :: (GHC.Base.Maybe ([] IPAddressPrivate))
+  getLinodeIPsResponseBody200Ipv4'Private :: (GHC.Maybe.Maybe ([IPAddressPrivate]))
   -- | public: A list of public IP Address objects belonging to this Linode.
-  , getLinodeIPsResponseBody200Ipv4Public :: (GHC.Base.Maybe ([] IPAddress))
+  , getLinodeIPsResponseBody200Ipv4'Public :: (GHC.Maybe.Maybe ([IPAddress]))
   -- | reserved: A list of reserved IP Address objects belonging to this Linode.
-  , getLinodeIPsResponseBody200Ipv4Reserved :: (GHC.Base.Maybe ([] IPAddress))
+  , getLinodeIPsResponseBody200Ipv4'Reserved :: (GHC.Maybe.Maybe ([IPAddress]))
   -- | shared: A list of shared IP Address objects assigned to this Linode.
-  , getLinodeIPsResponseBody200Ipv4Shared :: (GHC.Base.Maybe ([] IPAddress))
+  , getLinodeIPsResponseBody200Ipv4'Shared :: (GHC.Maybe.Maybe ([IPAddress]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeIPsResponseBody200Ipv4
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "private" (getLinodeIPsResponseBody200Ipv4Private obj) : (Data.Aeson..=) "public" (getLinodeIPsResponseBody200Ipv4Public obj) : (Data.Aeson..=) "reserved" (getLinodeIPsResponseBody200Ipv4Reserved obj) : (Data.Aeson..=) "shared" (getLinodeIPsResponseBody200Ipv4Shared obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "private" (getLinodeIPsResponseBody200Ipv4Private obj) GHC.Base.<> ((Data.Aeson..=) "public" (getLinodeIPsResponseBody200Ipv4Public obj) GHC.Base.<> ((Data.Aeson..=) "reserved" (getLinodeIPsResponseBody200Ipv4Reserved obj) GHC.Base.<> (Data.Aeson..=) "shared" (getLinodeIPsResponseBody200Ipv4Shared obj))))
-instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeIPsResponseBody200Ipv4
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeIPsResponseBody200Ipv4" (\obj -> (((GHC.Base.pure GetLinodeIPsResponseBody200Ipv4 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "private")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "public")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "reserved")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "shared"))
--- | Defines the data type for the schema GetLinodeIPsResponseBody200Ipv6
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeIPsResponseBody200Ipv4'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("private" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4'Private obj : "public" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4'Public obj : "reserved" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4'Reserved obj : "shared" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4'Shared obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("private" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4'Private obj) GHC.Base.<> (("public" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4'Public obj) GHC.Base.<> (("reserved" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4'Reserved obj) GHC.Base.<> ("shared" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv4'Shared obj))))
+instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeIPsResponseBody200Ipv4'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeIPsResponseBody200Ipv4'" (\obj -> (((GHC.Base.pure GetLinodeIPsResponseBody200Ipv4' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "private")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "public")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "reserved")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "shared"))
+-- | Create a new 'GetLinodeIPsResponseBody200Ipv4'' with all required fields.
+mkGetLinodeIPsResponseBody200Ipv4' :: GetLinodeIPsResponseBody200Ipv4'
+mkGetLinodeIPsResponseBody200Ipv4' = GetLinodeIPsResponseBody200Ipv4'{getLinodeIPsResponseBody200Ipv4'Private = GHC.Maybe.Nothing,
+                                                                      getLinodeIPsResponseBody200Ipv4'Public = GHC.Maybe.Nothing,
+                                                                      getLinodeIPsResponseBody200Ipv4'Reserved = GHC.Maybe.Nothing,
+                                                                      getLinodeIPsResponseBody200Ipv4'Shared = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/ips.GET.responses.200.content.application\/json.schema.properties.ipv6@ in the specification.
 -- 
 -- Information about this Linode\'s IPv6 addresses.
-data GetLinodeIPsResponseBody200Ipv6 = GetLinodeIPsResponseBody200Ipv6 {
+data GetLinodeIPsResponseBody200Ipv6' = GetLinodeIPsResponseBody200Ipv6' {
   -- | global: An object representing an IPv6 pool.
-  getLinodeIPsResponseBody200Ipv6Global :: (GHC.Base.Maybe IPv6Pool)
+  getLinodeIPsResponseBody200Ipv6'Global :: (GHC.Maybe.Maybe IPv6Pool)
   -- | link_local: A link-local IPv6 address that exists in Linode\'s system,.
-  , getLinodeIPsResponseBody200Ipv6Link_local :: (GHC.Base.Maybe IPAddressV6LinkLocal)
+  , getLinodeIPsResponseBody200Ipv6'LinkLocal :: (GHC.Maybe.Maybe IPAddressV6LinkLocal)
   -- | slaac: A SLAAC IPv6 address that exists in Linode\'s system.
-  , getLinodeIPsResponseBody200Ipv6Slaac :: (GHC.Base.Maybe IPAddressV6Slaac)
+  , getLinodeIPsResponseBody200Ipv6'Slaac :: (GHC.Maybe.Maybe IPAddressV6Slaac)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeIPsResponseBody200Ipv6
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "global" (getLinodeIPsResponseBody200Ipv6Global obj) : (Data.Aeson..=) "link_local" (getLinodeIPsResponseBody200Ipv6Link_local obj) : (Data.Aeson..=) "slaac" (getLinodeIPsResponseBody200Ipv6Slaac obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "global" (getLinodeIPsResponseBody200Ipv6Global obj) GHC.Base.<> ((Data.Aeson..=) "link_local" (getLinodeIPsResponseBody200Ipv6Link_local obj) GHC.Base.<> (Data.Aeson..=) "slaac" (getLinodeIPsResponseBody200Ipv6Slaac obj)))
-instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeIPsResponseBody200Ipv6
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeIPsResponseBody200Ipv6" (\obj -> ((GHC.Base.pure GetLinodeIPsResponseBody200Ipv6 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "global")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "link_local")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "slaac"))
--- | Defines the data type for the schema GetLinodeIPsResponseBodyDefault
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeIPsResponseBody200Ipv6'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("global" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv6'Global obj : "link_local" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv6'LinkLocal obj : "slaac" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv6'Slaac obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("global" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv6'Global obj) GHC.Base.<> (("link_local" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv6'LinkLocal obj) GHC.Base.<> ("slaac" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBody200Ipv6'Slaac obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeIPsResponseBody200Ipv6'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeIPsResponseBody200Ipv6'" (\obj -> ((GHC.Base.pure GetLinodeIPsResponseBody200Ipv6' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "global")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "link_local")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "slaac"))
+-- | Create a new 'GetLinodeIPsResponseBody200Ipv6'' with all required fields.
+mkGetLinodeIPsResponseBody200Ipv6' :: GetLinodeIPsResponseBody200Ipv6'
+mkGetLinodeIPsResponseBody200Ipv6' = GetLinodeIPsResponseBody200Ipv6'{getLinodeIPsResponseBody200Ipv6'Global = GHC.Maybe.Nothing,
+                                                                      getLinodeIPsResponseBody200Ipv6'LinkLocal = GHC.Maybe.Nothing,
+                                                                      getLinodeIPsResponseBody200Ipv6'Slaac = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLinodeIPsResponseBodyDefault = GetLinodeIPsResponseBodyDefault {
   -- | errors
-  getLinodeIPsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getLinodeIPsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeIPsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getLinodeIPsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getLinodeIPsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeIPsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getLinodeIPsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeIPsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeIPsResponseBodyDefault" (\obj -> GHC.Base.pure GetLinodeIPsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetLinodeIPsResponseBodyDefault' with all required fields.
+mkGetLinodeIPsResponseBodyDefault :: GetLinodeIPsResponseBodyDefault
+mkGetLinodeIPsResponseBodyDefault = GetLinodeIPsResponseBodyDefault{getLinodeIPsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

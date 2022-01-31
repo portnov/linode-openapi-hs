@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createPaymentMethod
 module Linode.Operations.CreatePaymentMethod where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,7 +41,6 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > POST /account/payment-methods
 -- 
@@ -57,124 +56,56 @@ import Linode.ManualTypes
 -- with a valid \`zip\` by using the Account Update ([PUT \/account](\/docs\/api\/account\/\#account-update)) endpoint.
 -- 
 -- * A \`payment_method_add\` event is generated when a payment is successfully submitted.
-createPaymentMethod :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CreatePaymentMethodRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreatePaymentMethodResponse)) -- ^ Monad containing the result of the operation
-createPaymentMethod config
-                    body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePaymentMethodResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentMethodResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                           CreatePaymentMethodResponseBody200)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentMethodResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                             CreatePaymentMethodResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payment-methods") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/payment-methods
--- 
--- The same as 'createPaymentMethod' but returns the raw 'Data.ByteString.Char8.ByteString'
-createPaymentMethodRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          Linode.Common.Configuration s ->
-                          CreatePaymentMethodRequestBody ->
-                          m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPaymentMethodRaw config
-                       body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payment-methods") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/payment-methods
--- 
--- Monadic version of 'createPaymentMethod' (use with 'Linode.Common.runWithConfiguration')
-createPaymentMethodM :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        CreatePaymentMethodRequestBody ->
-                        Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                           m
-                                                           (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                               (Network.HTTP.Client.Types.Response CreatePaymentMethodResponse))
-createPaymentMethodM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreatePaymentMethodResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentMethodResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                            CreatePaymentMethodResponseBody200)
-                                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentMethodResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                              CreatePaymentMethodResponseBodyDefault)
-                                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payment-methods") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/payment-methods
--- 
--- Monadic version of 'createPaymentMethodRaw' (use with 'Linode.Common.runWithConfiguration')
-createPaymentMethodRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           CreatePaymentMethodRequestBody ->
-                           Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                              m
-                                                              (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                  (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPaymentMethodRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payment-methods") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createPaymentMethodRequestBody
+createPaymentMethod :: forall m . Linode.Common.MonadHTTP m => CreatePaymentMethodRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreatePaymentMethodResponse) -- ^ Monadic computation which returns the result of the operation
+createPaymentMethod body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePaymentMethodResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentMethodResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                            Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePaymentMethodResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                              CreatePaymentMethodResponseBodyDefault)
+                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payment-methods") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/account\/payment-methods.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- Payment Method Request Object.
 data CreatePaymentMethodRequestBody = CreatePaymentMethodRequestBody {
   -- | data: An object representing the credit card information you have on file with
   -- Linode to make Payments against your Account.
   createPaymentMethodRequestBodyData :: CreditCard
-  -- | is_default
-  , createPaymentMethodRequestBodyIs_default :: PaymentMethod_properties_is_default
-  -- | type: The type of Payment Method.
-  -- 
-  -- Alternative Payment Methods including Google Pay and PayPal can be added using Linode Cloud Manager. See our
-  -- guide on [Managing Billing in the Cloud Manager](\/docs\/guides\/manage-billing-in-cloud-manager\/)
-  -- for details and instructions.
-  , createPaymentMethodRequestBodyType :: CreatePaymentMethodRequestBodyType
+  -- | is_default: Whether this Payment Method is the default method for automatically processing service charges.
+  , createPaymentMethodRequestBodyIsDefault :: PaymentMethodPropertiesIsDefault
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePaymentMethodRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (createPaymentMethodRequestBodyData obj) : (Data.Aeson..=) "is_default" (createPaymentMethodRequestBodyIs_default obj) : (Data.Aeson..=) "type" (createPaymentMethodRequestBodyType obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (createPaymentMethodRequestBodyData obj) GHC.Base.<> ((Data.Aeson..=) "is_default" (createPaymentMethodRequestBodyIs_default obj) GHC.Base.<> (Data.Aeson..=) "type" (createPaymentMethodRequestBodyType obj)))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePaymentMethodRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= createPaymentMethodRequestBodyData obj : "is_default" Data.Aeson.Types.ToJSON..= createPaymentMethodRequestBodyIsDefault obj : "type" Data.Aeson.Types.ToJSON..= Data.Aeson.Types.Internal.String "credit_card" : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= createPaymentMethodRequestBodyData obj) GHC.Base.<> (("is_default" Data.Aeson.Types.ToJSON..= createPaymentMethodRequestBodyIsDefault obj) GHC.Base.<> ("type" Data.Aeson.Types.ToJSON..= Data.Aeson.Types.Internal.String "credit_card")))
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePaymentMethodRequestBody
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePaymentMethodRequestBody" (\obj -> ((GHC.Base.pure CreatePaymentMethodRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "is_default")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "type"))
--- | Defines the enum schema createPaymentMethodRequestBodyType
--- 
--- The type of Payment Method.
--- 
--- Alternative Payment Methods including Google Pay and PayPal can be added using Linode Cloud Manager. See our
--- guide on [Managing Billing in the Cloud Manager](\/docs\/guides\/manage-billing-in-cloud-manager\/)
--- for details and instructions.
-data CreatePaymentMethodRequestBodyType
-    = CreatePaymentMethodRequestBodyTypeEnumOther Data.Aeson.Types.Internal.Value
-    | CreatePaymentMethodRequestBodyTypeEnumTyped Data.Text.Internal.Text
-    | CreatePaymentMethodRequestBodyTypeEnumString_credit_card
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePaymentMethodRequestBodyType
-    where toJSON (CreatePaymentMethodRequestBodyTypeEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreatePaymentMethodRequestBodyTypeEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreatePaymentMethodRequestBodyTypeEnumString_credit_card) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "credit_card"
-instance Data.Aeson.FromJSON CreatePaymentMethodRequestBodyType
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "credit_card")
-                                          then CreatePaymentMethodRequestBodyTypeEnumString_credit_card
-                                          else CreatePaymentMethodRequestBodyTypeEnumOther val)
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePaymentMethodRequestBody" (\obj -> (GHC.Base.pure CreatePaymentMethodRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "is_default"))
+-- | Create a new 'CreatePaymentMethodRequestBody' with all required fields.
+mkCreatePaymentMethodRequestBody :: CreditCard -- ^ 'createPaymentMethodRequestBodyData'
+  -> PaymentMethodPropertiesIsDefault -- ^ 'createPaymentMethodRequestBodyIsDefault'
+  -> CreatePaymentMethodRequestBody
+mkCreatePaymentMethodRequestBody createPaymentMethodRequestBodyData createPaymentMethodRequestBodyIsDefault = CreatePaymentMethodRequestBody{createPaymentMethodRequestBodyData = createPaymentMethodRequestBodyData,
+                                                                                                                                             createPaymentMethodRequestBodyIsDefault = createPaymentMethodRequestBodyIsDefault}
 -- | Represents a response of the operation 'createPaymentMethod'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreatePaymentMethodResponseError' is used.
-data CreatePaymentMethodResponse =                                             
-   CreatePaymentMethodResponseError GHC.Base.String                            -- ^ Means either no matching case available or a parse error
-  | CreatePaymentMethodResponse200 CreatePaymentMethodResponseBody200          -- ^ Payment Method added.
-  | CreatePaymentMethodResponseDefault CreatePaymentMethodResponseBodyDefault  -- ^ Error
+data CreatePaymentMethodResponse =
+   CreatePaymentMethodResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreatePaymentMethodResponse200 Data.Aeson.Types.Internal.Object -- ^ Payment Method added.
+  | CreatePaymentMethodResponseDefault CreatePaymentMethodResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreatePaymentMethodResponseBody200
--- 
--- 
-data CreatePaymentMethodResponseBody200 = CreatePaymentMethodResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePaymentMethodResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON CreatePaymentMethodResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePaymentMethodResponseBody200" (\obj -> GHC.Base.pure CreatePaymentMethodResponseBody200)
--- | Defines the data type for the schema CreatePaymentMethodResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePaymentMethodResponseBodyDefault = CreatePaymentMethodResponseBodyDefault {
   -- | errors
-  createPaymentMethodResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createPaymentMethodResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePaymentMethodResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createPaymentMethodResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createPaymentMethodResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePaymentMethodResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createPaymentMethodResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createPaymentMethodResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePaymentMethodResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePaymentMethodResponseBodyDefault" (\obj -> GHC.Base.pure CreatePaymentMethodResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreatePaymentMethodResponseBodyDefault' with all required fields.
+mkCreatePaymentMethodResponseBodyDefault :: CreatePaymentMethodResponseBodyDefault
+mkCreatePaymentMethodResponseBodyDefault = CreatePaymentMethodResponseBodyDefault{createPaymentMethodResponseBodyDefaultErrors = GHC.Maybe.Nothing}

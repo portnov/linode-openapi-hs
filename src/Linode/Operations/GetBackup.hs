@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getBackup
 module Linode.Operations.GetBackup where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,64 +45,59 @@ import Linode.Types
 -- | > GET /linode/instances/{linodeId}/backups/{backupId}
 -- 
 -- Returns information about a Backup.
-getBackup :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetBackupResponse)) -- ^ Monad containing the result of the operation
-getBackup config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetBackupResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetBackupResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                               Backup)
-                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetBackupResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                 GetBackupResponseBodyDefault)
-                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/backups/{backupId}") [])
--- | > GET /linode/instances/{linodeId}/backups/{backupId}
+getBackup :: forall m . Linode.Common.MonadHTTP m => GetBackupParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetBackupResponse) -- ^ Monadic computation which returns the result of the operation
+getBackup parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetBackupResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetBackupResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                    Backup)
+                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetBackupResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                      GetBackupResponseBodyDefault)
+                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack (("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getBackupParametersPathLinodeId parameters))) GHC.Base.++ "/backups/")) GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getBackupParametersPathBackupId parameters))) GHC.Base.++ ""))) GHC.Base.mempty)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/backups\/{backupId}.GET.parameters@ in the specification.
 -- 
--- The same as 'getBackup' but returns the raw 'Data.ByteString.Char8.ByteString'
-getBackupRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                Linode.Common.Configuration s ->
-                m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getBackupRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/backups/{backupId}") [])
--- | > GET /linode/instances/{linodeId}/backups/{backupId}
 -- 
--- Monadic version of 'getBackup' (use with 'Linode.Common.runWithConfiguration')
-getBackupM :: forall m s . (Linode.Common.MonadHTTP m,
-                            Linode.Common.SecurityScheme s) =>
-              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                 m
-                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                     (Network.HTTP.Client.Types.Response GetBackupResponse))
-getBackupM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetBackupResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetBackupResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                         Backup)
-                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetBackupResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                           GetBackupResponseBodyDefault)
-                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/backups/{backupId}") [])
--- | > GET /linode/instances/{linodeId}/backups/{backupId}
--- 
--- Monadic version of 'getBackupRaw' (use with 'Linode.Common.runWithConfiguration')
-getBackupRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getBackupRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/backups/{backupId}") [])
+data GetBackupParameters = GetBackupParameters {
+  -- | pathBackupId: Represents the parameter named \'backupId\'
+  -- 
+  -- The ID of the Backup to look up.
+  getBackupParametersPathBackupId :: GHC.Types.Int
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- The ID of the Linode the Backup belongs to.
+  , getBackupParametersPathLinodeId :: GHC.Types.Int
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetBackupParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathBackupId" Data.Aeson.Types.ToJSON..= getBackupParametersPathBackupId obj : "pathLinodeId" Data.Aeson.Types.ToJSON..= getBackupParametersPathLinodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathBackupId" Data.Aeson.Types.ToJSON..= getBackupParametersPathBackupId obj) GHC.Base.<> ("pathLinodeId" Data.Aeson.Types.ToJSON..= getBackupParametersPathLinodeId obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetBackupParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupParameters" (\obj -> (GHC.Base.pure GetBackupParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathBackupId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId"))
+-- | Create a new 'GetBackupParameters' with all required fields.
+mkGetBackupParameters :: GHC.Types.Int -- ^ 'getBackupParametersPathBackupId'
+  -> GHC.Types.Int -- ^ 'getBackupParametersPathLinodeId'
+  -> GetBackupParameters
+mkGetBackupParameters getBackupParametersPathBackupId getBackupParametersPathLinodeId = GetBackupParameters{getBackupParametersPathBackupId = getBackupParametersPathBackupId,
+                                                                                                            getBackupParametersPathLinodeId = getBackupParametersPathLinodeId}
 -- | Represents a response of the operation 'getBackup'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetBackupResponseError' is used.
-data GetBackupResponse =                                   
-   GetBackupResponseError GHC.Base.String                  -- ^ Means either no matching case available or a parse error
-  | GetBackupResponse200 Backup                            -- ^ A single Backup.
-  | GetBackupResponseDefault GetBackupResponseBodyDefault  -- ^ Error
+data GetBackupResponse =
+   GetBackupResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetBackupResponse200 Backup -- ^ A single Backup.
+  | GetBackupResponseDefault GetBackupResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetBackupResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetBackupResponseBodyDefault = GetBackupResponseBodyDefault {
   -- | errors
-  getBackupResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getBackupResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetBackupResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getBackupResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getBackupResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetBackupResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getBackupResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getBackupResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetBackupResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupResponseBodyDefault" (\obj -> GHC.Base.pure GetBackupResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetBackupResponseBodyDefault' with all required fields.
+mkGetBackupResponseBodyDefault :: GetBackupResponseBodyDefault
+mkGetBackupResponseBodyDefault = GetBackupResponseBodyDefault{getBackupResponseBodyDefaultErrors = GHC.Maybe.Nothing}

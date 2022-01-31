@@ -77,7 +77,7 @@ library
       Linode.Operations.GetDomainZone
       Linode.Operations.GetImages
       Linode.Operations.CreateImage
-      Linode.Operations.Post_images_upload
+      Linode.Operations.PostImagesUpload
       Linode.Operations.GetImage
       Linode.Operations.UpdateImage
       Linode.Operations.DeleteImage
@@ -231,7 +231,7 @@ library
       Linode.Operations.UpdateNodeBalancerNode
       Linode.Operations.DeleteNodeBalancerConfigNode
       Linode.Operations.RebuildNodeBalancerConfig
-      Linode.Operations.Get_nodebalancers__nodeBalancerId__stats
+      Linode.Operations.GetNodebalancersNodeBalancerIdStats
       Linode.Operations.GetObjectStorageBuckets
       Linode.Operations.CreateObjectStorageBucket
       Linode.Operations.GetObjectStorageBucketinCluster
@@ -304,22 +304,28 @@ library
       Linode.Operations.DetachVolume
       Linode.Operations.ResizeVolume
       Linode.Types
-      Linode.CyclicTypes
+      Linode.TypeAlias
+      Linode.Types.Account
       Linode.Types.AccountSettings
       Linode.Types.AuthorizedApp
+      Linode.Types.Backup
       Linode.Types.CreditCard
       Linode.Types.CreditCardData
       Linode.Types.Device
+      Linode.Types.Devices
       Linode.Types.Disk
+      Linode.Types.DiskRequest
       Linode.Types.Domain
       Linode.Types.DomainRecord
       Linode.Types.EntityTransfer
       Linode.Types.ErrorObject
       Linode.Types.Event
+      Linode.Types.Firewall
       Linode.Types.FirewallDevices
       Linode.Types.FirewallRuleConfig
       Linode.Types.GooglePayData
       Linode.Types.Grant
+      Linode.Types.GrantsResponse
       Linode.Types.IPAddress
       Linode.Types.IPAddressPrivate
       Linode.Types.IPAddressV6LinkLocal
@@ -332,10 +338,14 @@ library
       Linode.Types.InvoiceItem
       Linode.Types.Kernel
       Linode.Types.LKECluster
+      Linode.Types.LKENodePool
+      Linode.Types.LKENodePoolRequestBody
       Linode.Types.LKENodeStatus
       Linode.Types.LKEVersion
       Linode.Types.Linode
+      Linode.Types.LinodeConfig
       Linode.Types.LinodeConfigInterface
+      Linode.Types.LinodeRequest
       Linode.Types.LinodeStats
       Linode.Types.LinodeType
       Linode.Types.Login
@@ -365,16 +375,19 @@ library
       Linode.Types.PayPalData
       Linode.Types.PayPalExecute
       Linode.Types.Payment
+      Linode.Types.PaymentMethod
       Linode.Types.PaymentRequest
       Linode.Types.PersonalAccessToken
       Linode.Types.Profile
       Linode.Types.Promotion
       Linode.Types.Region
+      Linode.Types.RescueDevices
       Linode.Types.SSHKey
       Linode.Types.SSHKeyRequest
       Linode.Types.ServiceTransfer
+      Linode.Types.StackScript
       Linode.Types.StatsData
-      Linode.Types.StatsDataUnavailable
+      Linode.Types.StatsDataAvailable
       Linode.Types.SupportTicket
       Linode.Types.SupportTicketReply
       Linode.Types.SupportTicketRequest
@@ -384,18 +397,15 @@ library
       Linode.Types.User
       Linode.Types.UserDefinedField
       Linode.Types.Vlans
+      Linode.Types.Volume
       Linode.Types.WarningObject
-      Linode.Types.Account
-      Linode.Types.Devices
-      Linode.Types.Firewall
-      Linode.Types.GrantsResponse
-      Linode.Types.LKENodePool
-      Linode.Types.LinodeConfigInterfaces
-      Linode.Types.PaymentMethod
-      Linode.Types.RescueDevices
-      Linode.Types.StackScript
-      Linode.Types.StatsDataAvailable
-      Linode.Types.LinodeConfig
+      Linode.Types.DiskPropertiesFilesystem
+      Linode.Types.EntityTransferPropertiesEntities
+      Linode.Types.FirewallPropertiesRules
+      Linode.Types.FirewallPropertiesStatus
+      Linode.Types.FirewallDevicesPropertiesEntity
+      Linode.Types.LKENodePoolPropertiesDisksItems
+      Linode.Types.ServiceTransferPropertiesEntities
       Linode.Configuration
       Linode.SecuritySchemes
       Linode.Common

@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation rebuildLinodeInstance
 module Linode.Operations.RebuildLinodeInstance where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,7 +41,6 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > POST /linode/instances/{linodeId}/rebuild
 -- 
@@ -52,96 +51,96 @@ import Linode.ManualTypes
 --   * Requires a \`root_pass\` be supplied to use for the root User\'s Account.
 --   * It is recommended to supply SSH keys for the root User using the
 --     \`authorized_keys\` field.
-rebuildLinodeInstance :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> RebuildLinodeInstanceRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response RebuildLinodeInstanceResponse)) -- ^ Monad containing the result of the operation
-rebuildLinodeInstance config
-                      body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either RebuildLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> RebuildLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                 Linode)
-                                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> RebuildLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                   RebuildLinodeInstanceResponseBodyDefault)
-                                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/rebuild") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/rebuild
--- 
--- The same as 'rebuildLinodeInstance' but returns the raw 'Data.ByteString.Char8.ByteString'
-rebuildLinodeInstanceRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                          Linode.Common.SecurityScheme s) =>
-                            Linode.Common.Configuration s ->
-                            RebuildLinodeInstanceRequestBody ->
-                            m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                  (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-rebuildLinodeInstanceRaw config
-                         body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/rebuild") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/rebuild
--- 
--- Monadic version of 'rebuildLinodeInstance' (use with 'Linode.Common.runWithConfiguration')
-rebuildLinodeInstanceM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          RebuildLinodeInstanceRequestBody ->
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response RebuildLinodeInstanceResponse))
-rebuildLinodeInstanceM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either RebuildLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> RebuildLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                  Linode)
-                                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> RebuildLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                    RebuildLinodeInstanceResponseBodyDefault)
-                                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/rebuild") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /linode/instances/{linodeId}/rebuild
--- 
--- Monadic version of 'rebuildLinodeInstanceRaw' (use with 'Linode.Common.runWithConfiguration')
-rebuildLinodeInstanceRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                           Linode.Common.SecurityScheme s) =>
-                             RebuildLinodeInstanceRequestBody ->
-                             Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                m
-                                                                (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                    (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-rebuildLinodeInstanceRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/linode/instances/{linodeId}/rebuild") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema rebuildLinodeInstanceRequestBody
+rebuildLinodeInstance :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ linodeId: ID of the Linode to rebuild.
+  -> RebuildLinodeInstanceRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response RebuildLinodeInstanceResponse) -- ^ Monadic computation which returns the result of the operation
+rebuildLinodeInstance linodeId
+                      body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either RebuildLinodeInstanceResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> RebuildLinodeInstanceResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                  Linode)
+                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> RebuildLinodeInstanceResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                    RebuildLinodeInstanceResponseBodyDefault)
+                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel linodeId)) GHC.Base.++ "/rebuild"))) GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/rebuild.POST.requestBody.content.application\/json.schema.allOf@ in the specification.
 -- 
 -- 
 data RebuildLinodeInstanceRequestBody = RebuildLinodeInstanceRequestBody {
-  -- | authorized_keys
-  rebuildLinodeInstanceRequestBodyAuthorized_keys :: (GHC.Base.Maybe DiskRequest_properties_authorized_keys)
-  -- | authorized_users
-  , rebuildLinodeInstanceRequestBodyAuthorized_users :: (GHC.Base.Maybe DiskRequest_properties_authorized_users)
+  -- | authorized_keys: A list of public SSH keys that will be automatically appended
+  -- to the root user\'s \`~\/.ssh\/authorized_keys\` file when deploying from an Image.
+  rebuildLinodeInstanceRequestBodyAuthorizedKeys :: (GHC.Maybe.Maybe DiskRequestPropertiesAuthorizedKeys)
+  -- | authorized_users: A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the root users \`~\/.ssh\/authorized_keys\` file automatically when deploying from an Image.
+  , rebuildLinodeInstanceRequestBodyAuthorizedUsers :: (GHC.Maybe.Maybe DiskRequestPropertiesAuthorizedUsers)
   -- | booted: This field defaults to \`true\` if the Linode is created with an Image or from a Backup.
   -- If it is deployed from an Image or a Backup and you wish it to remain \`offline\` after deployment, set this to \`false\`.
-  , rebuildLinodeInstanceRequestBodyBooted :: (GHC.Base.Maybe GHC.Types.Bool)
-  -- | image
-  , rebuildLinodeInstanceRequestBodyImage :: (GHC.Base.Maybe DiskRequest_properties_image)
-  -- | root_pass
-  , rebuildLinodeInstanceRequestBodyRoot_pass :: (GHC.Base.Maybe DiskRequest_properties_root_pass)
-  -- | stackscript_data
-  , rebuildLinodeInstanceRequestBodyStackscript_data :: (GHC.Base.Maybe DiskRequest_properties_stackscript_data)
-  -- | stackscript_id
-  , rebuildLinodeInstanceRequestBodyStackscript_id :: (GHC.Base.Maybe DiskRequest_properties_stackscript_id)
+  , rebuildLinodeInstanceRequestBodyBooted :: (GHC.Maybe.Maybe GHC.Types.Bool)
+  -- | image: An Image ID to deploy the Linode Disk from.
+  -- 
+  -- Access the Images List ([GET \/images](\/docs\/api\/images\/\#images-list)) endpoint with authentication to view
+  -- all available Images. Official Linode Images start with \`linode\/\`, while your Account\'s Images start with \`private\/\`. Creating
+  -- a disk from a Private Image requires \`read_only\` or \`read_write\` permissions for that Image. Access the User\'s
+  -- Grant Update ([PUT \/account\/users\/{username}\/grants](\/docs\/api\/account\/\#users-grants-update)) endpoint to
+  -- adjust permissions for an Account Image.
+  , rebuildLinodeInstanceRequestBodyImage :: (GHC.Maybe.Maybe DiskRequestPropertiesImage)
+  -- | root_pass: This sets the root user\'s password on a newly-created Linode Disk when deploying from an Image.
+  -- 
+  -- * **Required** when creating a Linode Disk from an Image, including when using a StackScript.
+  -- 
+  -- * Must meet a password strength score requirement that is calculated internally by the API.
+  -- If the strength requirement is not met, you will receive a \`Password does not meet strength requirement\` error.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maximum length of 128
+  -- * Minimum length of 7
+  , rebuildLinodeInstanceRequestBodyRootPass :: (GHC.Maybe.Maybe DiskRequestPropertiesRootPass)
+  -- | stackscript_data: This field is required only if the StackScript being deployed requires input
+  -- data from the User for successful completion. See
+  -- [User Defined Fields (UDFs)](\/docs\/guides\/writing-scripts-for-use-with-linode-stackscripts-a-tutorial\/\#user-defined-fields-udfs)
+  -- for more details. This field is required to be valid JSON.
+  , rebuildLinodeInstanceRequestBodyStackscriptData :: (GHC.Maybe.Maybe DiskRequestPropertiesStackscriptData)
+  -- | stackscript_id: A StackScript ID that will cause the referenced StackScript to be run during
+  -- deployment of this Linode. A compatible \`image\` is required to use a
+  -- StackScript. To get a list of available StackScript and their permitted Images
+  -- see [\/stackscripts](\/docs\/api\/stackscripts\/\#stackscripts-list).
+  -- This field cannot be used when deploying from a Backup or a Private Image.
+  , rebuildLinodeInstanceRequestBodyStackscriptId :: (GHC.Maybe.Maybe DiskRequestPropertiesStackscriptId)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON RebuildLinodeInstanceRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "authorized_keys" (rebuildLinodeInstanceRequestBodyAuthorized_keys obj) : (Data.Aeson..=) "authorized_users" (rebuildLinodeInstanceRequestBodyAuthorized_users obj) : (Data.Aeson..=) "booted" (rebuildLinodeInstanceRequestBodyBooted obj) : (Data.Aeson..=) "image" (rebuildLinodeInstanceRequestBodyImage obj) : (Data.Aeson..=) "root_pass" (rebuildLinodeInstanceRequestBodyRoot_pass obj) : (Data.Aeson..=) "stackscript_data" (rebuildLinodeInstanceRequestBodyStackscript_data obj) : (Data.Aeson..=) "stackscript_id" (rebuildLinodeInstanceRequestBodyStackscript_id obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "authorized_keys" (rebuildLinodeInstanceRequestBodyAuthorized_keys obj) GHC.Base.<> ((Data.Aeson..=) "authorized_users" (rebuildLinodeInstanceRequestBodyAuthorized_users obj) GHC.Base.<> ((Data.Aeson..=) "booted" (rebuildLinodeInstanceRequestBodyBooted obj) GHC.Base.<> ((Data.Aeson..=) "image" (rebuildLinodeInstanceRequestBodyImage obj) GHC.Base.<> ((Data.Aeson..=) "root_pass" (rebuildLinodeInstanceRequestBodyRoot_pass obj) GHC.Base.<> ((Data.Aeson..=) "stackscript_data" (rebuildLinodeInstanceRequestBodyStackscript_data obj) GHC.Base.<> (Data.Aeson..=) "stackscript_id" (rebuildLinodeInstanceRequestBodyStackscript_id obj)))))))
+instance Data.Aeson.Types.ToJSON.ToJSON RebuildLinodeInstanceRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("authorized_keys" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyAuthorizedKeys obj : "authorized_users" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyAuthorizedUsers obj : "booted" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyBooted obj : "image" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyImage obj : "root_pass" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyRootPass obj : "stackscript_data" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyStackscriptData obj : "stackscript_id" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyStackscriptId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("authorized_keys" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyAuthorizedKeys obj) GHC.Base.<> (("authorized_users" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyAuthorizedUsers obj) GHC.Base.<> (("booted" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyBooted obj) GHC.Base.<> (("image" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyImage obj) GHC.Base.<> (("root_pass" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyRootPass obj) GHC.Base.<> (("stackscript_data" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyStackscriptData obj) GHC.Base.<> ("stackscript_id" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceRequestBodyStackscriptId obj)))))))
 instance Data.Aeson.Types.FromJSON.FromJSON RebuildLinodeInstanceRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "RebuildLinodeInstanceRequestBody" (\obj -> ((((((GHC.Base.pure RebuildLinodeInstanceRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "authorized_keys")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "authorized_users")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "booted")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "image")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "root_pass")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "stackscript_data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "stackscript_id"))
+-- | Create a new 'RebuildLinodeInstanceRequestBody' with all required fields.
+mkRebuildLinodeInstanceRequestBody :: RebuildLinodeInstanceRequestBody
+mkRebuildLinodeInstanceRequestBody = RebuildLinodeInstanceRequestBody{rebuildLinodeInstanceRequestBodyAuthorizedKeys = GHC.Maybe.Nothing,
+                                                                      rebuildLinodeInstanceRequestBodyAuthorizedUsers = GHC.Maybe.Nothing,
+                                                                      rebuildLinodeInstanceRequestBodyBooted = GHC.Maybe.Nothing,
+                                                                      rebuildLinodeInstanceRequestBodyImage = GHC.Maybe.Nothing,
+                                                                      rebuildLinodeInstanceRequestBodyRootPass = GHC.Maybe.Nothing,
+                                                                      rebuildLinodeInstanceRequestBodyStackscriptData = GHC.Maybe.Nothing,
+                                                                      rebuildLinodeInstanceRequestBodyStackscriptId = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'rebuildLinodeInstance'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'RebuildLinodeInstanceResponseError' is used.
-data RebuildLinodeInstanceResponse =                                               
-   RebuildLinodeInstanceResponseError GHC.Base.String                              -- ^ Means either no matching case available or a parse error
-  | RebuildLinodeInstanceResponse200 Linode                                        -- ^ Rebuild started.
-  | RebuildLinodeInstanceResponseDefault RebuildLinodeInstanceResponseBodyDefault  -- ^ Error
+data RebuildLinodeInstanceResponse =
+   RebuildLinodeInstanceResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | RebuildLinodeInstanceResponse200 Linode -- ^ Rebuild started.
+  | RebuildLinodeInstanceResponseDefault RebuildLinodeInstanceResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema RebuildLinodeInstanceResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data RebuildLinodeInstanceResponseBodyDefault = RebuildLinodeInstanceResponseBodyDefault {
   -- | errors
-  rebuildLinodeInstanceResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  rebuildLinodeInstanceResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON RebuildLinodeInstanceResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (rebuildLinodeInstanceResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (rebuildLinodeInstanceResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON RebuildLinodeInstanceResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= rebuildLinodeInstanceResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON RebuildLinodeInstanceResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "RebuildLinodeInstanceResponseBodyDefault" (\obj -> GHC.Base.pure RebuildLinodeInstanceResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'RebuildLinodeInstanceResponseBodyDefault' with all required fields.
+mkRebuildLinodeInstanceResponseBodyDefault :: RebuildLinodeInstanceResponseBodyDefault
+mkRebuildLinodeInstanceResponseBodyDefault = RebuildLinodeInstanceResponseBodyDefault{rebuildLinodeInstanceResponseBodyDefaultErrors = GHC.Maybe.Nothing}

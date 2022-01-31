@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation shareIPs
 module Linode.Operations.ShareIPs where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -55,53 +55,14 @@ import Linode.Types
 -- 
 -- **Note**: IPv6 range sharing has limited availability in certain regions. Please contact customer support for
 -- assistance in enabling IPv6 range sharing for your Linodes.
-shareIPs :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> ShareIPsRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response ShareIPsResponse)) -- ^ Monad containing the result of the operation
-shareIPs config
-         body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ShareIPsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ShareIPsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                          ShareIPsResponseBody200)
-                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ShareIPsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                            ShareIPsResponseBodyDefault)
-                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ips/share") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/ips/share
--- 
--- The same as 'shareIPs' but returns the raw 'Data.ByteString.Char8.ByteString'
-shareIPsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                             Linode.Common.SecurityScheme s) =>
-               Linode.Common.Configuration s ->
-               ShareIPsRequestBody ->
-               m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                     (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-shareIPsRaw config
-            body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ips/share") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/ips/share
--- 
--- Monadic version of 'shareIPs' (use with 'Linode.Common.runWithConfiguration')
-shareIPsM :: forall m s . (Linode.Common.MonadHTTP m,
-                           Linode.Common.SecurityScheme s) =>
-             ShareIPsRequestBody ->
-             Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                m
-                                                (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                    (Network.HTTP.Client.Types.Response ShareIPsResponse))
-shareIPsM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either ShareIPsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ShareIPsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                           ShareIPsResponseBody200)
-                                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ShareIPsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                             ShareIPsResponseBodyDefault)
-                                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ips/share") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /networking/ips/share
--- 
--- Monadic version of 'shareIPsRaw' (use with 'Linode.Common.runWithConfiguration')
-shareIPsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                ShareIPsRequestBody ->
-                Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                   m
-                                                   (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-shareIPsRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ips/share") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema shareIPsRequestBody
+shareIPs :: forall m . Linode.Common.MonadHTTP m => ShareIPsRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response ShareIPsResponse) -- ^ Monadic computation which returns the result of the operation
+shareIPs body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either ShareIPsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> ShareIPsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                           Data.Aeson.Types.Internal.Object)
+                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> ShareIPsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                             ShareIPsResponseBodyDefault)
+                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/networking/ips/share") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/networking\/ips\/share.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ShareIPsRequestBody = ShareIPsRequestBody {
@@ -111,46 +72,43 @@ data ShareIPsRequestBody = ShareIPsRequestBody {
   -- * You must have access to all of these addresses and they must be in the same Region as the primary
   -- Linode.
   -- * Enter an empty array to remove all shared IP addresses.
-  shareIPsRequestBodyIps :: ([] Data.Text.Internal.Text)
+  shareIPsRequestBodyIps :: ([Data.Text.Internal.Text])
   -- | linode_id: The ID of the primary Linode that the addresses will be shared with.
-  , shareIPsRequestBodyLinode_id :: GHC.Integer.Type.Integer
+  , shareIPsRequestBodyLinodeId :: GHC.Types.Int
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ShareIPsRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "ips" (shareIPsRequestBodyIps obj) : (Data.Aeson..=) "linode_id" (shareIPsRequestBodyLinode_id obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "ips" (shareIPsRequestBodyIps obj) GHC.Base.<> (Data.Aeson..=) "linode_id" (shareIPsRequestBodyLinode_id obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ShareIPsRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("ips" Data.Aeson.Types.ToJSON..= shareIPsRequestBodyIps obj : "linode_id" Data.Aeson.Types.ToJSON..= shareIPsRequestBodyLinodeId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("ips" Data.Aeson.Types.ToJSON..= shareIPsRequestBodyIps obj) GHC.Base.<> ("linode_id" Data.Aeson.Types.ToJSON..= shareIPsRequestBodyLinodeId obj))
 instance Data.Aeson.Types.FromJSON.FromJSON ShareIPsRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ShareIPsRequestBody" (\obj -> (GHC.Base.pure ShareIPsRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "ips")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "linode_id"))
+-- | Create a new 'ShareIPsRequestBody' with all required fields.
+mkShareIPsRequestBody :: [Data.Text.Internal.Text] -- ^ 'shareIPsRequestBodyIps'
+  -> GHC.Types.Int -- ^ 'shareIPsRequestBodyLinodeId'
+  -> ShareIPsRequestBody
+mkShareIPsRequestBody shareIPsRequestBodyIps shareIPsRequestBodyLinodeId = ShareIPsRequestBody{shareIPsRequestBodyIps = shareIPsRequestBodyIps,
+                                                                                               shareIPsRequestBodyLinodeId = shareIPsRequestBodyLinodeId}
 -- | Represents a response of the operation 'shareIPs'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'ShareIPsResponseError' is used.
-data ShareIPsResponse =                                  
-   ShareIPsResponseError GHC.Base.String                 -- ^ Means either no matching case available or a parse error
-  | ShareIPsResponse200 ShareIPsResponseBody200          -- ^ IP Address sharing successful.
-  | ShareIPsResponseDefault ShareIPsResponseBodyDefault  -- ^ Error
+data ShareIPsResponse =
+   ShareIPsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | ShareIPsResponse200 Data.Aeson.Types.Internal.Object -- ^ IP Address sharing successful.
+  | ShareIPsResponseDefault ShareIPsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema ShareIPsResponseBody200
--- 
--- 
-data ShareIPsResponseBody200 = ShareIPsResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ShareIPsResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON ShareIPsResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "ShareIPsResponseBody200" (\obj -> GHC.Base.pure ShareIPsResponseBody200)
--- | Defines the data type for the schema ShareIPsResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data ShareIPsResponseBodyDefault = ShareIPsResponseBodyDefault {
   -- | errors
-  shareIPsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  shareIPsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON ShareIPsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (shareIPsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (shareIPsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON ShareIPsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= shareIPsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= shareIPsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON ShareIPsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "ShareIPsResponseBodyDefault" (\obj -> GHC.Base.pure ShareIPsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'ShareIPsResponseBodyDefault' with all required fields.
+mkShareIPsResponseBodyDefault :: ShareIPsResponseBodyDefault
+mkShareIPsResponseBodyDefault = ShareIPsResponseBodyDefault{shareIPsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getLongviewClients
 module Linode.Operations.GetLongviewClients where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,96 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /longview/clients
 -- 
 -- Returns a paginated list of Longview Clients you have access to. Longview Client is used to monitor stats on your Linode with the help of the Longview Client application.
-getLongviewClients :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                        -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                        -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetLongviewClientsResponse)) -- ^ Monad containing the result of the operation
-getLongviewClients config
-                   page
-                   page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLongviewClientsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLongviewClientsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                             GetLongviewClientsResponseBody200)
-                                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLongviewClientsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                               GetLongviewClientsResponseBodyDefault)
-                                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/longview/clients") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /longview/clients
+getLongviewClients :: forall m . Linode.Common.MonadHTTP m => GetLongviewClientsParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetLongviewClientsResponse) -- ^ Monadic computation which returns the result of the operation
+getLongviewClients parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLongviewClientsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLongviewClientsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                               GetLongviewClientsResponseBody200)
+                                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLongviewClientsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                 GetLongviewClientsResponseBodyDefault)
+                                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/longview/clients") [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getLongviewClientsParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                  Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getLongviewClientsParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/longview\/clients.GET.parameters@ in the specification.
 -- 
--- The same as 'getLongviewClients' but returns the raw 'Data.ByteString.Char8.ByteString'
-getLongviewClientsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                         GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLongviewClientsRaw config
-                      page
-                      page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/longview/clients") ((Data.Text.pack "page",
-                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /longview/clients
 -- 
--- Monadic version of 'getLongviewClients' (use with 'Linode.Common.runWithConfiguration')
-getLongviewClientsM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response GetLongviewClientsResponse))
-getLongviewClientsM page
-                    page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetLongviewClientsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLongviewClientsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                              GetLongviewClientsResponseBody200)
-                                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLongviewClientsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                GetLongviewClientsResponseBodyDefault)
-                                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/longview/clients") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                   Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /longview/clients
--- 
--- Monadic version of 'getLongviewClientsRaw' (use with 'Linode.Common.runWithConfiguration')
-getLongviewClientsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                          GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLongviewClientsRawM page
-                       page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/longview/clients") ((Data.Text.pack "page",
-                                                                                                                                                                                   Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                            Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetLongviewClientsParameters = GetLongviewClientsParameters {
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  getLongviewClientsParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getLongviewClientsParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetLongviewClientsParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("queryPage" Data.Aeson.Types.ToJSON..= getLongviewClientsParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getLongviewClientsParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("queryPage" Data.Aeson.Types.ToJSON..= getLongviewClientsParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getLongviewClientsParametersQueryPageSize obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetLongviewClientsParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLongviewClientsParameters" (\obj -> (GHC.Base.pure GetLongviewClientsParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetLongviewClientsParameters' with all required fields.
+mkGetLongviewClientsParameters :: GetLongviewClientsParameters
+mkGetLongviewClientsParameters = GetLongviewClientsParameters{getLongviewClientsParametersQueryPage = GHC.Maybe.Nothing,
+                                                              getLongviewClientsParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getLongviewClients'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetLongviewClientsResponseError' is used.
-data GetLongviewClientsResponse =                                            
-   GetLongviewClientsResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | GetLongviewClientsResponse200 GetLongviewClientsResponseBody200          -- ^ A paginated list of Longview Clients.
-  | GetLongviewClientsResponseDefault GetLongviewClientsResponseBodyDefault  -- ^ Error
+data GetLongviewClientsResponse =
+   GetLongviewClientsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetLongviewClientsResponse200 GetLongviewClientsResponseBody200 -- ^ A paginated list of Longview Clients.
+  | GetLongviewClientsResponseDefault GetLongviewClientsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetLongviewClientsResponseBody200
+-- | Defines the object schema located at @paths.\/longview\/clients.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLongviewClientsResponseBody200 = GetLongviewClientsResponseBody200 {
   -- | data
-  getLongviewClientsResponseBody200Data :: (GHC.Base.Maybe ([] LongviewClient))
-  -- | page
-  , getLongviewClientsResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getLongviewClientsResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getLongviewClientsResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getLongviewClientsResponseBody200Data :: (GHC.Maybe.Maybe ([LongviewClient]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getLongviewClientsResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getLongviewClientsResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getLongviewClientsResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLongviewClientsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getLongviewClientsResponseBody200Data obj) : (Data.Aeson..=) "page" (getLongviewClientsResponseBody200Page obj) : (Data.Aeson..=) "pages" (getLongviewClientsResponseBody200Pages obj) : (Data.Aeson..=) "results" (getLongviewClientsResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getLongviewClientsResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getLongviewClientsResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getLongviewClientsResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getLongviewClientsResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLongviewClientsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetLongviewClientsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLongviewClientsResponseBody200" (\obj -> (((GHC.Base.pure GetLongviewClientsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetLongviewClientsResponseBodyDefault
+-- | Create a new 'GetLongviewClientsResponseBody200' with all required fields.
+mkGetLongviewClientsResponseBody200 :: GetLongviewClientsResponseBody200
+mkGetLongviewClientsResponseBody200 = GetLongviewClientsResponseBody200{getLongviewClientsResponseBody200Data = GHC.Maybe.Nothing,
+                                                                        getLongviewClientsResponseBody200Page = GHC.Maybe.Nothing,
+                                                                        getLongviewClientsResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                        getLongviewClientsResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLongviewClientsResponseBodyDefault = GetLongviewClientsResponseBodyDefault {
   -- | errors
-  getLongviewClientsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getLongviewClientsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLongviewClientsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getLongviewClientsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getLongviewClientsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLongviewClientsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getLongviewClientsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetLongviewClientsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLongviewClientsResponseBodyDefault" (\obj -> GHC.Base.pure GetLongviewClientsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetLongviewClientsResponseBodyDefault' with all required fields.
+mkGetLongviewClientsResponseBodyDefault :: GetLongviewClientsResponseBodyDefault
+mkGetLongviewClientsResponseBodyDefault = GetLongviewClientsResponseBodyDefault{getLongviewClientsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

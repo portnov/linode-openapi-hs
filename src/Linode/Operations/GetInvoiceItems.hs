@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getInvoiceItems
 module Linode.Operations.GetInvoiceItems where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,102 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /account/invoices/{invoiceId}/items
 -- 
 -- Returns a paginated list of Invoice items.
-getInvoiceItems :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                     -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                     -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetInvoiceItemsResponse)) -- ^ Monad containing the result of the operation
-getInvoiceItems config
-                page
-                page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetInvoiceItemsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetInvoiceItemsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                    GetInvoiceItemsResponseBody200)
-                                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetInvoiceItemsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                      GetInvoiceItemsResponseBodyDefault)
-                                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/invoices/{invoiceId}/items") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/invoices/{invoiceId}/items
+getInvoiceItems :: forall m . Linode.Common.MonadHTTP m => GetInvoiceItemsParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetInvoiceItemsResponse) -- ^ Monadic computation which returns the result of the operation
+getInvoiceItems parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetInvoiceItemsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetInvoiceItemsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                      GetInvoiceItemsResponseBody200)
+                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetInvoiceItemsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                        GetInvoiceItemsResponseBodyDefault)
+                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/account/invoices/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getInvoiceItemsParametersPathInvoiceId parameters))) GHC.Base.++ "/items"))) [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getInvoiceItemsParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getInvoiceItemsParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/account\/invoices\/{invoiceId}\/items.GET.parameters@ in the specification.
 -- 
--- The same as 'getInvoiceItems' but returns the raw 'Data.ByteString.Char8.ByteString'
-getInvoiceItemsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      Linode.Common.Configuration s ->
-                      GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                      GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                      m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                            (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getInvoiceItemsRaw config
-                   page
-                   page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/invoices/{invoiceId}/items") ((Data.Text.pack "page",
-                                                                                                                                                                                                       Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/invoices/{invoiceId}/items
 -- 
--- Monadic version of 'getInvoiceItems' (use with 'Linode.Common.runWithConfiguration')
-getInvoiceItemsM :: forall m s . (Linode.Common.MonadHTTP m,
-                                  Linode.Common.SecurityScheme s) =>
-                    GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                    GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                    Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                       m
-                                                       (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                           (Network.HTTP.Client.Types.Response GetInvoiceItemsResponse))
-getInvoiceItemsM page
-                 page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetInvoiceItemsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetInvoiceItemsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                     GetInvoiceItemsResponseBody200)
-                                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetInvoiceItemsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                       GetInvoiceItemsResponseBodyDefault)
-                                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/invoices/{invoiceId}/items") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                               Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/invoices/{invoiceId}/items
--- 
--- Monadic version of 'getInvoiceItemsRaw' (use with 'Linode.Common.runWithConfiguration')
-getInvoiceItemsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getInvoiceItemsRawM page
-                    page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/invoices/{invoiceId}/items") ((Data.Text.pack "page",
-                                                                                                                                                                                                  Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                           Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetInvoiceItemsParameters = GetInvoiceItemsParameters {
+  -- | pathInvoiceId: Represents the parameter named \'invoiceId\'
+  -- 
+  -- The ID of the Invoice.
+  getInvoiceItemsParametersPathInvoiceId :: GHC.Types.Int
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  , getInvoiceItemsParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getInvoiceItemsParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetInvoiceItemsParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathInvoiceId" Data.Aeson.Types.ToJSON..= getInvoiceItemsParametersPathInvoiceId obj : "queryPage" Data.Aeson.Types.ToJSON..= getInvoiceItemsParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getInvoiceItemsParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathInvoiceId" Data.Aeson.Types.ToJSON..= getInvoiceItemsParametersPathInvoiceId obj) GHC.Base.<> (("queryPage" Data.Aeson.Types.ToJSON..= getInvoiceItemsParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getInvoiceItemsParametersQueryPageSize obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetInvoiceItemsParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetInvoiceItemsParameters" (\obj -> ((GHC.Base.pure GetInvoiceItemsParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathInvoiceId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetInvoiceItemsParameters' with all required fields.
+mkGetInvoiceItemsParameters :: GHC.Types.Int -- ^ 'getInvoiceItemsParametersPathInvoiceId'
+  -> GetInvoiceItemsParameters
+mkGetInvoiceItemsParameters getInvoiceItemsParametersPathInvoiceId = GetInvoiceItemsParameters{getInvoiceItemsParametersPathInvoiceId = getInvoiceItemsParametersPathInvoiceId,
+                                                                                               getInvoiceItemsParametersQueryPage = GHC.Maybe.Nothing,
+                                                                                               getInvoiceItemsParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getInvoiceItems'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetInvoiceItemsResponseError' is used.
-data GetInvoiceItemsResponse =                                         
-   GetInvoiceItemsResponseError GHC.Base.String                        -- ^ Means either no matching case available or a parse error
-  | GetInvoiceItemsResponse200 GetInvoiceItemsResponseBody200          -- ^ A paginated list of InvoiceItem objects
-  | GetInvoiceItemsResponseDefault GetInvoiceItemsResponseBodyDefault  -- ^ Error
+data GetInvoiceItemsResponse =
+   GetInvoiceItemsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetInvoiceItemsResponse200 GetInvoiceItemsResponseBody200 -- ^ A paginated list of InvoiceItem objects
+  | GetInvoiceItemsResponseDefault GetInvoiceItemsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetInvoiceItemsResponseBody200
+-- | Defines the object schema located at @paths.\/account\/invoices\/{invoiceId}\/items.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetInvoiceItemsResponseBody200 = GetInvoiceItemsResponseBody200 {
   -- | data
-  getInvoiceItemsResponseBody200Data :: (GHC.Base.Maybe ([] InvoiceItem))
-  -- | page
-  , getInvoiceItemsResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getInvoiceItemsResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getInvoiceItemsResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getInvoiceItemsResponseBody200Data :: (GHC.Maybe.Maybe ([InvoiceItem]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getInvoiceItemsResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getInvoiceItemsResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getInvoiceItemsResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetInvoiceItemsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getInvoiceItemsResponseBody200Data obj) : (Data.Aeson..=) "page" (getInvoiceItemsResponseBody200Page obj) : (Data.Aeson..=) "pages" (getInvoiceItemsResponseBody200Pages obj) : (Data.Aeson..=) "results" (getInvoiceItemsResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getInvoiceItemsResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getInvoiceItemsResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getInvoiceItemsResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getInvoiceItemsResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetInvoiceItemsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetInvoiceItemsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetInvoiceItemsResponseBody200" (\obj -> (((GHC.Base.pure GetInvoiceItemsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetInvoiceItemsResponseBodyDefault
+-- | Create a new 'GetInvoiceItemsResponseBody200' with all required fields.
+mkGetInvoiceItemsResponseBody200 :: GetInvoiceItemsResponseBody200
+mkGetInvoiceItemsResponseBody200 = GetInvoiceItemsResponseBody200{getInvoiceItemsResponseBody200Data = GHC.Maybe.Nothing,
+                                                                  getInvoiceItemsResponseBody200Page = GHC.Maybe.Nothing,
+                                                                  getInvoiceItemsResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                  getInvoiceItemsResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetInvoiceItemsResponseBodyDefault = GetInvoiceItemsResponseBodyDefault {
   -- | errors
-  getInvoiceItemsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getInvoiceItemsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetInvoiceItemsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getInvoiceItemsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getInvoiceItemsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetInvoiceItemsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getInvoiceItemsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetInvoiceItemsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetInvoiceItemsResponseBodyDefault" (\obj -> GHC.Base.pure GetInvoiceItemsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetInvoiceItemsResponseBodyDefault' with all required fields.
+mkGetInvoiceItemsResponseBodyDefault :: GetInvoiceItemsResponseBodyDefault
+mkGetInvoiceItemsResponseBodyDefault = GetInvoiceItemsResponseBodyDefault{getInvoiceItemsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

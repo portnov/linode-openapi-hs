@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getPersonalAccessToken
 module Linode.Operations.GetPersonalAccessToken where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,64 +45,34 @@ import Linode.Types
 -- | > GET /profile/tokens/{tokenId}
 -- 
 -- Returns a single Personal Access Token.
-getPersonalAccessToken :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetPersonalAccessTokenResponse)) -- ^ Monad containing the result of the operation
-getPersonalAccessToken config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetPersonalAccessTokenResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetPersonalAccessTokenResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      PersonalAccessToken)
-                                                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetPersonalAccessTokenResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                        GetPersonalAccessTokenResponseBodyDefault)
-                                                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/tokens/{tokenId}") [])
--- | > GET /profile/tokens/{tokenId}
--- 
--- The same as 'getPersonalAccessToken' but returns the raw 'Data.ByteString.Char8.ByteString'
-getPersonalAccessTokenRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                           Linode.Common.SecurityScheme s) =>
-                             Linode.Common.Configuration s ->
-                             m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                   (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getPersonalAccessTokenRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/tokens/{tokenId}") [])
--- | > GET /profile/tokens/{tokenId}
--- 
--- Monadic version of 'getPersonalAccessToken' (use with 'Linode.Common.runWithConfiguration')
-getPersonalAccessTokenM :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                              m
-                                                              (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                  (Network.HTTP.Client.Types.Response GetPersonalAccessTokenResponse))
-getPersonalAccessTokenM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetPersonalAccessTokenResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetPersonalAccessTokenResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                PersonalAccessToken)
-                                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetPersonalAccessTokenResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                  GetPersonalAccessTokenResponseBodyDefault)
-                                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/tokens/{tokenId}") [])
--- | > GET /profile/tokens/{tokenId}
--- 
--- Monadic version of 'getPersonalAccessTokenRaw' (use with 'Linode.Common.runWithConfiguration')
-getPersonalAccessTokenRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                            Linode.Common.SecurityScheme s) =>
-                              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                 m
-                                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                     (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getPersonalAccessTokenRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/tokens/{tokenId}") [])
+getPersonalAccessToken :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ tokenId: The ID of the token to access.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetPersonalAccessTokenResponse) -- ^ Monadic computation which returns the result of the operation
+getPersonalAccessToken tokenId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetPersonalAccessTokenResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetPersonalAccessTokenResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                        PersonalAccessToken)
+                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetPersonalAccessTokenResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                          GetPersonalAccessTokenResponseBodyDefault)
+                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/profile/tokens/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel tokenId)) GHC.Base.++ ""))) GHC.Base.mempty)
 -- | Represents a response of the operation 'getPersonalAccessToken'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetPersonalAccessTokenResponseError' is used.
-data GetPersonalAccessTokenResponse =                                                
-   GetPersonalAccessTokenResponseError GHC.Base.String                               -- ^ Means either no matching case available or a parse error
-  | GetPersonalAccessTokenResponse200 PersonalAccessToken                            -- ^ The requested token.
-  | GetPersonalAccessTokenResponseDefault GetPersonalAccessTokenResponseBodyDefault  -- ^ Error
+data GetPersonalAccessTokenResponse =
+   GetPersonalAccessTokenResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetPersonalAccessTokenResponse200 PersonalAccessToken -- ^ The requested token.
+  | GetPersonalAccessTokenResponseDefault GetPersonalAccessTokenResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetPersonalAccessTokenResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetPersonalAccessTokenResponseBodyDefault = GetPersonalAccessTokenResponseBodyDefault {
   -- | errors
-  getPersonalAccessTokenResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getPersonalAccessTokenResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetPersonalAccessTokenResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getPersonalAccessTokenResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getPersonalAccessTokenResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetPersonalAccessTokenResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getPersonalAccessTokenResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getPersonalAccessTokenResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetPersonalAccessTokenResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetPersonalAccessTokenResponseBodyDefault" (\obj -> GHC.Base.pure GetPersonalAccessTokenResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetPersonalAccessTokenResponseBodyDefault' with all required fields.
+mkGetPersonalAccessTokenResponseBodyDefault :: GetPersonalAccessTokenResponseBodyDefault
+mkGetPersonalAccessTokenResponseBodyDefault = GetPersonalAccessTokenResponseBodyDefault{getPersonalAccessTokenResponseBodyDefaultErrors = GHC.Maybe.Nothing}

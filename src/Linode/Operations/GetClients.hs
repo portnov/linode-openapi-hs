@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getClients
 module Linode.Operations.GetClients where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,96 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /account/oauth-clients
 -- 
 -- Returns a paginated list of OAuth Clients registered to your Account.  OAuth Clients allow users to log into applications you write or host using their Linode Account, and may allow them to grant some level of access to their Linodes or other entities to your application.
-getClients :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetClientsResponse)) -- ^ Monad containing the result of the operation
-getClients config
-           page
-           page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetClientsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetClientsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                     GetClientsResponseBody200)
-                                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetClientsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                       GetClientsResponseBodyDefault)
-                                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/oauth-clients") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                             Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/oauth-clients
+getClients :: forall m . Linode.Common.MonadHTTP m => GetClientsParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetClientsResponse) -- ^ Monadic computation which returns the result of the operation
+getClients parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetClientsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetClientsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                       GetClientsResponseBody200)
+                                                                                                                                                             | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetClientsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                         GetClientsResponseBodyDefault)
+                                                                                                                                                             | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/oauth-clients") [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getClientsParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                       Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getClientsParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/account\/oauth-clients.GET.parameters@ in the specification.
 -- 
--- The same as 'getClients' but returns the raw 'Data.ByteString.Char8.ByteString'
-getClientsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Linode.Common.Configuration s ->
-                 GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                 GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                 m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getClientsRaw config
-              page
-              page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/oauth-clients") ((Data.Text.pack "page",
-                                                                                                                                                                                     Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                              Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/oauth-clients
 -- 
--- Monadic version of 'getClients' (use with 'Linode.Common.runWithConfiguration')
-getClientsM :: forall m s . (Linode.Common.MonadHTTP m,
-                             Linode.Common.SecurityScheme s) =>
-               GHC.Base.Maybe GHC.Integer.Type.Integer ->
-               GHC.Base.Maybe GHC.Integer.Type.Integer ->
-               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                  m
-                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                      (Network.HTTP.Client.Types.Response GetClientsResponse))
-getClientsM page
-            page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetClientsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetClientsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                      GetClientsResponseBody200)
-                                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetClientsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                        GetClientsResponseBodyDefault)
-                                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/oauth-clients") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                        Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /account/oauth-clients
--- 
--- Monadic version of 'getClientsRaw' (use with 'Linode.Common.runWithConfiguration')
-getClientsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                  GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getClientsRawM page
-               page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/account/oauth-clients") ((Data.Text.pack "page",
-                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetClientsParameters = GetClientsParameters {
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  getClientsParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getClientsParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetClientsParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("queryPage" Data.Aeson.Types.ToJSON..= getClientsParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getClientsParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("queryPage" Data.Aeson.Types.ToJSON..= getClientsParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getClientsParametersQueryPageSize obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetClientsParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetClientsParameters" (\obj -> (GHC.Base.pure GetClientsParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetClientsParameters' with all required fields.
+mkGetClientsParameters :: GetClientsParameters
+mkGetClientsParameters = GetClientsParameters{getClientsParametersQueryPage = GHC.Maybe.Nothing,
+                                              getClientsParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getClients'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetClientsResponseError' is used.
-data GetClientsResponse =                                    
-   GetClientsResponseError GHC.Base.String                   -- ^ Means either no matching case available or a parse error
-  | GetClientsResponse200 GetClientsResponseBody200          -- ^ A paginated list of OAuth Clients.
-  | GetClientsResponseDefault GetClientsResponseBodyDefault  -- ^ Error
+data GetClientsResponse =
+   GetClientsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetClientsResponse200 GetClientsResponseBody200 -- ^ A paginated list of OAuth Clients.
+  | GetClientsResponseDefault GetClientsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetClientsResponseBody200
+-- | Defines the object schema located at @paths.\/account\/oauth-clients.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetClientsResponseBody200 = GetClientsResponseBody200 {
   -- | data
-  getClientsResponseBody200Data :: (GHC.Base.Maybe ([] OAuthClient))
-  -- | page
-  , getClientsResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getClientsResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getClientsResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getClientsResponseBody200Data :: (GHC.Maybe.Maybe ([OAuthClient]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getClientsResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getClientsResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getClientsResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetClientsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getClientsResponseBody200Data obj) : (Data.Aeson..=) "page" (getClientsResponseBody200Page obj) : (Data.Aeson..=) "pages" (getClientsResponseBody200Pages obj) : (Data.Aeson..=) "results" (getClientsResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getClientsResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getClientsResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getClientsResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getClientsResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetClientsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getClientsResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getClientsResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getClientsResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getClientsResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getClientsResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getClientsResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getClientsResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getClientsResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetClientsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetClientsResponseBody200" (\obj -> (((GHC.Base.pure GetClientsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetClientsResponseBodyDefault
+-- | Create a new 'GetClientsResponseBody200' with all required fields.
+mkGetClientsResponseBody200 :: GetClientsResponseBody200
+mkGetClientsResponseBody200 = GetClientsResponseBody200{getClientsResponseBody200Data = GHC.Maybe.Nothing,
+                                                        getClientsResponseBody200Page = GHC.Maybe.Nothing,
+                                                        getClientsResponseBody200Pages = GHC.Maybe.Nothing,
+                                                        getClientsResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetClientsResponseBodyDefault = GetClientsResponseBodyDefault {
   -- | errors
-  getClientsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getClientsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetClientsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getClientsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getClientsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetClientsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getClientsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getClientsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetClientsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetClientsResponseBodyDefault" (\obj -> GHC.Base.pure GetClientsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetClientsResponseBodyDefault' with all required fields.
+mkGetClientsResponseBodyDefault :: GetClientsResponseBodyDefault
+mkGetClientsResponseBodyDefault = GetClientsResponseBodyDefault{getClientsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

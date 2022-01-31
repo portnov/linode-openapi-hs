@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createPayPalPayment
 module Linode.Operations.CreatePayPalPayment where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -53,103 +53,72 @@ import Linode.Types
 -- **Note**: This endpoint is deprecated and may be removed in a future release. PayPal can now be
 -- designated as a Payment Method for automated payments using
 -- [Cloud Manager](\/docs\/guides\/manage-billing-in-cloud-manager\/\#adding-a-new-payment-method).
-createPayPalPayment :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> PayPal                                                                                                                          -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreatePayPalPaymentResponse)) -- ^ Monad containing the result of the operation
-createPayPalPayment config
-                    body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePayPalPaymentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePayPalPaymentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                           CreatePayPalPaymentResponseBody200)
-                                                                                                                                                                                        | (\status_2 -> Network.HTTP.Types.Status.statusCode status_2 GHC.Classes.== 299) (Network.HTTP.Client.Types.responseStatus response) -> CreatePayPalPaymentResponse299 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                           CreatePayPalPaymentResponseBody299)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePayPalPaymentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                             CreatePayPalPaymentResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments/paypal") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/payments/paypal
--- 
--- The same as 'createPayPalPayment' but returns the raw 'Data.ByteString.Char8.ByteString'
-createPayPalPaymentRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          Linode.Common.Configuration s ->
-                          PayPal ->
-                          m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPayPalPaymentRaw config
-                       body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments/paypal") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/payments/paypal
--- 
--- Monadic version of 'createPayPalPayment' (use with 'Linode.Common.runWithConfiguration')
-createPayPalPaymentM :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        PayPal ->
-                        Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                           m
-                                                           (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                               (Network.HTTP.Client.Types.Response CreatePayPalPaymentResponse))
-createPayPalPaymentM body = GHC.Base.fmap (GHC.Base.fmap (\response_3 -> GHC.Base.fmap (Data.Either.either CreatePayPalPaymentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_4 -> Network.HTTP.Types.Status.statusCode status_4 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePayPalPaymentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                            CreatePayPalPaymentResponseBody200)
-                                                                                                                                                                                         | (\status_5 -> Network.HTTP.Types.Status.statusCode status_5 GHC.Classes.== 299) (Network.HTTP.Client.Types.responseStatus response) -> CreatePayPalPaymentResponse299 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                            CreatePayPalPaymentResponseBody299)
-                                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePayPalPaymentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                              CreatePayPalPaymentResponseBodyDefault)
-                                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_3) response_3)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments/paypal") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /account/payments/paypal
--- 
--- Monadic version of 'createPayPalPaymentRaw' (use with 'Linode.Common.runWithConfiguration')
-createPayPalPaymentRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           PayPal ->
-                           Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                              m
-                                                              (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                  (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createPayPalPaymentRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments/paypal") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
+createPayPalPayment :: forall m . Linode.Common.MonadHTTP m => PayPal -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreatePayPalPaymentResponse) -- ^ Monadic computation which returns the result of the operation
+createPayPalPayment body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreatePayPalPaymentResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreatePayPalPaymentResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                            CreatePayPalPaymentResponseBody200)
+                                                                                                                                                                         | (\status_2 -> Network.HTTP.Types.Status.statusCode status_2 GHC.Classes.== 299) (Network.HTTP.Client.Types.responseStatus response) -> CreatePayPalPaymentResponse299 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                            CreatePayPalPaymentResponseBody299)
+                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreatePayPalPaymentResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                              CreatePayPalPaymentResponseBodyDefault)
+                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/payments/paypal") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
 -- | Represents a response of the operation 'createPayPalPayment'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreatePayPalPaymentResponseError' is used.
-data CreatePayPalPaymentResponse =                                             
-   CreatePayPalPaymentResponseError GHC.Base.String                            -- ^ Means either no matching case available or a parse error
-  | CreatePayPalPaymentResponse200 CreatePayPalPaymentResponseBody200          -- ^ PayPal Payment staged.
-  | CreatePayPalPaymentResponse299 CreatePayPalPaymentResponseBody299          -- ^ Request successful. This endpoint is deprecated and may be removed in a future release.  A warnings array is included with the standard 200 response body. 
-  | CreatePayPalPaymentResponseDefault CreatePayPalPaymentResponseBodyDefault  -- ^ Error
+data CreatePayPalPaymentResponse =
+   CreatePayPalPaymentResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreatePayPalPaymentResponse200 CreatePayPalPaymentResponseBody200 -- ^ PayPal Payment staged.
+  | CreatePayPalPaymentResponse299 CreatePayPalPaymentResponseBody299 -- ^ Request successful. This endpoint is deprecated and may be removed in a future release.  A warnings array is included with the standard 200 response body. 
+  | CreatePayPalPaymentResponseDefault CreatePayPalPaymentResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreatePayPalPaymentResponseBody200
+-- | Defines the object schema located at @paths.\/account\/payments\/paypal.POST.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePayPalPaymentResponseBody200 = CreatePayPalPaymentResponseBody200 {
   -- | checkout_token: The checkout token generated for this Payment.
-  createPayPalPaymentResponseBody200Checkout_token :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  createPayPalPaymentResponseBody200CheckoutToken :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | payment_id: The paypal-generated ID for this Payment. Used when authorizing the Payment in PayPal\'s interface.
-  , createPayPalPaymentResponseBody200Payment_id :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createPayPalPaymentResponseBody200PaymentId :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePayPalPaymentResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "checkout_token" (createPayPalPaymentResponseBody200Checkout_token obj) : (Data.Aeson..=) "payment_id" (createPayPalPaymentResponseBody200Payment_id obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "checkout_token" (createPayPalPaymentResponseBody200Checkout_token obj) GHC.Base.<> (Data.Aeson..=) "payment_id" (createPayPalPaymentResponseBody200Payment_id obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePayPalPaymentResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("checkout_token" Data.Aeson.Types.ToJSON..= createPayPalPaymentResponseBody200CheckoutToken obj : "payment_id" Data.Aeson.Types.ToJSON..= createPayPalPaymentResponseBody200PaymentId obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("checkout_token" Data.Aeson.Types.ToJSON..= createPayPalPaymentResponseBody200CheckoutToken obj) GHC.Base.<> ("payment_id" Data.Aeson.Types.ToJSON..= createPayPalPaymentResponseBody200PaymentId obj))
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePayPalPaymentResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePayPalPaymentResponseBody200" (\obj -> (GHC.Base.pure CreatePayPalPaymentResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "checkout_token")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "payment_id"))
--- | Defines the data type for the schema CreatePayPalPaymentResponseBody299
+-- | Create a new 'CreatePayPalPaymentResponseBody200' with all required fields.
+mkCreatePayPalPaymentResponseBody200 :: CreatePayPalPaymentResponseBody200
+mkCreatePayPalPaymentResponseBody200 = CreatePayPalPaymentResponseBody200{createPayPalPaymentResponseBody200CheckoutToken = GHC.Maybe.Nothing,
+                                                                          createPayPalPaymentResponseBody200PaymentId = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.DeprecatedResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePayPalPaymentResponseBody299 = CreatePayPalPaymentResponseBody299 {
   -- | warnings
-  createPayPalPaymentResponseBody299Warnings :: (GHC.Base.Maybe ([] WarningObject))
+  createPayPalPaymentResponseBody299Warnings :: (GHC.Maybe.Maybe ([WarningObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePayPalPaymentResponseBody299
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "warnings" (createPayPalPaymentResponseBody299Warnings obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "warnings" (createPayPalPaymentResponseBody299Warnings obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePayPalPaymentResponseBody299
+    where toJSON obj = Data.Aeson.Types.Internal.object ("warnings" Data.Aeson.Types.ToJSON..= createPayPalPaymentResponseBody299Warnings obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("warnings" Data.Aeson.Types.ToJSON..= createPayPalPaymentResponseBody299Warnings obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePayPalPaymentResponseBody299
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePayPalPaymentResponseBody299" (\obj -> GHC.Base.pure CreatePayPalPaymentResponseBody299 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "warnings"))
--- | Defines the data type for the schema CreatePayPalPaymentResponseBodyDefault
+-- | Create a new 'CreatePayPalPaymentResponseBody299' with all required fields.
+mkCreatePayPalPaymentResponseBody299 :: CreatePayPalPaymentResponseBody299
+mkCreatePayPalPaymentResponseBody299 = CreatePayPalPaymentResponseBody299{createPayPalPaymentResponseBody299Warnings = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreatePayPalPaymentResponseBodyDefault = CreatePayPalPaymentResponseBodyDefault {
   -- | errors
-  createPayPalPaymentResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createPayPalPaymentResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreatePayPalPaymentResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createPayPalPaymentResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createPayPalPaymentResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreatePayPalPaymentResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createPayPalPaymentResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createPayPalPaymentResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreatePayPalPaymentResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreatePayPalPaymentResponseBodyDefault" (\obj -> GHC.Base.pure CreatePayPalPaymentResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreatePayPalPaymentResponseBodyDefault' with all required fields.
+mkCreatePayPalPaymentResponseBodyDefault :: CreatePayPalPaymentResponseBodyDefault
+mkCreatePayPalPaymentResponseBodyDefault = CreatePayPalPaymentResponseBodyDefault{createPayPalPaymentResponseBodyDefaultErrors = GHC.Maybe.Nothing}

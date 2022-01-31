@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getNodeBalancerConfigs
 module Linode.Operations.GetNodeBalancerConfigs where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,112 +41,104 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /nodebalancers/{nodeBalancerId}/configs
 -- 
 -- Returns a paginated list of NodeBalancer Configs associated with this NodeBalancer. NodeBalancer Configs represent individual ports that this NodeBalancer will accept traffic on, one Config per port.
 -- 
 -- For example, if you wanted to accept standard HTTP traffic, you would need a Config listening on port 80.
-getNodeBalancerConfigs :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                            -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                            -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetNodeBalancerConfigsResponse)) -- ^ Monad containing the result of the operation
-getNodeBalancerConfigs config
-                       page
-                       page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetNodeBalancerConfigsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                         GetNodeBalancerConfigsResponseBody200)
-                                                                                                                                                                                                   | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                           GetNodeBalancerConfigsResponseBodyDefault)
-                                                                                                                                                                                                   | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/nodebalancers/{nodeBalancerId}/configs") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /nodebalancers/{nodeBalancerId}/configs
+getNodeBalancerConfigs :: forall m . Linode.Common.MonadHTTP m => GetNodeBalancerConfigsParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetNodeBalancerConfigsResponse) -- ^ Monadic computation which returns the result of the operation
+getNodeBalancerConfigs parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetNodeBalancerConfigsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                                           GetNodeBalancerConfigsResponseBody200)
+                                                                                                                                                                                     | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                             GetNodeBalancerConfigsResponseBodyDefault)
+                                                                                                                                                                                     | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/nodebalancers/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getNodeBalancerConfigsParametersPathNodeBalancerId parameters))) GHC.Base.++ "/configs"))) [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getNodeBalancerConfigsParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getNodeBalancerConfigsParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/nodebalancers\/{nodeBalancerId}\/configs.GET.parameters@ in the specification.
 -- 
--- The same as 'getNodeBalancerConfigs' but returns the raw 'Data.ByteString.Char8.ByteString'
-getNodeBalancerConfigsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                           Linode.Common.SecurityScheme s) =>
-                             Linode.Common.Configuration s ->
-                             GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                             GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                             m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                   (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getNodeBalancerConfigsRaw config
-                          page
-                          page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/nodebalancers/{nodeBalancerId}/configs") ((Data.Text.pack "page",
-                                                                                                                                                                                                                  Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                           Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /nodebalancers/{nodeBalancerId}/configs
 -- 
--- Monadic version of 'getNodeBalancerConfigs' (use with 'Linode.Common.runWithConfiguration')
-getNodeBalancerConfigsM :: forall m s . (Linode.Common.MonadHTTP m,
-                                         Linode.Common.SecurityScheme s) =>
-                           GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                           GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                           Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                              m
-                                                              (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                  (Network.HTTP.Client.Types.Response GetNodeBalancerConfigsResponse))
-getNodeBalancerConfigsM page
-                        page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetNodeBalancerConfigsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          GetNodeBalancerConfigsResponseBody200)
-                                                                                                                                                                                                    | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetNodeBalancerConfigsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                            GetNodeBalancerConfigsResponseBodyDefault)
-                                                                                                                                                                                                    | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/nodebalancers/{nodeBalancerId}/configs") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /nodebalancers/{nodeBalancerId}/configs
--- 
--- Monadic version of 'getNodeBalancerConfigsRaw' (use with 'Linode.Common.runWithConfiguration')
-getNodeBalancerConfigsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                            Linode.Common.SecurityScheme s) =>
-                              GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                              GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                                 m
-                                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                     (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getNodeBalancerConfigsRawM page
-                           page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/nodebalancers/{nodeBalancerId}/configs") ((Data.Text.pack "page",
-                                                                                                                                                                                                             Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                      Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetNodeBalancerConfigsParameters = GetNodeBalancerConfigsParameters {
+  -- | pathNodeBalancerId: Represents the parameter named \'nodeBalancerId\'
+  -- 
+  -- The ID of the NodeBalancer to access.
+  getNodeBalancerConfigsParametersPathNodeBalancerId :: GHC.Types.Int
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  , getNodeBalancerConfigsParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getNodeBalancerConfigsParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetNodeBalancerConfigsParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathNodeBalancerId" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsParametersPathNodeBalancerId obj : "queryPage" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathNodeBalancerId" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsParametersPathNodeBalancerId obj) GHC.Base.<> (("queryPage" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsParametersQueryPageSize obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetNodeBalancerConfigsParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetNodeBalancerConfigsParameters" (\obj -> ((GHC.Base.pure GetNodeBalancerConfigsParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathNodeBalancerId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetNodeBalancerConfigsParameters' with all required fields.
+mkGetNodeBalancerConfigsParameters :: GHC.Types.Int -- ^ 'getNodeBalancerConfigsParametersPathNodeBalancerId'
+  -> GetNodeBalancerConfigsParameters
+mkGetNodeBalancerConfigsParameters getNodeBalancerConfigsParametersPathNodeBalancerId = GetNodeBalancerConfigsParameters{getNodeBalancerConfigsParametersPathNodeBalancerId = getNodeBalancerConfigsParametersPathNodeBalancerId,
+                                                                                                                         getNodeBalancerConfigsParametersQueryPage = GHC.Maybe.Nothing,
+                                                                                                                         getNodeBalancerConfigsParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getNodeBalancerConfigs'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetNodeBalancerConfigsResponseError' is used.
-data GetNodeBalancerConfigsResponse =                                                
-   GetNodeBalancerConfigsResponseError GHC.Base.String                               -- ^ Means either no matching case available or a parse error
-  | GetNodeBalancerConfigsResponse200 GetNodeBalancerConfigsResponseBody200          -- ^ A paginted list of NodeBalancer Configs
-  | GetNodeBalancerConfigsResponseDefault GetNodeBalancerConfigsResponseBodyDefault  -- ^ Error
+data GetNodeBalancerConfigsResponse =
+   GetNodeBalancerConfigsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetNodeBalancerConfigsResponse200 GetNodeBalancerConfigsResponseBody200 -- ^ A paginted list of NodeBalancer Configs
+  | GetNodeBalancerConfigsResponseDefault GetNodeBalancerConfigsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetNodeBalancerConfigsResponseBody200
+-- | Defines the object schema located at @paths.\/nodebalancers\/{nodeBalancerId}\/configs.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetNodeBalancerConfigsResponseBody200 = GetNodeBalancerConfigsResponseBody200 {
   -- | data
-  getNodeBalancerConfigsResponseBody200Data :: (GHC.Base.Maybe ([] NodeBalancerConfig))
-  -- | page
-  , getNodeBalancerConfigsResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getNodeBalancerConfigsResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getNodeBalancerConfigsResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getNodeBalancerConfigsResponseBody200Data :: (GHC.Maybe.Maybe ([NodeBalancerConfig]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getNodeBalancerConfigsResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getNodeBalancerConfigsResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getNodeBalancerConfigsResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetNodeBalancerConfigsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getNodeBalancerConfigsResponseBody200Data obj) : (Data.Aeson..=) "page" (getNodeBalancerConfigsResponseBody200Page obj) : (Data.Aeson..=) "pages" (getNodeBalancerConfigsResponseBody200Pages obj) : (Data.Aeson..=) "results" (getNodeBalancerConfigsResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getNodeBalancerConfigsResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getNodeBalancerConfigsResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getNodeBalancerConfigsResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getNodeBalancerConfigsResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetNodeBalancerConfigsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetNodeBalancerConfigsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetNodeBalancerConfigsResponseBody200" (\obj -> (((GHC.Base.pure GetNodeBalancerConfigsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetNodeBalancerConfigsResponseBodyDefault
+-- | Create a new 'GetNodeBalancerConfigsResponseBody200' with all required fields.
+mkGetNodeBalancerConfigsResponseBody200 :: GetNodeBalancerConfigsResponseBody200
+mkGetNodeBalancerConfigsResponseBody200 = GetNodeBalancerConfigsResponseBody200{getNodeBalancerConfigsResponseBody200Data = GHC.Maybe.Nothing,
+                                                                                getNodeBalancerConfigsResponseBody200Page = GHC.Maybe.Nothing,
+                                                                                getNodeBalancerConfigsResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                                getNodeBalancerConfigsResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetNodeBalancerConfigsResponseBodyDefault = GetNodeBalancerConfigsResponseBodyDefault {
   -- | errors
-  getNodeBalancerConfigsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getNodeBalancerConfigsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetNodeBalancerConfigsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getNodeBalancerConfigsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getNodeBalancerConfigsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetNodeBalancerConfigsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getNodeBalancerConfigsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetNodeBalancerConfigsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetNodeBalancerConfigsResponseBodyDefault" (\obj -> GHC.Base.pure GetNodeBalancerConfigsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetNodeBalancerConfigsResponseBodyDefault' with all required fields.
+mkGetNodeBalancerConfigsResponseBodyDefault :: GetNodeBalancerConfigsResponseBodyDefault
+mkGetNodeBalancerConfigsResponseBodyDefault = GetNodeBalancerConfigsResponseBodyDefault{getNodeBalancerConfigsResponseBodyDefaultErrors = GHC.Maybe.Nothing}

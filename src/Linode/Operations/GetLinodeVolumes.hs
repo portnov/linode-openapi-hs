@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getLinodeVolumes
 module Linode.Operations.GetLinodeVolumes where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,110 +41,102 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /linode/instances/{linodeId}/volumes
 -- 
 -- View Block Storage Volumes attached to this Linode.
-getLinodeVolumes :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                      -- ^ page: The page of a collection to return. | Constraints: Minimum  of 1.0
-  -> GHC.Base.Maybe GHC.Integer.Type.Integer                                                                                      -- ^ page_size: The number of items to return per page. | Constraints: Maxium  of 100.0, Minimum  of 25.0
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetLinodeVolumesResponse)) -- ^ Monad containing the result of the operation
-getLinodeVolumes config
-                 page
-                 page_size = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLinodeVolumesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeVolumesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                       GetLinodeVolumesResponseBody200)
-                                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeVolumesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                         GetLinodeVolumesResponseBodyDefault)
-                                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/volumes") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                       Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /linode/instances/{linodeId}/volumes
+getLinodeVolumes :: forall m . Linode.Common.MonadHTTP m => GetLinodeVolumesParameters -- ^ Contains all available parameters of this operation (query and path parameters)
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetLinodeVolumesResponse) -- ^ Monadic computation which returns the result of the operation
+getLinodeVolumes parameters = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetLinodeVolumesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeVolumesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                         GetLinodeVolumesResponseBody200)
+                                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeVolumesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                           GetLinodeVolumesResponseBodyDefault)
+                                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel (getLinodeVolumesParametersPathLinodeId parameters))) GHC.Base.++ "/volumes"))) [Linode.Common.QueryParameter (Data.Text.pack "page") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getLinodeVolumesParametersQueryPage parameters) (Data.Text.pack "form") GHC.Types.False,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Linode.Common.QueryParameter (Data.Text.pack "page_size") (Data.Aeson.Types.ToJSON.toJSON Data.Functor.<$> getLinodeVolumesParametersQueryPageSize parameters) (Data.Text.pack "form") GHC.Types.False])
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/volumes.GET.parameters@ in the specification.
 -- 
--- The same as 'getLinodeVolumes' but returns the raw 'Data.ByteString.Char8.ByteString'
-getLinodeVolumesRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Linode.Common.Configuration s ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                       m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLinodeVolumesRaw config
-                    page
-                    page_size = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/volumes") ((Data.Text.pack "page",
-                                                                                                                                                                                                         Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                  Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /linode/instances/{linodeId}/volumes
 -- 
--- Monadic version of 'getLinodeVolumes' (use with 'Linode.Common.runWithConfiguration')
-getLinodeVolumesM :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                     Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                        m
-                                                        (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                            (Network.HTTP.Client.Types.Response GetLinodeVolumesResponse))
-getLinodeVolumesM page
-                  page_size = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetLinodeVolumesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeVolumesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                        GetLinodeVolumesResponseBody200)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetLinodeVolumesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                          GetLinodeVolumesResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/volumes") ((Data.Text.pack "page",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                  Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
--- | > GET /linode/instances/{linodeId}/volumes
--- 
--- Monadic version of 'getLinodeVolumesRaw' (use with 'Linode.Common.runWithConfiguration')
-getLinodeVolumesRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                      Linode.Common.SecurityScheme s) =>
-                        GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                        GHC.Base.Maybe GHC.Integer.Type.Integer ->
-                        Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                           m
-                                                           (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getLinodeVolumesRawM page
-                     page_size = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/volumes") ((Data.Text.pack "page",
-                                                                                                                                                                                                    Linode.Common.stringifyModel Data.Functor.<$> page) : ((Data.Text.pack "page_size",
-                                                                                                                                                                                                                                                             Linode.Common.stringifyModel Data.Functor.<$> page_size) : [])))
+data GetLinodeVolumesParameters = GetLinodeVolumesParameters {
+  -- | pathLinodeId: Represents the parameter named \'linodeId\'
+  -- 
+  -- ID of the Linode to look up.
+  getLinodeVolumesParametersPathLinodeId :: GHC.Types.Int
+  -- | queryPage: Represents the parameter named \'page\'
+  -- 
+  -- The page of a collection to return.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Minimum  of 1.0
+  , getLinodeVolumesParametersQueryPage :: (GHC.Maybe.Maybe GHC.Types.Int)
+  -- | queryPage_size: Represents the parameter named \'page_size\'
+  -- 
+  -- The number of items to return per page.
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 100.0
+  -- * Minimum  of 25.0
+  , getLinodeVolumesParametersQueryPageSize :: (GHC.Maybe.Maybe GHC.Types.Int)
+  } deriving (GHC.Show.Show
+  , GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeVolumesParameters
+    where toJSON obj = Data.Aeson.Types.Internal.object ("pathLinodeId" Data.Aeson.Types.ToJSON..= getLinodeVolumesParametersPathLinodeId obj : "queryPage" Data.Aeson.Types.ToJSON..= getLinodeVolumesParametersQueryPage obj : "queryPage_size" Data.Aeson.Types.ToJSON..= getLinodeVolumesParametersQueryPageSize obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("pathLinodeId" Data.Aeson.Types.ToJSON..= getLinodeVolumesParametersPathLinodeId obj) GHC.Base.<> (("queryPage" Data.Aeson.Types.ToJSON..= getLinodeVolumesParametersQueryPage obj) GHC.Base.<> ("queryPage_size" Data.Aeson.Types.ToJSON..= getLinodeVolumesParametersQueryPageSize obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeVolumesParameters
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeVolumesParameters" (\obj -> ((GHC.Base.pure GetLinodeVolumesParameters GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "pathLinodeId")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "queryPage_size"))
+-- | Create a new 'GetLinodeVolumesParameters' with all required fields.
+mkGetLinodeVolumesParameters :: GHC.Types.Int -- ^ 'getLinodeVolumesParametersPathLinodeId'
+  -> GetLinodeVolumesParameters
+mkGetLinodeVolumesParameters getLinodeVolumesParametersPathLinodeId = GetLinodeVolumesParameters{getLinodeVolumesParametersPathLinodeId = getLinodeVolumesParametersPathLinodeId,
+                                                                                                 getLinodeVolumesParametersQueryPage = GHC.Maybe.Nothing,
+                                                                                                 getLinodeVolumesParametersQueryPageSize = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'getLinodeVolumes'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetLinodeVolumesResponseError' is used.
-data GetLinodeVolumesResponse =                                          
-   GetLinodeVolumesResponseError GHC.Base.String                         -- ^ Means either no matching case available or a parse error
-  | GetLinodeVolumesResponse200 GetLinodeVolumesResponseBody200          -- ^ Returns an array of Block Storage Volumes attached to this Linode. 
-  | GetLinodeVolumesResponseDefault GetLinodeVolumesResponseBodyDefault  -- ^ Error
+data GetLinodeVolumesResponse =
+   GetLinodeVolumesResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetLinodeVolumesResponse200 GetLinodeVolumesResponseBody200 -- ^ Returns an array of Block Storage Volumes attached to this Linode. 
+  | GetLinodeVolumesResponseDefault GetLinodeVolumesResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetLinodeVolumesResponseBody200
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/volumes.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLinodeVolumesResponseBody200 = GetLinodeVolumesResponseBody200 {
   -- | data
-  getLinodeVolumesResponseBody200Data :: (GHC.Base.Maybe ([] Volume))
-  -- | page
-  , getLinodeVolumesResponseBody200Page :: (GHC.Base.Maybe PaginationEnvelope_properties_page)
-  -- | pages
-  , getLinodeVolumesResponseBody200Pages :: (GHC.Base.Maybe PaginationEnvelope_properties_pages)
-  -- | results
-  , getLinodeVolumesResponseBody200Results :: (GHC.Base.Maybe PaginationEnvelope_properties_results)
+  getLinodeVolumesResponseBody200Data :: (GHC.Maybe.Maybe ([Volume]))
+  -- | page: The current [page](\/docs\/api\/\#pagination).
+  , getLinodeVolumesResponseBody200Page :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPage)
+  -- | pages: The total number of [pages](\/docs\/api\/\#pagination).
+  , getLinodeVolumesResponseBody200Pages :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesPages)
+  -- | results: The total number of results.
+  , getLinodeVolumesResponseBody200Results :: (GHC.Maybe.Maybe PaginationEnvelopePropertiesResults)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeVolumesResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "data" (getLinodeVolumesResponseBody200Data obj) : (Data.Aeson..=) "page" (getLinodeVolumesResponseBody200Page obj) : (Data.Aeson..=) "pages" (getLinodeVolumesResponseBody200Pages obj) : (Data.Aeson..=) "results" (getLinodeVolumesResponseBody200Results obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "data" (getLinodeVolumesResponseBody200Data obj) GHC.Base.<> ((Data.Aeson..=) "page" (getLinodeVolumesResponseBody200Page obj) GHC.Base.<> ((Data.Aeson..=) "pages" (getLinodeVolumesResponseBody200Pages obj) GHC.Base.<> (Data.Aeson..=) "results" (getLinodeVolumesResponseBody200Results obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeVolumesResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("data" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBody200Data obj : "page" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBody200Page obj : "pages" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBody200Pages obj : "results" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBody200Results obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("data" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBody200Data obj) GHC.Base.<> (("page" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBody200Page obj) GHC.Base.<> (("pages" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBody200Pages obj) GHC.Base.<> ("results" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBody200Results obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeVolumesResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeVolumesResponseBody200" (\obj -> (((GHC.Base.pure GetLinodeVolumesResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "data")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "page")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "pages")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "results"))
--- | Defines the data type for the schema GetLinodeVolumesResponseBodyDefault
+-- | Create a new 'GetLinodeVolumesResponseBody200' with all required fields.
+mkGetLinodeVolumesResponseBody200 :: GetLinodeVolumesResponseBody200
+mkGetLinodeVolumesResponseBody200 = GetLinodeVolumesResponseBody200{getLinodeVolumesResponseBody200Data = GHC.Maybe.Nothing,
+                                                                    getLinodeVolumesResponseBody200Page = GHC.Maybe.Nothing,
+                                                                    getLinodeVolumesResponseBody200Pages = GHC.Maybe.Nothing,
+                                                                    getLinodeVolumesResponseBody200Results = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetLinodeVolumesResponseBodyDefault = GetLinodeVolumesResponseBodyDefault {
   -- | errors
-  getLinodeVolumesResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getLinodeVolumesResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetLinodeVolumesResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getLinodeVolumesResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getLinodeVolumesResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetLinodeVolumesResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getLinodeVolumesResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetLinodeVolumesResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetLinodeVolumesResponseBodyDefault" (\obj -> GHC.Base.pure GetLinodeVolumesResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetLinodeVolumesResponseBodyDefault' with all required fields.
+mkGetLinodeVolumesResponseBodyDefault :: GetLinodeVolumesResponseBodyDefault
+mkGetLinodeVolumesResponseBodyDefault = GetLinodeVolumesResponseBodyDefault{getLinodeVolumesResponseBodyDefaultErrors = GHC.Maybe.Nothing}

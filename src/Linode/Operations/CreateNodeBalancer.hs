@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation createNodeBalancer
 module Linode.Operations.CreateNodeBalancer where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,88 +41,68 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > POST /nodebalancers
 -- 
 -- Creates a NodeBalancer in the requested Region. This NodeBalancer will not start serving requests until it is configured.
-createNodeBalancer :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> CreateNodeBalancerRequestBody                                                                                                  -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response CreateNodeBalancerResponse)) -- ^ Monad containing the result of the operation
-createNodeBalancer config
-                   body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateNodeBalancerResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateNodeBalancerResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                        NodeBalancer)
-                                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateNodeBalancerResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                          CreateNodeBalancerResponseBodyDefault)
-                                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/nodebalancers") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /nodebalancers
--- 
--- The same as 'createNodeBalancer' but returns the raw 'Data.ByteString.Char8.ByteString'
-createNodeBalancerRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         CreateNodeBalancerRequestBody ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createNodeBalancerRaw config
-                      body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/nodebalancers") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /nodebalancers
--- 
--- Monadic version of 'createNodeBalancer' (use with 'Linode.Common.runWithConfiguration')
-createNodeBalancerM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       CreateNodeBalancerRequestBody ->
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response CreateNodeBalancerResponse))
-createNodeBalancerM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either CreateNodeBalancerResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateNodeBalancerResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                         NodeBalancer)
-                                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateNodeBalancerResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                           CreateNodeBalancerResponseBodyDefault)
-                                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/nodebalancers") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | > POST /nodebalancers
--- 
--- Monadic version of 'createNodeBalancerRaw' (use with 'Linode.Common.runWithConfiguration')
-createNodeBalancerRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          CreateNodeBalancerRequestBody ->
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-createNodeBalancerRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/nodebalancers") [] (GHC.Base.Just body) Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema createNodeBalancerRequestBody
+createNodeBalancer :: forall m . Linode.Common.MonadHTTP m => CreateNodeBalancerRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response CreateNodeBalancerResponse) -- ^ Monadic computation which returns the result of the operation
+createNodeBalancer body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either CreateNodeBalancerResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> CreateNodeBalancerResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                         NodeBalancer)
+                                                                                                                                                                       | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> CreateNodeBalancerResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                           CreateNodeBalancerResponseBodyDefault)
+                                                                                                                                                                       | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/nodebalancers") GHC.Base.mempty (GHC.Maybe.Just body) Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/nodebalancers.POST.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateNodeBalancerRequestBody = CreateNodeBalancerRequestBody {
-  -- | client_conn_throttle
-  createNodeBalancerRequestBodyClient_conn_throttle :: (GHC.Base.Maybe NodeBalancer_properties_client_conn_throttle)
+  -- | client_conn_throttle: Throttle connections per second.  Set to 0 (zero) to disable throttling.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maxium  of 20.0
+  -- * Minimum  of 0.0
+  createNodeBalancerRequestBodyClientConnThrottle :: (GHC.Maybe.Maybe NodeBalancerPropertiesClientConnThrottle)
   -- | configs: The ports to configure this NodeBalancer with on creation. Each config must have a unique port and at least one Node.
-  , createNodeBalancerRequestBodyConfigs :: (GHC.Base.Maybe ([] CreateNodeBalancerRequestBodyConfigs))
-  -- | label
-  , createNodeBalancerRequestBodyLabel :: (GHC.Base.Maybe NodeBalancer_properties_label)
+  , createNodeBalancerRequestBodyConfigs :: (GHC.Maybe.Maybe ([CreateNodeBalancerRequestBodyConfigs']))
+  -- | label: This NodeBalancer\'s label. These must be unique on your Account.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maximum length of 32
+  -- * Minimum length of 3
+  -- * Must match pattern \'[a-zA-Z0-9-_]{3,32}\'
+  , createNodeBalancerRequestBodyLabel :: (GHC.Maybe.Maybe NodeBalancerPropertiesLabel)
   -- | region: The ID of the Region to create this NodeBalancer in.
   , createNodeBalancerRequestBodyRegion :: Data.Text.Internal.Text
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "client_conn_throttle" (createNodeBalancerRequestBodyClient_conn_throttle obj) : (Data.Aeson..=) "configs" (createNodeBalancerRequestBodyConfigs obj) : (Data.Aeson..=) "label" (createNodeBalancerRequestBodyLabel obj) : (Data.Aeson..=) "region" (createNodeBalancerRequestBodyRegion obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "client_conn_throttle" (createNodeBalancerRequestBodyClient_conn_throttle obj) GHC.Base.<> ((Data.Aeson..=) "configs" (createNodeBalancerRequestBodyConfigs obj) GHC.Base.<> ((Data.Aeson..=) "label" (createNodeBalancerRequestBodyLabel obj) GHC.Base.<> (Data.Aeson..=) "region" (createNodeBalancerRequestBodyRegion obj))))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("client_conn_throttle" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyClientConnThrottle obj : "configs" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs obj : "label" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyLabel obj : "region" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyRegion obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("client_conn_throttle" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyClientConnThrottle obj) GHC.Base.<> (("configs" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyLabel obj) GHC.Base.<> ("region" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyRegion obj))))
 instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateNodeBalancerRequestBody" (\obj -> (((GHC.Base.pure CreateNodeBalancerRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "client_conn_throttle")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "configs")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..: "region"))
--- | Defines the data type for the schema createNodeBalancerRequestBodyConfigs
+-- | Create a new 'CreateNodeBalancerRequestBody' with all required fields.
+mkCreateNodeBalancerRequestBody :: Data.Text.Internal.Text -- ^ 'createNodeBalancerRequestBodyRegion'
+  -> CreateNodeBalancerRequestBody
+mkCreateNodeBalancerRequestBody createNodeBalancerRequestBodyRegion = CreateNodeBalancerRequestBody{createNodeBalancerRequestBodyClientConnThrottle = GHC.Maybe.Nothing,
+                                                                                                    createNodeBalancerRequestBodyConfigs = GHC.Maybe.Nothing,
+                                                                                                    createNodeBalancerRequestBodyLabel = GHC.Maybe.Nothing,
+                                                                                                    createNodeBalancerRequestBodyRegion = createNodeBalancerRequestBodyRegion}
+-- | Defines the object schema located at @paths.\/nodebalancers.POST.requestBody.content.application\/json.schema.properties.configs.items.allOf@ in the specification.
 -- 
 -- 
-data CreateNodeBalancerRequestBodyConfigs = CreateNodeBalancerRequestBodyConfigs {
+data CreateNodeBalancerRequestBodyConfigs' = CreateNodeBalancerRequestBodyConfigs' {
   -- | algorithm: What algorithm this NodeBalancer should use for routing traffic to backends.
-  createNodeBalancerRequestBodyConfigsAlgorithm :: (GHC.Base.Maybe CreateNodeBalancerRequestBodyConfigsAlgorithm)
+  createNodeBalancerRequestBodyConfigs'Algorithm :: (GHC.Maybe.Maybe CreateNodeBalancerRequestBodyConfigs'Algorithm')
   -- | check: The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down.
   -- * If \`none\` no check is performed.
   -- * \`connection\` requires only a connection to the backend to succeed.
   -- * \`http\` and \`http_body\` rely on the backend serving HTTP, and that
   --   the response returned matches what is expected.
-  , createNodeBalancerRequestBodyConfigsCheck :: (GHC.Base.Maybe CreateNodeBalancerRequestBodyConfigsCheck)
+  , createNodeBalancerRequestBodyConfigs'Check :: (GHC.Maybe.Maybe CreateNodeBalancerRequestBodyConfigs'Check')
   -- | check_attempts: How many times to attempt a check before considering a backend to be down.
   -- 
   -- 
@@ -130,20 +110,20 @@ data CreateNodeBalancerRequestBodyConfigs = CreateNodeBalancerRequestBodyConfigs
   -- 
   -- * Maxium  of 30.0
   -- * Minimum  of 1.0
-  , createNodeBalancerRequestBodyConfigsCheck_attempts :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createNodeBalancerRequestBodyConfigs'CheckAttempts :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | check_body: This value must be present in the response body of the check in order for it to pass. If this value is not present in the response body of a check request, the backend is considered to be down.
-  , createNodeBalancerRequestBodyConfigsCheck_body :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createNodeBalancerRequestBodyConfigs'CheckBody :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | check_interval: How often, in seconds, to check that backends are up and serving requests.
-  , createNodeBalancerRequestBodyConfigsCheck_interval :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createNodeBalancerRequestBodyConfigs'CheckInterval :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | check_passive: If true, any response from this backend with a \`5xx\` status code will be enough for it to be considered unhealthy and taken out of rotation.
-  , createNodeBalancerRequestBodyConfigsCheck_passive :: (GHC.Base.Maybe GHC.Types.Bool)
+  , createNodeBalancerRequestBodyConfigs'CheckPassive :: (GHC.Maybe.Maybe GHC.Types.Bool)
   -- | check_path: The URL path to check on each backend. If the backend does not respond to this request it is considered to be down.
   -- 
   -- 
   -- Constraints:
   -- 
   -- * Must match pattern \'^[a-zA-Z0-9\\\/\\-%?&=.]*\$\'
-  , createNodeBalancerRequestBodyConfigsCheck_path :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createNodeBalancerRequestBodyConfigs'CheckPath :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | check_timeout: How long, in seconds, to wait for a check attempt before considering it failed.
   -- 
   -- 
@@ -151,19 +131,19 @@ data CreateNodeBalancerRequestBodyConfigs = CreateNodeBalancerRequestBodyConfigs
   -- 
   -- * Maxium  of 30.0
   -- * Minimum  of 1.0
-  , createNodeBalancerRequestBodyConfigsCheck_timeout :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createNodeBalancerRequestBodyConfigs'CheckTimeout :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | cipher_suite: What ciphers to use for SSL connections served by this NodeBalancer.
   -- 
   -- * \`legacy\` is considered insecure and should only be used if necessary.
-  , createNodeBalancerRequestBodyConfigsCipher_suite :: (GHC.Base.Maybe CreateNodeBalancerRequestBodyConfigsCipher_suite)
+  , createNodeBalancerRequestBodyConfigs'CipherSuite :: (GHC.Maybe.Maybe CreateNodeBalancerRequestBodyConfigs'CipherSuite')
   -- | id: This config\'s unique ID
-  , createNodeBalancerRequestBodyConfigsId :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createNodeBalancerRequestBodyConfigs'Id :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | nodebalancer_id: The ID for the NodeBalancer this config belongs to.
-  , createNodeBalancerRequestBodyConfigsNodebalancer_id :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createNodeBalancerRequestBodyConfigs'NodebalancerId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | nodes: The NodeBalancer Nodes that serve this port.  When creating a NodeBalancer this way, at least one Node is required per configured port.
-  , createNodeBalancerRequestBodyConfigsNodes :: (GHC.Base.Maybe ([] NodeBalancerNode))
+  , createNodeBalancerRequestBodyConfigs'Nodes :: (GHC.Maybe.Maybe ([NodeBalancerNode]))
   -- | nodes_status: A structure containing information about the health of the backends for this port.  This information is updated periodically as checks are performed against backends.
-  , createNodeBalancerRequestBodyConfigsNodes_status :: (GHC.Base.Maybe CreateNodeBalancerRequestBodyConfigsNodes_status)
+  , createNodeBalancerRequestBodyConfigs'NodesStatus :: (GHC.Maybe.Maybe CreateNodeBalancerRequestBodyConfigs'NodesStatus')
   -- | port: The port this Config is for. These values must be unique across configs on a single NodeBalancer (you can\'t have two configs for port 80, for example).  While some ports imply some protocols, no enforcement is done and you may configure your NodeBalancer however is useful to you. For example, while port 443 is generally used for HTTPS, you do not need SSL configured to have a NodeBalancer listening on port 443.
   -- 
   -- 
@@ -171,17 +151,17 @@ data CreateNodeBalancerRequestBodyConfigs = CreateNodeBalancerRequestBodyConfigs
   -- 
   -- * Maxium  of 65535.0
   -- * Minimum  of 1.0
-  , createNodeBalancerRequestBodyConfigsPort :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createNodeBalancerRequestBodyConfigs'Port :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | protocol: The protocol this port is configured to serve.
   -- * If using \`http\` or \`tcp\` protocol, \`ssl_cert\` and \`ssl_key\` are not supported.
   -- * If using \`https\` protocol, \`ssl_cert\` and \`ssl_key\` are required.
-  , createNodeBalancerRequestBodyConfigsProtocol :: (GHC.Base.Maybe CreateNodeBalancerRequestBodyConfigsProtocol)
+  , createNodeBalancerRequestBodyConfigs'Protocol :: (GHC.Maybe.Maybe CreateNodeBalancerRequestBodyConfigs'Protocol')
   -- | proxy_protocol: ProxyProtocol is a TCP extension that sends initial TCP connection information such as source\/destination IPs and ports to backend devices. This information would be lost otherwise. Backend devices must be configured to work with ProxyProtocol if enabled.
   -- 
   -- * If ommited, or set to \`none\`, the NodeBalancer doesn\'t send any auxilary data over TCP connections. This is the default.
   -- * If set to \`v1\`, the human-readable header format (Version 1) is used.
   -- * If set to \`v2\`, the binary header format (Version 2) is used.
-  , createNodeBalancerRequestBodyConfigsProxy_protocol :: (GHC.Base.Maybe CreateNodeBalancerRequestBodyConfigsProxy_protocol)
+  , createNodeBalancerRequestBodyConfigs'ProxyProtocol :: (GHC.Maybe.Maybe CreateNodeBalancerRequestBodyConfigs'ProxyProtocol')
   -- | ssl_cert: The PEM-formatted public SSL certificate (or the combined PEM-formatted SSL
   -- certificate and Certificate Authority chain) that should be served on this
   -- NodeBalancerConfig\'s port.
@@ -193,11 +173,11 @@ data CreateNodeBalancerRequestBodyConfigs = CreateNodeBalancerRequestBodyConfigs
   -- The read-only \`ssl_commonname\` and \`ssl_fingerprint\` fields in a NodeBalancerConfig
   -- response are automatically derived from your certificate. Please refer to these fields to
   -- verify that the appropriate certificate was assigned to your NodeBalancerConfig.
-  , createNodeBalancerRequestBodyConfigsSsl_cert :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createNodeBalancerRequestBodyConfigs'SslCert :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | ssl_commonname: The read-only common name automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
-  , createNodeBalancerRequestBodyConfigsSsl_commonname :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createNodeBalancerRequestBodyConfigs'SslCommonname :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | ssl_fingerprint: The read-only fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.
-  , createNodeBalancerRequestBodyConfigsSsl_fingerprint :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createNodeBalancerRequestBodyConfigs'SslFingerprint :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | ssl_key: The PEM-formatted private key for the SSL certificate set in the \`ssl_cert\` field.
   -- 
   -- Line breaks must be represented as \"\\n\" in the string.
@@ -209,7 +189,7 @@ data CreateNodeBalancerRequestBodyConfigs = CreateNodeBalancerRequestBodyConfigs
   -- The read-only \`ssl_commonname\` and \`ssl_fingerprint\` fields in a NodeBalancerConfig
   -- response are automatically derived from your certificate. Please refer to these fields to
   -- verify that the appropriate certificate was assigned to your NodeBalancerConfig.
-  , createNodeBalancerRequestBodyConfigsSsl_key :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , createNodeBalancerRequestBodyConfigs'SslKey :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | stickiness: Controls how session stickiness is handled on this port.
   -- * If set to \`none\` connections will always be assigned a backend based on the algorithm configured.
   -- * If set to \`table\` sessions from the same remote address will be routed to the same
@@ -217,162 +197,174 @@ data CreateNodeBalancerRequestBodyConfigs = CreateNodeBalancerRequestBodyConfigs
   -- 
   -- * For HTTP or HTTPS clients, \`http_cookie\` allows sessions to be
   --   routed to the same backend based on a cookie set by the NodeBalancer.
-  , createNodeBalancerRequestBodyConfigsStickiness :: (GHC.Base.Maybe CreateNodeBalancerRequestBodyConfigsStickiness)
+  , createNodeBalancerRequestBodyConfigs'Stickiness :: (GHC.Maybe.Maybe CreateNodeBalancerRequestBodyConfigs'Stickiness')
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerRequestBodyConfigs
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "algorithm" (createNodeBalancerRequestBodyConfigsAlgorithm obj) : (Data.Aeson..=) "check" (createNodeBalancerRequestBodyConfigsCheck obj) : (Data.Aeson..=) "check_attempts" (createNodeBalancerRequestBodyConfigsCheck_attempts obj) : (Data.Aeson..=) "check_body" (createNodeBalancerRequestBodyConfigsCheck_body obj) : (Data.Aeson..=) "check_interval" (createNodeBalancerRequestBodyConfigsCheck_interval obj) : (Data.Aeson..=) "check_passive" (createNodeBalancerRequestBodyConfigsCheck_passive obj) : (Data.Aeson..=) "check_path" (createNodeBalancerRequestBodyConfigsCheck_path obj) : (Data.Aeson..=) "check_timeout" (createNodeBalancerRequestBodyConfigsCheck_timeout obj) : (Data.Aeson..=) "cipher_suite" (createNodeBalancerRequestBodyConfigsCipher_suite obj) : (Data.Aeson..=) "id" (createNodeBalancerRequestBodyConfigsId obj) : (Data.Aeson..=) "nodebalancer_id" (createNodeBalancerRequestBodyConfigsNodebalancer_id obj) : (Data.Aeson..=) "nodes" (createNodeBalancerRequestBodyConfigsNodes obj) : (Data.Aeson..=) "nodes_status" (createNodeBalancerRequestBodyConfigsNodes_status obj) : (Data.Aeson..=) "port" (createNodeBalancerRequestBodyConfigsPort obj) : (Data.Aeson..=) "protocol" (createNodeBalancerRequestBodyConfigsProtocol obj) : (Data.Aeson..=) "proxy_protocol" (createNodeBalancerRequestBodyConfigsProxy_protocol obj) : (Data.Aeson..=) "ssl_cert" (createNodeBalancerRequestBodyConfigsSsl_cert obj) : (Data.Aeson..=) "ssl_commonname" (createNodeBalancerRequestBodyConfigsSsl_commonname obj) : (Data.Aeson..=) "ssl_fingerprint" (createNodeBalancerRequestBodyConfigsSsl_fingerprint obj) : (Data.Aeson..=) "ssl_key" (createNodeBalancerRequestBodyConfigsSsl_key obj) : (Data.Aeson..=) "stickiness" (createNodeBalancerRequestBodyConfigsStickiness obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "algorithm" (createNodeBalancerRequestBodyConfigsAlgorithm obj) GHC.Base.<> ((Data.Aeson..=) "check" (createNodeBalancerRequestBodyConfigsCheck obj) GHC.Base.<> ((Data.Aeson..=) "check_attempts" (createNodeBalancerRequestBodyConfigsCheck_attempts obj) GHC.Base.<> ((Data.Aeson..=) "check_body" (createNodeBalancerRequestBodyConfigsCheck_body obj) GHC.Base.<> ((Data.Aeson..=) "check_interval" (createNodeBalancerRequestBodyConfigsCheck_interval obj) GHC.Base.<> ((Data.Aeson..=) "check_passive" (createNodeBalancerRequestBodyConfigsCheck_passive obj) GHC.Base.<> ((Data.Aeson..=) "check_path" (createNodeBalancerRequestBodyConfigsCheck_path obj) GHC.Base.<> ((Data.Aeson..=) "check_timeout" (createNodeBalancerRequestBodyConfigsCheck_timeout obj) GHC.Base.<> ((Data.Aeson..=) "cipher_suite" (createNodeBalancerRequestBodyConfigsCipher_suite obj) GHC.Base.<> ((Data.Aeson..=) "id" (createNodeBalancerRequestBodyConfigsId obj) GHC.Base.<> ((Data.Aeson..=) "nodebalancer_id" (createNodeBalancerRequestBodyConfigsNodebalancer_id obj) GHC.Base.<> ((Data.Aeson..=) "nodes" (createNodeBalancerRequestBodyConfigsNodes obj) GHC.Base.<> ((Data.Aeson..=) "nodes_status" (createNodeBalancerRequestBodyConfigsNodes_status obj) GHC.Base.<> ((Data.Aeson..=) "port" (createNodeBalancerRequestBodyConfigsPort obj) GHC.Base.<> ((Data.Aeson..=) "protocol" (createNodeBalancerRequestBodyConfigsProtocol obj) GHC.Base.<> ((Data.Aeson..=) "proxy_protocol" (createNodeBalancerRequestBodyConfigsProxy_protocol obj) GHC.Base.<> ((Data.Aeson..=) "ssl_cert" (createNodeBalancerRequestBodyConfigsSsl_cert obj) GHC.Base.<> ((Data.Aeson..=) "ssl_commonname" (createNodeBalancerRequestBodyConfigsSsl_commonname obj) GHC.Base.<> ((Data.Aeson..=) "ssl_fingerprint" (createNodeBalancerRequestBodyConfigsSsl_fingerprint obj) GHC.Base.<> ((Data.Aeson..=) "ssl_key" (createNodeBalancerRequestBodyConfigsSsl_key obj) GHC.Base.<> (Data.Aeson..=) "stickiness" (createNodeBalancerRequestBodyConfigsStickiness obj)))))))))))))))))))))
-instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigs
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateNodeBalancerRequestBodyConfigs" (\obj -> ((((((((((((((((((((GHC.Base.pure CreateNodeBalancerRequestBodyConfigs GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "algorithm")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_attempts")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_body")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_interval")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_passive")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_path")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_timeout")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "cipher_suite")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "nodebalancer_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "nodes")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "nodes_status")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "port")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "protocol")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "proxy_protocol")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ssl_cert")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ssl_commonname")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ssl_fingerprint")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ssl_key")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "stickiness"))
--- | Defines the enum schema createNodeBalancerRequestBodyConfigsAlgorithm
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerRequestBodyConfigs'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("algorithm" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Algorithm obj : "check" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Check obj : "check_attempts" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckAttempts obj : "check_body" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckBody obj : "check_interval" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckInterval obj : "check_passive" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckPassive obj : "check_path" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckPath obj : "check_timeout" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckTimeout obj : "cipher_suite" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CipherSuite obj : "id" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Id obj : "nodebalancer_id" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'NodebalancerId obj : "nodes" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Nodes obj : "nodes_status" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'NodesStatus obj : "port" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Port obj : "protocol" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Protocol obj : "proxy_protocol" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'ProxyProtocol obj : "ssl_cert" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'SslCert obj : "ssl_commonname" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'SslCommonname obj : "ssl_fingerprint" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'SslFingerprint obj : "ssl_key" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'SslKey obj : "stickiness" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Stickiness obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("algorithm" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Algorithm obj) GHC.Base.<> (("check" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Check obj) GHC.Base.<> (("check_attempts" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckAttempts obj) GHC.Base.<> (("check_body" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckBody obj) GHC.Base.<> (("check_interval" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckInterval obj) GHC.Base.<> (("check_passive" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckPassive obj) GHC.Base.<> (("check_path" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckPath obj) GHC.Base.<> (("check_timeout" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CheckTimeout obj) GHC.Base.<> (("cipher_suite" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'CipherSuite obj) GHC.Base.<> (("id" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Id obj) GHC.Base.<> (("nodebalancer_id" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'NodebalancerId obj) GHC.Base.<> (("nodes" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Nodes obj) GHC.Base.<> (("nodes_status" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'NodesStatus obj) GHC.Base.<> (("port" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Port obj) GHC.Base.<> (("protocol" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Protocol obj) GHC.Base.<> (("proxy_protocol" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'ProxyProtocol obj) GHC.Base.<> (("ssl_cert" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'SslCert obj) GHC.Base.<> (("ssl_commonname" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'SslCommonname obj) GHC.Base.<> (("ssl_fingerprint" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'SslFingerprint obj) GHC.Base.<> (("ssl_key" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'SslKey obj) GHC.Base.<> ("stickiness" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'Stickiness obj)))))))))))))))))))))
+instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigs'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateNodeBalancerRequestBodyConfigs'" (\obj -> ((((((((((((((((((((GHC.Base.pure CreateNodeBalancerRequestBodyConfigs' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "algorithm")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_attempts")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_body")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_interval")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_passive")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_path")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "check_timeout")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "cipher_suite")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "nodebalancer_id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "nodes")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "nodes_status")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "port")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "protocol")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "proxy_protocol")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ssl_cert")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ssl_commonname")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ssl_fingerprint")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "ssl_key")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "stickiness"))
+-- | Create a new 'CreateNodeBalancerRequestBodyConfigs'' with all required fields.
+mkCreateNodeBalancerRequestBodyConfigs' :: CreateNodeBalancerRequestBodyConfigs'
+mkCreateNodeBalancerRequestBodyConfigs' = CreateNodeBalancerRequestBodyConfigs'{createNodeBalancerRequestBodyConfigs'Algorithm = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'Check = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'CheckAttempts = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'CheckBody = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'CheckInterval = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'CheckPassive = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'CheckPath = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'CheckTimeout = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'CipherSuite = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'Id = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'NodebalancerId = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'Nodes = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'NodesStatus = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'Port = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'Protocol = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'ProxyProtocol = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'SslCert = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'SslCommonname = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'SslFingerprint = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'SslKey = GHC.Maybe.Nothing,
+                                                                                createNodeBalancerRequestBodyConfigs'Stickiness = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/nodebalancers.POST.requestBody.content.application\/json.schema.properties.configs.items.allOf.properties.algorithm@ in the specification.
 -- 
 -- What algorithm this NodeBalancer should use for routing traffic to backends.
-data CreateNodeBalancerRequestBodyConfigsAlgorithm
-    = CreateNodeBalancerRequestBodyConfigsAlgorithmEnumOther Data.Aeson.Types.Internal.Value
-    | CreateNodeBalancerRequestBodyConfigsAlgorithmEnumTyped Data.Text.Internal.Text
-    | CreateNodeBalancerRequestBodyConfigsAlgorithmEnumString_leastconn
-    | CreateNodeBalancerRequestBodyConfigsAlgorithmEnumString_roundrobin
-    | CreateNodeBalancerRequestBodyConfigsAlgorithmEnumString_source
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerRequestBodyConfigsAlgorithm
-    where toJSON (CreateNodeBalancerRequestBodyConfigsAlgorithmEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsAlgorithmEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsAlgorithmEnumString_leastconn) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "leastconn"
-          toJSON (CreateNodeBalancerRequestBodyConfigsAlgorithmEnumString_roundrobin) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "roundrobin"
-          toJSON (CreateNodeBalancerRequestBodyConfigsAlgorithmEnumString_source) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "source"
-instance Data.Aeson.FromJSON CreateNodeBalancerRequestBodyConfigsAlgorithm
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "leastconn")
-                                          then CreateNodeBalancerRequestBodyConfigsAlgorithmEnumString_leastconn
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "roundrobin")
-                                                then CreateNodeBalancerRequestBodyConfigsAlgorithmEnumString_roundrobin
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "source")
-                                                      then CreateNodeBalancerRequestBodyConfigsAlgorithmEnumString_source
-                                                      else CreateNodeBalancerRequestBodyConfigsAlgorithmEnumOther val)
--- | Defines the enum schema createNodeBalancerRequestBodyConfigsCheck
+data CreateNodeBalancerRequestBodyConfigs'Algorithm' =
+   CreateNodeBalancerRequestBodyConfigs'Algorithm'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateNodeBalancerRequestBodyConfigs'Algorithm'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateNodeBalancerRequestBodyConfigs'Algorithm'EnumRoundrobin -- ^ Represents the JSON value @"roundrobin"@
+  | CreateNodeBalancerRequestBodyConfigs'Algorithm'EnumLeastconn -- ^ Represents the JSON value @"leastconn"@
+  | CreateNodeBalancerRequestBodyConfigs'Algorithm'EnumSource -- ^ Represents the JSON value @"source"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerRequestBodyConfigs'Algorithm'
+    where toJSON (CreateNodeBalancerRequestBodyConfigs'Algorithm'Other val) = val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Algorithm'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Algorithm'EnumRoundrobin) = "roundrobin"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Algorithm'EnumLeastconn) = "leastconn"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Algorithm'EnumSource) = "source"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigs'Algorithm'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "roundrobin" -> CreateNodeBalancerRequestBodyConfigs'Algorithm'EnumRoundrobin
+                                            | val GHC.Classes.== "leastconn" -> CreateNodeBalancerRequestBodyConfigs'Algorithm'EnumLeastconn
+                                            | val GHC.Classes.== "source" -> CreateNodeBalancerRequestBodyConfigs'Algorithm'EnumSource
+                                            | GHC.Base.otherwise -> CreateNodeBalancerRequestBodyConfigs'Algorithm'Other val)
+-- | Defines the enum schema located at @paths.\/nodebalancers.POST.requestBody.content.application\/json.schema.properties.configs.items.allOf.properties.check@ in the specification.
 -- 
 -- The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down.
 -- * If \`none\` no check is performed.
 -- * \`connection\` requires only a connection to the backend to succeed.
 -- * \`http\` and \`http_body\` rely on the backend serving HTTP, and that
 --   the response returned matches what is expected.
-data CreateNodeBalancerRequestBodyConfigsCheck
-    = CreateNodeBalancerRequestBodyConfigsCheckEnumOther Data.Aeson.Types.Internal.Value
-    | CreateNodeBalancerRequestBodyConfigsCheckEnumTyped Data.Text.Internal.Text
-    | CreateNodeBalancerRequestBodyConfigsCheckEnumString_connection
-    | CreateNodeBalancerRequestBodyConfigsCheckEnumString_http
-    | CreateNodeBalancerRequestBodyConfigsCheckEnumString_http_body
-    | CreateNodeBalancerRequestBodyConfigsCheckEnumString_none
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerRequestBodyConfigsCheck
-    where toJSON (CreateNodeBalancerRequestBodyConfigsCheckEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsCheckEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsCheckEnumString_connection) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "connection"
-          toJSON (CreateNodeBalancerRequestBodyConfigsCheckEnumString_http) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "http"
-          toJSON (CreateNodeBalancerRequestBodyConfigsCheckEnumString_http_body) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "http_body"
-          toJSON (CreateNodeBalancerRequestBodyConfigsCheckEnumString_none) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "none"
-instance Data.Aeson.FromJSON CreateNodeBalancerRequestBodyConfigsCheck
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "connection")
-                                          then CreateNodeBalancerRequestBodyConfigsCheckEnumString_connection
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "http")
-                                                then CreateNodeBalancerRequestBodyConfigsCheckEnumString_http
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "http_body")
-                                                      then CreateNodeBalancerRequestBodyConfigsCheckEnumString_http_body
-                                                      else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "none")
-                                                            then CreateNodeBalancerRequestBodyConfigsCheckEnumString_none
-                                                            else CreateNodeBalancerRequestBodyConfigsCheckEnumOther val)
--- | Defines the enum schema createNodeBalancerRequestBodyConfigsCipher_suite
+data CreateNodeBalancerRequestBodyConfigs'Check' =
+   CreateNodeBalancerRequestBodyConfigs'Check'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateNodeBalancerRequestBodyConfigs'Check'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateNodeBalancerRequestBodyConfigs'Check'EnumNone -- ^ Represents the JSON value @"none"@
+  | CreateNodeBalancerRequestBodyConfigs'Check'EnumConnection -- ^ Represents the JSON value @"connection"@
+  | CreateNodeBalancerRequestBodyConfigs'Check'EnumHttp -- ^ Represents the JSON value @"http"@
+  | CreateNodeBalancerRequestBodyConfigs'Check'EnumHttpBody -- ^ Represents the JSON value @"http_body"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerRequestBodyConfigs'Check'
+    where toJSON (CreateNodeBalancerRequestBodyConfigs'Check'Other val) = val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Check'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Check'EnumNone) = "none"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Check'EnumConnection) = "connection"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Check'EnumHttp) = "http"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Check'EnumHttpBody) = "http_body"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigs'Check'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "none" -> CreateNodeBalancerRequestBodyConfigs'Check'EnumNone
+                                            | val GHC.Classes.== "connection" -> CreateNodeBalancerRequestBodyConfigs'Check'EnumConnection
+                                            | val GHC.Classes.== "http" -> CreateNodeBalancerRequestBodyConfigs'Check'EnumHttp
+                                            | val GHC.Classes.== "http_body" -> CreateNodeBalancerRequestBodyConfigs'Check'EnumHttpBody
+                                            | GHC.Base.otherwise -> CreateNodeBalancerRequestBodyConfigs'Check'Other val)
+-- | Defines the enum schema located at @paths.\/nodebalancers.POST.requestBody.content.application\/json.schema.properties.configs.items.allOf.properties.cipher_suite@ in the specification.
 -- 
 -- What ciphers to use for SSL connections served by this NodeBalancer.
 -- 
 -- * \`legacy\` is considered insecure and should only be used if necessary.
-data CreateNodeBalancerRequestBodyConfigsCipher_suite
-    = CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumOther Data.Aeson.Types.Internal.Value
-    | CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumTyped Data.Text.Internal.Text
-    | CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumString_legacy
-    | CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumString_recommended
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerRequestBodyConfigsCipher_suite
-    where toJSON (CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumString_legacy) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "legacy"
-          toJSON (CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumString_recommended) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "recommended"
-instance Data.Aeson.FromJSON CreateNodeBalancerRequestBodyConfigsCipher_suite
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "legacy")
-                                          then CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumString_legacy
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "recommended")
-                                                then CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumString_recommended
-                                                else CreateNodeBalancerRequestBodyConfigsCipher_suiteEnumOther val)
--- | Defines the data type for the schema createNodeBalancerRequestBodyConfigsNodes_status
+data CreateNodeBalancerRequestBodyConfigs'CipherSuite' =
+   CreateNodeBalancerRequestBodyConfigs'CipherSuite'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateNodeBalancerRequestBodyConfigs'CipherSuite'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateNodeBalancerRequestBodyConfigs'CipherSuite'EnumRecommended -- ^ Represents the JSON value @"recommended"@
+  | CreateNodeBalancerRequestBodyConfigs'CipherSuite'EnumLegacy -- ^ Represents the JSON value @"legacy"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerRequestBodyConfigs'CipherSuite'
+    where toJSON (CreateNodeBalancerRequestBodyConfigs'CipherSuite'Other val) = val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'CipherSuite'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'CipherSuite'EnumRecommended) = "recommended"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'CipherSuite'EnumLegacy) = "legacy"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigs'CipherSuite'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "recommended" -> CreateNodeBalancerRequestBodyConfigs'CipherSuite'EnumRecommended
+                                            | val GHC.Classes.== "legacy" -> CreateNodeBalancerRequestBodyConfigs'CipherSuite'EnumLegacy
+                                            | GHC.Base.otherwise -> CreateNodeBalancerRequestBodyConfigs'CipherSuite'Other val)
+-- | Defines the object schema located at @paths.\/nodebalancers.POST.requestBody.content.application\/json.schema.properties.configs.items.allOf.properties.nodes_status@ in the specification.
 -- 
 -- A structure containing information about the health of the backends for this port.  This information is updated periodically as checks are performed against backends.
-data CreateNodeBalancerRequestBodyConfigsNodes_status = CreateNodeBalancerRequestBodyConfigsNodes_status {
+data CreateNodeBalancerRequestBodyConfigs'NodesStatus' = CreateNodeBalancerRequestBodyConfigs'NodesStatus' {
   -- | down: The number of backends considered to be \"DOWN\" and unhealthy.  These are not in rotation, and not serving requests.
-  createNodeBalancerRequestBodyConfigsNodes_statusDown :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  createNodeBalancerRequestBodyConfigs'NodesStatus'Down :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | up: The number of backends considered to be \"UP\" and healthy, and that are serving requests.
-  , createNodeBalancerRequestBodyConfigsNodes_statusUp :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , createNodeBalancerRequestBodyConfigs'NodesStatus'Up :: (GHC.Maybe.Maybe GHC.Types.Int)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerRequestBodyConfigsNodes_status
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "down" (createNodeBalancerRequestBodyConfigsNodes_statusDown obj) : (Data.Aeson..=) "up" (createNodeBalancerRequestBodyConfigsNodes_statusUp obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "down" (createNodeBalancerRequestBodyConfigsNodes_statusDown obj) GHC.Base.<> (Data.Aeson..=) "up" (createNodeBalancerRequestBodyConfigsNodes_statusUp obj))
-instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigsNodes_status
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateNodeBalancerRequestBodyConfigsNodes_status" (\obj -> (GHC.Base.pure CreateNodeBalancerRequestBodyConfigsNodes_status GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "down")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "up"))
--- | Defines the enum schema createNodeBalancerRequestBodyConfigsProtocol
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerRequestBodyConfigs'NodesStatus'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("down" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'NodesStatus'Down obj : "up" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'NodesStatus'Up obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("down" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'NodesStatus'Down obj) GHC.Base.<> ("up" Data.Aeson.Types.ToJSON..= createNodeBalancerRequestBodyConfigs'NodesStatus'Up obj))
+instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigs'NodesStatus'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateNodeBalancerRequestBodyConfigs'NodesStatus'" (\obj -> (GHC.Base.pure CreateNodeBalancerRequestBodyConfigs'NodesStatus' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "down")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "up"))
+-- | Create a new 'CreateNodeBalancerRequestBodyConfigs'NodesStatus'' with all required fields.
+mkCreateNodeBalancerRequestBodyConfigs'NodesStatus' :: CreateNodeBalancerRequestBodyConfigs'NodesStatus'
+mkCreateNodeBalancerRequestBodyConfigs'NodesStatus' = CreateNodeBalancerRequestBodyConfigs'NodesStatus'{createNodeBalancerRequestBodyConfigs'NodesStatus'Down = GHC.Maybe.Nothing,
+                                                                                                        createNodeBalancerRequestBodyConfigs'NodesStatus'Up = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/nodebalancers.POST.requestBody.content.application\/json.schema.properties.configs.items.allOf.properties.protocol@ in the specification.
 -- 
 -- The protocol this port is configured to serve.
 -- * If using \`http\` or \`tcp\` protocol, \`ssl_cert\` and \`ssl_key\` are not supported.
 -- * If using \`https\` protocol, \`ssl_cert\` and \`ssl_key\` are required.
-data CreateNodeBalancerRequestBodyConfigsProtocol
-    = CreateNodeBalancerRequestBodyConfigsProtocolEnumOther Data.Aeson.Types.Internal.Value
-    | CreateNodeBalancerRequestBodyConfigsProtocolEnumTyped Data.Text.Internal.Text
-    | CreateNodeBalancerRequestBodyConfigsProtocolEnumString_http
-    | CreateNodeBalancerRequestBodyConfigsProtocolEnumString_https
-    | CreateNodeBalancerRequestBodyConfigsProtocolEnumString_tcp
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerRequestBodyConfigsProtocol
-    where toJSON (CreateNodeBalancerRequestBodyConfigsProtocolEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsProtocolEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsProtocolEnumString_http) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "http"
-          toJSON (CreateNodeBalancerRequestBodyConfigsProtocolEnumString_https) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "https"
-          toJSON (CreateNodeBalancerRequestBodyConfigsProtocolEnumString_tcp) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "tcp"
-instance Data.Aeson.FromJSON CreateNodeBalancerRequestBodyConfigsProtocol
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "http")
-                                          then CreateNodeBalancerRequestBodyConfigsProtocolEnumString_http
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "https")
-                                                then CreateNodeBalancerRequestBodyConfigsProtocolEnumString_https
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "tcp")
-                                                      then CreateNodeBalancerRequestBodyConfigsProtocolEnumString_tcp
-                                                      else CreateNodeBalancerRequestBodyConfigsProtocolEnumOther val)
--- | Defines the enum schema createNodeBalancerRequestBodyConfigsProxy_protocol
+data CreateNodeBalancerRequestBodyConfigs'Protocol' =
+   CreateNodeBalancerRequestBodyConfigs'Protocol'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateNodeBalancerRequestBodyConfigs'Protocol'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateNodeBalancerRequestBodyConfigs'Protocol'EnumHttp -- ^ Represents the JSON value @"http"@
+  | CreateNodeBalancerRequestBodyConfigs'Protocol'EnumHttps -- ^ Represents the JSON value @"https"@
+  | CreateNodeBalancerRequestBodyConfigs'Protocol'EnumTcp -- ^ Represents the JSON value @"tcp"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerRequestBodyConfigs'Protocol'
+    where toJSON (CreateNodeBalancerRequestBodyConfigs'Protocol'Other val) = val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Protocol'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Protocol'EnumHttp) = "http"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Protocol'EnumHttps) = "https"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Protocol'EnumTcp) = "tcp"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigs'Protocol'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "http" -> CreateNodeBalancerRequestBodyConfigs'Protocol'EnumHttp
+                                            | val GHC.Classes.== "https" -> CreateNodeBalancerRequestBodyConfigs'Protocol'EnumHttps
+                                            | val GHC.Classes.== "tcp" -> CreateNodeBalancerRequestBodyConfigs'Protocol'EnumTcp
+                                            | GHC.Base.otherwise -> CreateNodeBalancerRequestBodyConfigs'Protocol'Other val)
+-- | Defines the enum schema located at @paths.\/nodebalancers.POST.requestBody.content.application\/json.schema.properties.configs.items.allOf.properties.proxy_protocol@ in the specification.
 -- 
 -- ProxyProtocol is a TCP extension that sends initial TCP connection information such as source\/destination IPs and ports to backend devices. This information would be lost otherwise. Backend devices must be configured to work with ProxyProtocol if enabled.
 -- 
 -- * If ommited, or set to \`none\`, the NodeBalancer doesn\'t send any auxilary data over TCP connections. This is the default.
 -- * If set to \`v1\`, the human-readable header format (Version 1) is used.
 -- * If set to \`v2\`, the binary header format (Version 2) is used.
-data CreateNodeBalancerRequestBodyConfigsProxy_protocol
-    = CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumOther Data.Aeson.Types.Internal.Value
-    | CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumTyped Data.Text.Internal.Text
-    | CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumString_none
-    | CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumString_v1
-    | CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumString_v2
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerRequestBodyConfigsProxy_protocol
-    where toJSON (CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumString_none) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "none"
-          toJSON (CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumString_v1) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "v1"
-          toJSON (CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumString_v2) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "v2"
-instance Data.Aeson.FromJSON CreateNodeBalancerRequestBodyConfigsProxy_protocol
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "none")
-                                          then CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumString_none
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "v1")
-                                                then CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumString_v1
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "v2")
-                                                      then CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumString_v2
-                                                      else CreateNodeBalancerRequestBodyConfigsProxy_protocolEnumOther val)
--- | Defines the enum schema createNodeBalancerRequestBodyConfigsStickiness
+data CreateNodeBalancerRequestBodyConfigs'ProxyProtocol' =
+   CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'EnumNone -- ^ Represents the JSON value @"none"@
+  | CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'EnumV1 -- ^ Represents the JSON value @"v1"@
+  | CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'EnumV2 -- ^ Represents the JSON value @"v2"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'
+    where toJSON (CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'Other val) = val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'EnumNone) = "none"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'EnumV1) = "v1"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'EnumV2) = "v2"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "none" -> CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'EnumNone
+                                            | val GHC.Classes.== "v1" -> CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'EnumV1
+                                            | val GHC.Classes.== "v2" -> CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'EnumV2
+                                            | GHC.Base.otherwise -> CreateNodeBalancerRequestBodyConfigs'ProxyProtocol'Other val)
+-- | Defines the enum schema located at @paths.\/nodebalancers.POST.requestBody.content.application\/json.schema.properties.configs.items.allOf.properties.stickiness@ in the specification.
 -- 
 -- Controls how session stickiness is handled on this port.
 -- * If set to \`none\` connections will always be assigned a backend based on the algorithm configured.
@@ -381,45 +373,45 @@ instance Data.Aeson.FromJSON CreateNodeBalancerRequestBodyConfigsProxy_protocol
 -- 
 -- * For HTTP or HTTPS clients, \`http_cookie\` allows sessions to be
 --   routed to the same backend based on a cookie set by the NodeBalancer.
-data CreateNodeBalancerRequestBodyConfigsStickiness
-    = CreateNodeBalancerRequestBodyConfigsStickinessEnumOther Data.Aeson.Types.Internal.Value
-    | CreateNodeBalancerRequestBodyConfigsStickinessEnumTyped Data.Text.Internal.Text
-    | CreateNodeBalancerRequestBodyConfigsStickinessEnumString_http_cookie
-    | CreateNodeBalancerRequestBodyConfigsStickinessEnumString_none
-    | CreateNodeBalancerRequestBodyConfigsStickinessEnumString_table
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerRequestBodyConfigsStickiness
-    where toJSON (CreateNodeBalancerRequestBodyConfigsStickinessEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsStickinessEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (CreateNodeBalancerRequestBodyConfigsStickinessEnumString_http_cookie) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "http_cookie"
-          toJSON (CreateNodeBalancerRequestBodyConfigsStickinessEnumString_none) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "none"
-          toJSON (CreateNodeBalancerRequestBodyConfigsStickinessEnumString_table) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "table"
-instance Data.Aeson.FromJSON CreateNodeBalancerRequestBodyConfigsStickiness
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "http_cookie")
-                                          then CreateNodeBalancerRequestBodyConfigsStickinessEnumString_http_cookie
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "none")
-                                                then CreateNodeBalancerRequestBodyConfigsStickinessEnumString_none
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "table")
-                                                      then CreateNodeBalancerRequestBodyConfigsStickinessEnumString_table
-                                                      else CreateNodeBalancerRequestBodyConfigsStickinessEnumOther val)
+data CreateNodeBalancerRequestBodyConfigs'Stickiness' =
+   CreateNodeBalancerRequestBodyConfigs'Stickiness'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | CreateNodeBalancerRequestBodyConfigs'Stickiness'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | CreateNodeBalancerRequestBodyConfigs'Stickiness'EnumNone -- ^ Represents the JSON value @"none"@
+  | CreateNodeBalancerRequestBodyConfigs'Stickiness'EnumTable -- ^ Represents the JSON value @"table"@
+  | CreateNodeBalancerRequestBodyConfigs'Stickiness'EnumHttpCookie -- ^ Represents the JSON value @"http_cookie"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerRequestBodyConfigs'Stickiness'
+    where toJSON (CreateNodeBalancerRequestBodyConfigs'Stickiness'Other val) = val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Stickiness'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Stickiness'EnumNone) = "none"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Stickiness'EnumTable) = "table"
+          toJSON (CreateNodeBalancerRequestBodyConfigs'Stickiness'EnumHttpCookie) = "http_cookie"
+instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerRequestBodyConfigs'Stickiness'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "none" -> CreateNodeBalancerRequestBodyConfigs'Stickiness'EnumNone
+                                            | val GHC.Classes.== "table" -> CreateNodeBalancerRequestBodyConfigs'Stickiness'EnumTable
+                                            | val GHC.Classes.== "http_cookie" -> CreateNodeBalancerRequestBodyConfigs'Stickiness'EnumHttpCookie
+                                            | GHC.Base.otherwise -> CreateNodeBalancerRequestBodyConfigs'Stickiness'Other val)
 -- | Represents a response of the operation 'createNodeBalancer'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'CreateNodeBalancerResponseError' is used.
-data CreateNodeBalancerResponse =                                            
-   CreateNodeBalancerResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | CreateNodeBalancerResponse200 NodeBalancer                               -- ^ NodeBalancer created successfully.
-  | CreateNodeBalancerResponseDefault CreateNodeBalancerResponseBodyDefault  -- ^ Error
+data CreateNodeBalancerResponse =
+   CreateNodeBalancerResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | CreateNodeBalancerResponse200 NodeBalancer -- ^ NodeBalancer created successfully.
+  | CreateNodeBalancerResponseDefault CreateNodeBalancerResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema CreateNodeBalancerResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data CreateNodeBalancerResponseBodyDefault = CreateNodeBalancerResponseBodyDefault {
   -- | errors
-  createNodeBalancerResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  createNodeBalancerResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON CreateNodeBalancerResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (createNodeBalancerResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (createNodeBalancerResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON CreateNodeBalancerResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= createNodeBalancerResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= createNodeBalancerResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON CreateNodeBalancerResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "CreateNodeBalancerResponseBodyDefault" (\obj -> GHC.Base.pure CreateNodeBalancerResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'CreateNodeBalancerResponseBodyDefault' with all required fields.
+mkCreateNodeBalancerResponseBodyDefault :: CreateNodeBalancerResponseBodyDefault
+mkCreateNodeBalancerResponseBodyDefault = CreateNodeBalancerResponseBodyDefault{createNodeBalancerResponseBodyDefaultErrors = GHC.Maybe.Nothing}

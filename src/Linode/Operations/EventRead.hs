@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation eventRead
 module Linode.Operations.EventRead where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,76 +45,34 @@ import Linode.Types
 -- | > POST /account/events/{eventId}/read
 -- 
 -- Marks a single Event as read.
-eventReadOper :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response EventReadResponse)) -- ^ Monad containing the result of the operation
-eventReadOper config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either EventReadResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> EventReadResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                               EventReadResponseBody200)
-                                                                                                                                                                          | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> EventReadResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                 EventReadResponseBodyDefault)
-                                                                                                                                                                          | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/events/{eventId}/read") [])
--- | > POST /account/events/{eventId}/read
--- 
--- The same as 'eventRead' but returns the raw 'Data.ByteString.Char8.ByteString'
-eventReadRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                Linode.Common.Configuration s ->
-                m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-eventReadRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/events/{eventId}/read") [])
--- | > POST /account/events/{eventId}/read
--- 
--- Monadic version of 'eventRead' (use with 'Linode.Common.runWithConfiguration')
-eventReadM :: forall m s . (Linode.Common.MonadHTTP m,
-                            Linode.Common.SecurityScheme s) =>
-              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                 m
-                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                     (Network.HTTP.Client.Types.Response EventReadResponse))
-eventReadM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either EventReadResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> EventReadResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                         EventReadResponseBody200)
-                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> EventReadResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                           EventReadResponseBodyDefault)
-                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/events/{eventId}/read") [])
--- | > POST /account/events/{eventId}/read
--- 
--- Monadic version of 'eventReadRaw' (use with 'Linode.Common.runWithConfiguration')
-eventReadRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-eventReadRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack "/account/events/{eventId}/read") [])
+eventReadOper :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ eventId: The ID of the Event to designate as read.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response EventReadResponse) -- ^ Monadic computation which returns the result of the operation
+eventReadOper eventId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either EventReadResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> EventReadResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                 Data.Aeson.Types.Internal.Object)
+                                                                                                                                                            | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> EventReadResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                   EventReadResponseBodyDefault)
+                                                                                                                                                            | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "POST") (Data.Text.pack ("/account/events/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel eventId)) GHC.Base.++ "/read"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'eventRead'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'EventReadResponseError' is used.
-data EventReadResponse =                                   
-   EventReadResponseError GHC.Base.String                  -- ^ Means either no matching case available or a parse error
-  | EventReadResponse200 EventReadResponseBody200          -- ^ Event read.
-  | EventReadResponseDefault EventReadResponseBodyDefault  -- ^ Error
+data EventReadResponse =
+   EventReadResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | EventReadResponse200 Data.Aeson.Types.Internal.Object -- ^ Event read.
+  | EventReadResponseDefault EventReadResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema EventReadResponseBody200
--- 
--- 
-data EventReadResponseBody200 = EventReadResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON EventReadResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON EventReadResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "EventReadResponseBody200" (\obj -> GHC.Base.pure EventReadResponseBody200)
--- | Defines the data type for the schema EventReadResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data EventReadResponseBodyDefault = EventReadResponseBodyDefault {
   -- | errors
-  eventReadResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  eventReadResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON EventReadResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (eventReadResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (eventReadResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON EventReadResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= eventReadResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= eventReadResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON EventReadResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "EventReadResponseBodyDefault" (\obj -> GHC.Base.pure EventReadResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'EventReadResponseBodyDefault' with all required fields.
+mkEventReadResponseBodyDefault :: EventReadResponseBodyDefault
+mkEventReadResponseBodyDefault = EventReadResponseBodyDefault{eventReadResponseBodyDefaultErrors = GHC.Maybe.Nothing}

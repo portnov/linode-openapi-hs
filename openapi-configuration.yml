@@ -25,4 +25,4 @@ parameterCookiePrefix: "cookie"
 parameterHeaderPrefix: "header"
 operationsToGenerate: []
 opaqueSchemas: []
-whiteListedSchemas: ["LKENodePoolPropertiesTags", "RegionPropertiesId"]
+whiteListedSchemas: []

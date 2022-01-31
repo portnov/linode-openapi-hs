@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getUserPreferences
 module Linode.Operations.GetUserPreferences where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -50,76 +50,33 @@ import Linode.Types
 -- size preference or preferred display name. User preferences are available
 -- for each OAuth client registered to your account, and as such an account can
 -- have multiple user preferences.
-getUserPreferences :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetUserPreferencesResponse)) -- ^ Monad containing the result of the operation
-getUserPreferences config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetUserPreferencesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetUserPreferencesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                          GetUserPreferencesResponseBody200)
-                                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetUserPreferencesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                            GetUserPreferencesResponseBodyDefault)
-                                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/preferences") [])
--- | > GET /profile/preferences
--- 
--- The same as 'getUserPreferences' but returns the raw 'Data.ByteString.Char8.ByteString'
-getUserPreferencesRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                       Linode.Common.SecurityScheme s) =>
-                         Linode.Common.Configuration s ->
-                         m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                               (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getUserPreferencesRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/preferences") [])
--- | > GET /profile/preferences
--- 
--- Monadic version of 'getUserPreferences' (use with 'Linode.Common.runWithConfiguration')
-getUserPreferencesM :: forall m s . (Linode.Common.MonadHTTP m,
-                                     Linode.Common.SecurityScheme s) =>
-                       Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                          m
-                                                          (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                              (Network.HTTP.Client.Types.Response GetUserPreferencesResponse))
-getUserPreferencesM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetUserPreferencesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetUserPreferencesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                                    GetUserPreferencesResponseBody200)
-                                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetUserPreferencesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                      GetUserPreferencesResponseBodyDefault)
-                                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/preferences") [])
--- | > GET /profile/preferences
--- 
--- Monadic version of 'getUserPreferencesRaw' (use with 'Linode.Common.runWithConfiguration')
-getUserPreferencesRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                        Linode.Common.SecurityScheme s) =>
-                          Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                             m
-                                                             (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                                 (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getUserPreferencesRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/preferences") [])
+getUserPreferences :: forall m . Linode.Common.MonadHTTP m => Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetUserPreferencesResponse) -- ^ Monadic computation which returns the result of the operation
+getUserPreferences = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetUserPreferencesResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetUserPreferencesResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                                    Data.Aeson.Types.Internal.Object)
+                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetUserPreferencesResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                      GetUserPreferencesResponseBodyDefault)
+                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/preferences") GHC.Base.mempty)
 -- | Represents a response of the operation 'getUserPreferences'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetUserPreferencesResponseError' is used.
-data GetUserPreferencesResponse =                                            
-   GetUserPreferencesResponseError GHC.Base.String                           -- ^ Means either no matching case available or a parse error
-  | GetUserPreferencesResponse200 GetUserPreferencesResponseBody200          -- ^ Returns an object of user preferences.
-  | GetUserPreferencesResponseDefault GetUserPreferencesResponseBodyDefault  -- ^ Error
+data GetUserPreferencesResponse =
+   GetUserPreferencesResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetUserPreferencesResponse200 Data.Aeson.Types.Internal.Object -- ^ Returns an object of user preferences.
+  | GetUserPreferencesResponseDefault GetUserPreferencesResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetUserPreferencesResponseBody200
--- 
--- A dictionary of user preferences.
-data GetUserPreferencesResponseBody200 = GetUserPreferencesResponseBody200 {
-  
-  } deriving (GHC.Show.Show
-  , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetUserPreferencesResponseBody200
-    where toJSON obj = Data.Aeson.object []
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "string" ("string" :: GHC.Base.String))
-instance Data.Aeson.Types.FromJSON.FromJSON GetUserPreferencesResponseBody200
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetUserPreferencesResponseBody200" (\obj -> GHC.Base.pure GetUserPreferencesResponseBody200)
--- | Defines the data type for the schema GetUserPreferencesResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetUserPreferencesResponseBodyDefault = GetUserPreferencesResponseBodyDefault {
   -- | errors
-  getUserPreferencesResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getUserPreferencesResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetUserPreferencesResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getUserPreferencesResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getUserPreferencesResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetUserPreferencesResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getUserPreferencesResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getUserPreferencesResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetUserPreferencesResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetUserPreferencesResponseBodyDefault" (\obj -> GHC.Base.pure GetUserPreferencesResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetUserPreferencesResponseBodyDefault' with all required fields.
+mkGetUserPreferencesResponseBodyDefault :: GetUserPreferencesResponseBodyDefault
+mkGetUserPreferencesResponseBodyDefault = GetUserPreferencesResponseBodyDefault{getUserPreferencesResponseBodyDefaultErrors = GHC.Maybe.Nothing}

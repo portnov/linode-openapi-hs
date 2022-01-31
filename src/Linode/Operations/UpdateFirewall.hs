@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation updateFirewall
 module Linode.Operations.UpdateFirewall where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,7 +41,6 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > PUT /networking/firewalls/{firewallId}
 -- 
@@ -64,87 +63,77 @@ import Linode.ManualTypes
 -- 
 -- If a Firewall\'s status is changed with this endpoint, a corresponding \`firewall_enable\` or
 -- \`firewall_disable\` Event will be generated.
-updateFirewall :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> GHC.Base.Maybe UpdateFirewallRequestBody                                                                                   -- ^ The request body to send
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response UpdateFirewallResponse)) -- ^ Monad containing the result of the operation
-updateFirewall config
-               body = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateFirewallResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateFirewallResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                            Firewall)
-                                                                                                                                                                              | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateFirewallResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                              UpdateFirewallResponseBodyDefault)
-                                                                                                                                                                              | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/networking/firewalls/{firewallId}") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /networking/firewalls/{firewallId}
--- 
--- The same as 'updateFirewall' but returns the raw 'Data.ByteString.Char8.ByteString'
-updateFirewallRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                                   Linode.Common.SecurityScheme s) =>
-                     Linode.Common.Configuration s ->
-                     GHC.Base.Maybe UpdateFirewallRequestBody ->
-                     m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                           (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateFirewallRaw config
-                  body = GHC.Base.id (Linode.Common.doBodyCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/networking/firewalls/{firewallId}") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /networking/firewalls/{firewallId}
--- 
--- Monadic version of 'updateFirewall' (use with 'Linode.Common.runWithConfiguration')
-updateFirewallM :: forall m s . (Linode.Common.MonadHTTP m,
-                                 Linode.Common.SecurityScheme s) =>
-                   GHC.Base.Maybe UpdateFirewallRequestBody ->
-                   Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                      m
-                                                      (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                          (Network.HTTP.Client.Types.Response UpdateFirewallResponse))
-updateFirewallM body = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either UpdateFirewallResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateFirewallResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                             Firewall)
-                                                                                                                                                                               | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateFirewallResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                               UpdateFirewallResponseBodyDefault)
-                                                                                                                                                                               | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/networking/firewalls/{firewallId}") [] body Linode.Common.RequestBodyEncodingJSON)
--- | > PUT /networking/firewalls/{firewallId}
--- 
--- Monadic version of 'updateFirewallRaw' (use with 'Linode.Common.runWithConfiguration')
-updateFirewallRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                    Linode.Common.SecurityScheme s) =>
-                      GHC.Base.Maybe UpdateFirewallRequestBody ->
-                      Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                         m
-                                                         (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                             (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-updateFirewallRawM body = GHC.Base.id (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack "/networking/firewalls/{firewallId}") [] body Linode.Common.RequestBodyEncodingJSON)
--- | Defines the data type for the schema updateFirewallRequestBody
+updateFirewall :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ firewallId: ID of the Firewall to access. 
+  -> GHC.Maybe.Maybe UpdateFirewallRequestBody -- ^ The request body to send
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response UpdateFirewallResponse) -- ^ Monadic computation which returns the result of the operation
+updateFirewall firewallId
+               body = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either UpdateFirewallResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> UpdateFirewallResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                             Firewall)
+                                                                                                                                                               | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> UpdateFirewallResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                               UpdateFirewallResponseBodyDefault)
+                                                                                                                                                               | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doBodyCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "PUT") (Data.Text.pack ("/networking/firewalls/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel firewallId)) GHC.Base.++ ""))) GHC.Base.mempty body Linode.Common.RequestBodyEncodingJSON)
+-- | Defines the object schema located at @paths.\/networking\/firewalls\/{firewallId}.PUT.requestBody.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data UpdateFirewallRequestBody = UpdateFirewallRequestBody {
-  -- | label
-  updateFirewallRequestBodyLabel :: (GHC.Base.Maybe Firewall_properties_label)
-  -- | status
-  , updateFirewallRequestBodyStatus :: (GHC.Base.Maybe Firewall_properties_status)
-  -- | tags
-  , updateFirewallRequestBodyTags :: (GHC.Base.Maybe Firewall_properties_tags)
+  -- | label: The Firewall\'s label, for display purposes only.
+  -- 
+  -- Firewall labels have the following constraints:
+  -- 
+  --   * Must begin and end with an alphanumeric character.
+  --   * May only consist of alphanumeric characters, dashes (\`-\`), underscores (\`_\`) or periods (\`.\`).
+  --   * Cannot have two dashes (\`--\`), underscores (\`__\`) or periods (\`..\`) in a row.
+  --   * Must be between 3 and 32 characters.
+  --   * Must be unique.
+  -- 
+  -- 
+  -- Constraints:
+  -- 
+  -- * Maximum length of 32
+  -- * Minimum length of 3
+  -- * Must match pattern \'^[a-zA-Z]((?!--|__|..)[a-zA-Z0-9-_.])+\$\'
+  updateFirewallRequestBodyLabel :: (GHC.Maybe.Maybe FirewallPropertiesLabel)
+  -- | status: The status of this Firewall.
+  -- 
+  --   * When a Firewall is first created its status is \`enabled\`.
+  --   * Use the [Update Firewall](\/docs\/api\/networking\/\#firewall-update) endpoint to set a Firewall\'s status to \`enabled\` or \`disabled\`.
+  --   * Use the [Delete Firewall](\/docs\/api\/networking\/\#firewall-delete) endpoint to delete a Firewall.
+  , updateFirewallRequestBodyStatus :: (GHC.Maybe.Maybe FirewallPropertiesStatus)
+  -- | tags: An array of tags applied to this object. Tags are for organizational purposes only.
+  , updateFirewallRequestBodyTags :: (GHC.Maybe.Maybe FirewallPropertiesTags)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateFirewallRequestBody
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "label" (updateFirewallRequestBodyLabel obj) : (Data.Aeson..=) "status" (updateFirewallRequestBodyStatus obj) : (Data.Aeson..=) "tags" (updateFirewallRequestBodyTags obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "label" (updateFirewallRequestBodyLabel obj) GHC.Base.<> ((Data.Aeson..=) "status" (updateFirewallRequestBodyStatus obj) GHC.Base.<> (Data.Aeson..=) "tags" (updateFirewallRequestBodyTags obj)))
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateFirewallRequestBody
+    where toJSON obj = Data.Aeson.Types.Internal.object ("label" Data.Aeson.Types.ToJSON..= updateFirewallRequestBodyLabel obj : "status" Data.Aeson.Types.ToJSON..= updateFirewallRequestBodyStatus obj : "tags" Data.Aeson.Types.ToJSON..= updateFirewallRequestBodyTags obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("label" Data.Aeson.Types.ToJSON..= updateFirewallRequestBodyLabel obj) GHC.Base.<> (("status" Data.Aeson.Types.ToJSON..= updateFirewallRequestBodyStatus obj) GHC.Base.<> ("tags" Data.Aeson.Types.ToJSON..= updateFirewallRequestBodyTags obj)))
 instance Data.Aeson.Types.FromJSON.FromJSON UpdateFirewallRequestBody
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "UpdateFirewallRequestBody" (\obj -> ((GHC.Base.pure UpdateFirewallRequestBody GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "status")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "tags"))
+-- | Create a new 'UpdateFirewallRequestBody' with all required fields.
+mkUpdateFirewallRequestBody :: UpdateFirewallRequestBody
+mkUpdateFirewallRequestBody = UpdateFirewallRequestBody{updateFirewallRequestBodyLabel = GHC.Maybe.Nothing,
+                                                        updateFirewallRequestBodyStatus = GHC.Maybe.Nothing,
+                                                        updateFirewallRequestBodyTags = GHC.Maybe.Nothing}
 -- | Represents a response of the operation 'updateFirewall'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'UpdateFirewallResponseError' is used.
-data UpdateFirewallResponse =                                        
-   UpdateFirewallResponseError GHC.Base.String                       -- ^ Means either no matching case available or a parse error
-  | UpdateFirewallResponse200 Firewall                               -- ^ Firewall updated successfully.
-  | UpdateFirewallResponseDefault UpdateFirewallResponseBodyDefault  -- ^ Error
+data UpdateFirewallResponse =
+   UpdateFirewallResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | UpdateFirewallResponse200 Firewall -- ^ Firewall updated successfully.
+  | UpdateFirewallResponseDefault UpdateFirewallResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema UpdateFirewallResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data UpdateFirewallResponseBodyDefault = UpdateFirewallResponseBodyDefault {
   -- | errors
-  updateFirewallResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  updateFirewallResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON UpdateFirewallResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (updateFirewallResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (updateFirewallResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON UpdateFirewallResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= updateFirewallResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= updateFirewallResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON UpdateFirewallResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "UpdateFirewallResponseBodyDefault" (\obj -> GHC.Base.pure UpdateFirewallResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'UpdateFirewallResponseBodyDefault' with all required fields.
+mkUpdateFirewallResponseBodyDefault :: UpdateFirewallResponseBodyDefault
+mkUpdateFirewallResponseBodyDefault = UpdateFirewallResponseBodyDefault{updateFirewallResponseBodyDefaultErrors = GHC.Maybe.Nothing}

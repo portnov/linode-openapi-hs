@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getSSHKey
 module Linode.Operations.GetSSHKey where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -45,64 +45,34 @@ import Linode.Types
 -- | > GET /profile/sshkeys/{sshKeyId}
 -- 
 -- Returns a single SSH Key object identified by \`id\` that you have access to view.
-getSSHKey :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetSSHKeyResponse)) -- ^ Monad containing the result of the operation
-getSSHKey config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetSSHKeyResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeyResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                               SSHKey)
-                                                                                                                                                                      | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeyResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                 GetSSHKeyResponseBodyDefault)
-                                                                                                                                                                      | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/sshkeys/{sshKeyId}") [])
--- | > GET /profile/sshkeys/{sshKeyId}
--- 
--- The same as 'getSSHKey' but returns the raw 'Data.ByteString.Char8.ByteString'
-getSSHKeyRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                              Linode.Common.SecurityScheme s) =>
-                Linode.Common.Configuration s ->
-                m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                      (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getSSHKeyRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/sshkeys/{sshKeyId}") [])
--- | > GET /profile/sshkeys/{sshKeyId}
--- 
--- Monadic version of 'getSSHKey' (use with 'Linode.Common.runWithConfiguration')
-getSSHKeyM :: forall m s . (Linode.Common.MonadHTTP m,
-                            Linode.Common.SecurityScheme s) =>
-              Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                 m
-                                                 (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                     (Network.HTTP.Client.Types.Response GetSSHKeyResponse))
-getSSHKeyM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetSSHKeyResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeyResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                         SSHKey)
-                                                                                                                                                                | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeyResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                           GetSSHKeyResponseBodyDefault)
-                                                                                                                                                                | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/sshkeys/{sshKeyId}") [])
--- | > GET /profile/sshkeys/{sshKeyId}
--- 
--- Monadic version of 'getSSHKeyRaw' (use with 'Linode.Common.runWithConfiguration')
-getSSHKeyRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                    m
-                                                    (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                        (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getSSHKeyRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/profile/sshkeys/{sshKeyId}") [])
+getSSHKey :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ sshKeyId: The ID of the SSHKey
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetSSHKeyResponse) -- ^ Monadic computation which returns the result of the operation
+getSSHKey sshKeyId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetSSHKeyResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeyResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                  SSHKey)
+                                                                                                                                                         | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetSSHKeyResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                    GetSSHKeyResponseBodyDefault)
+                                                                                                                                                         | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/profile/sshkeys/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel sshKeyId)) GHC.Base.++ ""))) GHC.Base.mempty)
 -- | Represents a response of the operation 'getSSHKey'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetSSHKeyResponseError' is used.
-data GetSSHKeyResponse =                                   
-   GetSSHKeyResponseError GHC.Base.String                  -- ^ Means either no matching case available or a parse error
-  | GetSSHKeyResponse200 SSHKey                            -- ^ An SSH Key object
-  | GetSSHKeyResponseDefault GetSSHKeyResponseBodyDefault  -- ^ Error
+data GetSSHKeyResponse =
+   GetSSHKeyResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetSSHKeyResponse200 SSHKey -- ^ An SSH Key object
+  | GetSSHKeyResponseDefault GetSSHKeyResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetSSHKeyResponseBodyDefault
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetSSHKeyResponseBodyDefault = GetSSHKeyResponseBodyDefault {
   -- | errors
-  getSSHKeyResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getSSHKeyResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetSSHKeyResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getSSHKeyResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getSSHKeyResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetSSHKeyResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getSSHKeyResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getSSHKeyResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetSSHKeyResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetSSHKeyResponseBodyDefault" (\obj -> GHC.Base.pure GetSSHKeyResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetSSHKeyResponseBodyDefault' with all required fields.
+mkGetSSHKeyResponseBodyDefault :: GetSSHKeyResponseBodyDefault
+mkGetSSHKeyResponseBodyDefault = GetSSHKeyResponseBodyDefault{getSSHKeyResponseBodyDefaultErrors = GHC.Maybe.Nothing}

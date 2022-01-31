@@ -2,22 +2,28 @@
 
 -- | Rexports all type modules (used in the operation modules).
 module Linode.Types (
-  module Linode.CyclicTypes,
+  module Linode.TypeAlias,
+  module Linode.Types.Account,
   module Linode.Types.AccountSettings,
   module Linode.Types.AuthorizedApp,
+  module Linode.Types.Backup,
   module Linode.Types.CreditCard,
   module Linode.Types.CreditCardData,
   module Linode.Types.Device,
+  module Linode.Types.Devices,
   module Linode.Types.Disk,
+  module Linode.Types.DiskRequest,
   module Linode.Types.Domain,
   module Linode.Types.DomainRecord,
   module Linode.Types.EntityTransfer,
   module Linode.Types.ErrorObject,
   module Linode.Types.Event,
+  module Linode.Types.Firewall,
   module Linode.Types.FirewallDevices,
   module Linode.Types.FirewallRuleConfig,
   module Linode.Types.GooglePayData,
   module Linode.Types.Grant,
+  module Linode.Types.GrantsResponse,
   module Linode.Types.IPAddress,
   module Linode.Types.IPAddressPrivate,
   module Linode.Types.IPAddressV6LinkLocal,
@@ -30,10 +36,14 @@ module Linode.Types (
   module Linode.Types.InvoiceItem,
   module Linode.Types.Kernel,
   module Linode.Types.LKECluster,
+  module Linode.Types.LKENodePool,
+  module Linode.Types.LKENodePoolRequestBody,
   module Linode.Types.LKENodeStatus,
   module Linode.Types.LKEVersion,
   module Linode.Types.Linode,
+  module Linode.Types.LinodeConfig,
   module Linode.Types.LinodeConfigInterface,
+  module Linode.Types.LinodeRequest,
   module Linode.Types.LinodeStats,
   module Linode.Types.LinodeType,
   module Linode.Types.Login,
@@ -63,16 +73,19 @@ module Linode.Types (
   module Linode.Types.PayPalData,
   module Linode.Types.PayPalExecute,
   module Linode.Types.Payment,
+  module Linode.Types.PaymentMethod,
   module Linode.Types.PaymentRequest,
   module Linode.Types.PersonalAccessToken,
   module Linode.Types.Profile,
   module Linode.Types.Promotion,
   module Linode.Types.Region,
+  module Linode.Types.RescueDevices,
   module Linode.Types.SSHKey,
   module Linode.Types.SSHKeyRequest,
   module Linode.Types.ServiceTransfer,
+  module Linode.Types.StackScript,
   module Linode.Types.StatsData,
-  module Linode.Types.StatsDataUnavailable,
+  module Linode.Types.StatsDataAvailable,
   module Linode.Types.SupportTicket,
   module Linode.Types.SupportTicketReply,
   module Linode.Types.SupportTicketRequest,
@@ -82,36 +95,39 @@ module Linode.Types (
   module Linode.Types.User,
   module Linode.Types.UserDefinedField,
   module Linode.Types.Vlans,
+  module Linode.Types.Volume,
   module Linode.Types.WarningObject,
-  module Linode.Types.Account,
-  module Linode.Types.Devices,
-  module Linode.Types.Firewall,
-  module Linode.Types.GrantsResponse,
-  module Linode.Types.LKENodePool,
-  module Linode.Types.LinodeConfigInterfaces,
-  module Linode.Types.PaymentMethod,
-  module Linode.Types.RescueDevices,
-  module Linode.Types.StackScript,
-  module Linode.Types.StatsDataAvailable,
-  module Linode.Types.LinodeConfig,
+  module Linode.Types.DiskPropertiesFilesystem,
+  module Linode.Types.EntityTransferPropertiesEntities,
+  module Linode.Types.FirewallPropertiesRules,
+  module Linode.Types.FirewallPropertiesStatus,
+  module Linode.Types.FirewallDevicesPropertiesEntity,
+  module Linode.Types.LKENodePoolPropertiesDisksItems,
+  module Linode.Types.ServiceTransferPropertiesEntities,
   ) where
 
-import Linode.CyclicTypes
+import Linode.TypeAlias
+import Linode.Types.Account
 import Linode.Types.AccountSettings
 import Linode.Types.AuthorizedApp
+import Linode.Types.Backup
 import Linode.Types.CreditCard
 import Linode.Types.CreditCardData
 import Linode.Types.Device
+import Linode.Types.Devices
 import Linode.Types.Disk
+import Linode.Types.DiskRequest
 import Linode.Types.Domain
 import Linode.Types.DomainRecord
 import Linode.Types.EntityTransfer
 import Linode.Types.ErrorObject
 import Linode.Types.Event
+import Linode.Types.Firewall
 import Linode.Types.FirewallDevices
 import Linode.Types.FirewallRuleConfig
 import Linode.Types.GooglePayData
 import Linode.Types.Grant
+import Linode.Types.GrantsResponse
 import Linode.Types.IPAddress
 import Linode.Types.IPAddressPrivate
 import Linode.Types.IPAddressV6LinkLocal
@@ -124,10 +140,14 @@ import Linode.Types.Invoice
 import Linode.Types.InvoiceItem
 import Linode.Types.Kernel
 import Linode.Types.LKECluster
+import Linode.Types.LKENodePool
+import Linode.Types.LKENodePoolRequestBody
 import Linode.Types.LKENodeStatus
 import Linode.Types.LKEVersion
 import Linode.Types.Linode
+import Linode.Types.LinodeConfig
 import Linode.Types.LinodeConfigInterface
+import Linode.Types.LinodeRequest
 import Linode.Types.LinodeStats
 import Linode.Types.LinodeType
 import Linode.Types.Login
@@ -157,16 +177,19 @@ import Linode.Types.PayPal
 import Linode.Types.PayPalData
 import Linode.Types.PayPalExecute
 import Linode.Types.Payment
+import Linode.Types.PaymentMethod
 import Linode.Types.PaymentRequest
 import Linode.Types.PersonalAccessToken
 import Linode.Types.Profile
 import Linode.Types.Promotion
 import Linode.Types.Region
+import Linode.Types.RescueDevices
 import Linode.Types.SSHKey
 import Linode.Types.SSHKeyRequest
 import Linode.Types.ServiceTransfer
+import Linode.Types.StackScript
 import Linode.Types.StatsData
-import Linode.Types.StatsDataUnavailable
+import Linode.Types.StatsDataAvailable
 import Linode.Types.SupportTicket
 import Linode.Types.SupportTicketReply
 import Linode.Types.SupportTicketRequest
@@ -176,16 +199,12 @@ import Linode.Types.TrustedDevice
 import Linode.Types.User
 import Linode.Types.UserDefinedField
 import Linode.Types.Vlans
+import Linode.Types.Volume
 import Linode.Types.WarningObject
-import Linode.Types.Account
-import Linode.Types.Devices
-import Linode.Types.Firewall
-import Linode.Types.GrantsResponse
-import Linode.Types.LKENodePool
-import Linode.Types.LinodeConfigInterfaces
-import Linode.Types.PaymentMethod
-import Linode.Types.RescueDevices
-import Linode.Types.StackScript
-import Linode.Types.StatsDataAvailable
-import Linode.Types.LinodeConfig
-
+import Linode.Types.DiskPropertiesFilesystem
+import Linode.Types.EntityTransferPropertiesEntities
+import Linode.Types.FirewallPropertiesRules
+import Linode.Types.FirewallPropertiesStatus
+import Linode.Types.FirewallDevicesPropertiesEntity
+import Linode.Types.LKENodePoolPropertiesDisksItems
+import Linode.Types.ServiceTransferPropertiesEntities

@@ -3,15 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE MultiWayIf #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 -- | Contains the different functions to run the operation getBackups
 module Linode.Operations.GetBackups where
 
 import qualified Prelude as GHC.Integer.Type
 import qualified Prelude as GHC.Maybe
+import qualified Control.Monad.Fail
 import qualified Control.Monad.Trans.Reader
 import qualified Data.Aeson
+import qualified Data.Aeson as Data.Aeson.Encoding.Internal
 import qualified Data.Aeson as Data.Aeson.Types
 import qualified Data.Aeson as Data.Aeson.Types.FromJSON
 import qualified Data.Aeson as Data.Aeson.Types.ToJSON
@@ -28,7 +29,6 @@ import qualified Data.Time.LocalTime as Data.Time.LocalTime.Internal.ZonedTime
 import qualified Data.Vector
 import qualified GHC.Base
 import qualified GHC.Classes
-import qualified GHC.Generics
 import qualified GHC.Int
 import qualified GHC.Show
 import qualified GHC.Types
@@ -41,205 +41,195 @@ import qualified Network.HTTP.Types as Network.HTTP.Types.Status
 import qualified Network.HTTP.Types as Network.HTTP.Types.URI
 import qualified Linode.Common
 import Linode.Types
-import Linode.ManualTypes
 
 -- | > GET /linode/instances/{linodeId}/backups
 -- 
 -- Returns information about this Linode\'s available backups.
-getBackups :: forall m s . (Linode.Common.MonadHTTP m, Linode.Common.SecurityScheme s) => Linode.Common.Configuration s  -- ^ The configuration to use in the request
-  -> m (Data.Either.Either Network.HTTP.Client.Types.HttpException (Network.HTTP.Client.Types.Response GetBackupsResponse)) -- ^ Monad containing the result of the operation
-getBackups config = GHC.Base.fmap (GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetBackupsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetBackupsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                                  GetBackupsResponseBody200)
-                                                                                                                                                                        | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetBackupsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                    GetBackupsResponseBodyDefault)
-                                                                                                                                                                        | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0)) (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/backups") [])
--- | > GET /linode/instances/{linodeId}/backups
--- 
--- The same as 'getBackups' but returns the raw 'Data.ByteString.Char8.ByteString'
-getBackupsRaw :: forall m s . (Linode.Common.MonadHTTP m,
-                               Linode.Common.SecurityScheme s) =>
-                 Linode.Common.Configuration s ->
-                 m (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                       (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getBackupsRaw config = GHC.Base.id (Linode.Common.doCallWithConfiguration config (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/backups") [])
--- | > GET /linode/instances/{linodeId}/backups
--- 
--- Monadic version of 'getBackups' (use with 'Linode.Common.runWithConfiguration')
-getBackupsM :: forall m s . (Linode.Common.MonadHTTP m,
-                             Linode.Common.SecurityScheme s) =>
-               Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                  m
-                                                  (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                      (Network.HTTP.Client.Types.Response GetBackupsResponse))
-getBackupsM = GHC.Base.fmap (GHC.Base.fmap (\response_2 -> GHC.Base.fmap (Data.Either.either GetBackupsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_3 -> Network.HTTP.Types.Status.statusCode status_3 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetBackupsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                                                                            GetBackupsResponseBody200)
-                                                                                                                                                                  | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetBackupsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
-                                                                                                                                                                                                                                                                                                                                                              GetBackupsResponseBodyDefault)
-                                                                                                                                                                  | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_2) response_2)) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/backups") [])
--- | > GET /linode/instances/{linodeId}/backups
--- 
--- Monadic version of 'getBackupsRaw' (use with 'Linode.Common.runWithConfiguration')
-getBackupsRawM :: forall m s . (Linode.Common.MonadHTTP m,
-                                Linode.Common.SecurityScheme s) =>
-                  Control.Monad.Trans.Reader.ReaderT (Linode.Common.Configuration s)
-                                                     m
-                                                     (Data.Either.Either Network.HTTP.Client.Types.HttpException
-                                                                         (Network.HTTP.Client.Types.Response Data.ByteString.Internal.ByteString))
-getBackupsRawM = GHC.Base.id (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack "/linode/instances/{linodeId}/backups") [])
+getBackups :: forall m . Linode.Common.MonadHTTP m => GHC.Types.Int -- ^ linodeId: The ID of the Linode the backups belong to.
+  -> Linode.Common.ClientT m (Network.HTTP.Client.Types.Response GetBackupsResponse) -- ^ Monadic computation which returns the result of the operation
+getBackups linodeId = GHC.Base.fmap (\response_0 -> GHC.Base.fmap (Data.Either.either GetBackupsResponseError GHC.Base.id GHC.Base.. (\response body -> if | (\status_1 -> Network.HTTP.Types.Status.statusCode status_1 GHC.Classes.== 200) (Network.HTTP.Client.Types.responseStatus response) -> GetBackupsResponse200 Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                                                                     GetBackupsResponseBody200)
+                                                                                                                                                           | GHC.Base.const GHC.Types.True (Network.HTTP.Client.Types.responseStatus response) -> GetBackupsResponseDefault Data.Functor.<$> (Data.Aeson.eitherDecodeStrict body :: Data.Either.Either GHC.Base.String
+                                                                                                                                                                                                                                                                                                                                                       GetBackupsResponseBodyDefault)
+                                                                                                                                                           | GHC.Base.otherwise -> Data.Either.Left "Missing default response type") response_0) response_0) (Linode.Common.doCallWithConfigurationM (Data.Text.toUpper GHC.Base.$ Data.Text.pack "GET") (Data.Text.pack ("/linode/instances/" GHC.Base.++ (Data.ByteString.Char8.unpack (Network.HTTP.Types.URI.urlEncode GHC.Types.True GHC.Base.$ (Data.ByteString.Char8.pack GHC.Base.$ Linode.Common.stringifyModel linodeId)) GHC.Base.++ "/backups"))) GHC.Base.mempty)
 -- | Represents a response of the operation 'getBackups'.
 -- 
 -- The response constructor is chosen by the status code of the response. If no case matches (no specific case for the response code, no range case, no default case), 'GetBackupsResponseError' is used.
-data GetBackupsResponse =                                    
-   GetBackupsResponseError GHC.Base.String                   -- ^ Means either no matching case available or a parse error
-  | GetBackupsResponse200 GetBackupsResponseBody200          -- ^ A collection of the specified Linode\'s available backups.
-  | GetBackupsResponseDefault GetBackupsResponseBodyDefault  -- ^ Error
+data GetBackupsResponse =
+   GetBackupsResponseError GHC.Base.String -- ^ Means either no matching case available or a parse error
+  | GetBackupsResponse200 GetBackupsResponseBody200 -- ^ A collection of the specified Linode\'s available backups.
+  | GetBackupsResponseDefault GetBackupsResponseBodyDefault -- ^ Error
   deriving (GHC.Show.Show, GHC.Classes.Eq)
--- | Defines the data type for the schema GetBackupsResponseBody200
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/backups.GET.responses.200.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetBackupsResponseBody200 = GetBackupsResponseBody200 {
   -- | automatic
-  getBackupsResponseBody200Automatic :: (GHC.Base.Maybe ([] GetBackupsResponseBody200Automatic))
+  getBackupsResponseBody200Automatic :: (GHC.Maybe.Maybe ([GetBackupsResponseBody200Automatic']))
   -- | snapshot
-  , getBackupsResponseBody200Snapshot :: (GHC.Base.Maybe GetBackupsResponseBody200Snapshot)
+  , getBackupsResponseBody200Snapshot :: (GHC.Maybe.Maybe GetBackupsResponseBody200Snapshot')
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetBackupsResponseBody200
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "automatic" (getBackupsResponseBody200Automatic obj) : (Data.Aeson..=) "snapshot" (getBackupsResponseBody200Snapshot obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "automatic" (getBackupsResponseBody200Automatic obj) GHC.Base.<> (Data.Aeson..=) "snapshot" (getBackupsResponseBody200Snapshot obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetBackupsResponseBody200
+    where toJSON obj = Data.Aeson.Types.Internal.object ("automatic" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic obj : "snapshot" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Snapshot obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("automatic" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic obj) GHC.Base.<> ("snapshot" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Snapshot obj))
 instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBody200
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupsResponseBody200" (\obj -> (GHC.Base.pure GetBackupsResponseBody200 GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "automatic")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "snapshot"))
--- | Defines the data type for the schema GetBackupsResponseBody200Automatic
+-- | Create a new 'GetBackupsResponseBody200' with all required fields.
+mkGetBackupsResponseBody200 :: GetBackupsResponseBody200
+mkGetBackupsResponseBody200 = GetBackupsResponseBody200{getBackupsResponseBody200Automatic = GHC.Maybe.Nothing,
+                                                        getBackupsResponseBody200Snapshot = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/backups.GET.responses.200.content.application\/json.schema.properties.automatic.items.allOf@ in the specification.
 -- 
 -- 
-data GetBackupsResponseBody200Automatic = GetBackupsResponseBody200Automatic {
+data GetBackupsResponseBody200Automatic' = GetBackupsResponseBody200Automatic' {
   -- | configs: A list of the labels of the Configuration profiles that are part of the Backup.
-  getBackupsResponseBody200AutomaticConfigs :: (GHC.Base.Maybe ([] Data.Text.Internal.Text))
+  getBackupsResponseBody200Automatic'Configs :: (GHC.Maybe.Maybe ([Data.Text.Internal.Text]))
   -- | created: The date the Backup was taken.
-  , getBackupsResponseBody200AutomaticCreated :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , getBackupsResponseBody200Automatic'Created :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | disks: A list of the disks that are part of the Backup.
-  , getBackupsResponseBody200AutomaticDisks :: (GHC.Base.Maybe ([] GetBackupsResponseBody200AutomaticDisks))
+  , getBackupsResponseBody200Automatic'Disks :: (GHC.Maybe.Maybe ([GetBackupsResponseBody200Automatic'Disks']))
   -- | finished: The date the Backup completed.
-  , getBackupsResponseBody200AutomaticFinished :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , getBackupsResponseBody200Automatic'Finished :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | id: The unique ID of this Backup.
-  , getBackupsResponseBody200AutomaticId :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , getBackupsResponseBody200Automatic'Id :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | label: A label for Backups that are of type \`snapshot\`.
-  , getBackupsResponseBody200AutomaticLabel :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , getBackupsResponseBody200Automatic'Label :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | status: The current state of a specific Backup.
-  , getBackupsResponseBody200AutomaticStatus :: (GHC.Base.Maybe GetBackupsResponseBody200AutomaticStatus)
+  , getBackupsResponseBody200Automatic'Status :: (GHC.Maybe.Maybe GetBackupsResponseBody200Automatic'Status')
   -- | type: This indicates whether the Backup is an automatic Backup or manual snapshot taken by the User at a specific point in time.
-  , getBackupsResponseBody200AutomaticType :: (GHC.Base.Maybe GetBackupsResponseBody200AutomaticType)
+  , getBackupsResponseBody200Automatic'Type :: (GHC.Maybe.Maybe GetBackupsResponseBody200Automatic'Type')
   -- | updated: The date the Backup was most recently updated.
-  , getBackupsResponseBody200AutomaticUpdated :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , getBackupsResponseBody200Automatic'Updated :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetBackupsResponseBody200Automatic
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "configs" (getBackupsResponseBody200AutomaticConfigs obj) : (Data.Aeson..=) "created" (getBackupsResponseBody200AutomaticCreated obj) : (Data.Aeson..=) "disks" (getBackupsResponseBody200AutomaticDisks obj) : (Data.Aeson..=) "finished" (getBackupsResponseBody200AutomaticFinished obj) : (Data.Aeson..=) "id" (getBackupsResponseBody200AutomaticId obj) : (Data.Aeson..=) "label" (getBackupsResponseBody200AutomaticLabel obj) : (Data.Aeson..=) "status" (getBackupsResponseBody200AutomaticStatus obj) : (Data.Aeson..=) "type" (getBackupsResponseBody200AutomaticType obj) : (Data.Aeson..=) "updated" (getBackupsResponseBody200AutomaticUpdated obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "configs" (getBackupsResponseBody200AutomaticConfigs obj) GHC.Base.<> ((Data.Aeson..=) "created" (getBackupsResponseBody200AutomaticCreated obj) GHC.Base.<> ((Data.Aeson..=) "disks" (getBackupsResponseBody200AutomaticDisks obj) GHC.Base.<> ((Data.Aeson..=) "finished" (getBackupsResponseBody200AutomaticFinished obj) GHC.Base.<> ((Data.Aeson..=) "id" (getBackupsResponseBody200AutomaticId obj) GHC.Base.<> ((Data.Aeson..=) "label" (getBackupsResponseBody200AutomaticLabel obj) GHC.Base.<> ((Data.Aeson..=) "status" (getBackupsResponseBody200AutomaticStatus obj) GHC.Base.<> ((Data.Aeson..=) "type" (getBackupsResponseBody200AutomaticType obj) GHC.Base.<> (Data.Aeson..=) "updated" (getBackupsResponseBody200AutomaticUpdated obj)))))))))
-instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBody200Automatic
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupsResponseBody200Automatic" (\obj -> ((((((((GHC.Base.pure GetBackupsResponseBody200Automatic GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "configs")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "created")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "disks")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "finished")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "status")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "type")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "updated"))
--- | Defines the data type for the schema GetBackupsResponseBody200AutomaticDisks
+instance Data.Aeson.Types.ToJSON.ToJSON GetBackupsResponseBody200Automatic'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("configs" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Configs obj : "created" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Created obj : "disks" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Disks obj : "finished" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Finished obj : "id" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Id obj : "label" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Label obj : "status" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Status obj : "type" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Type obj : "updated" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Updated obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("configs" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Configs obj) GHC.Base.<> (("created" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Created obj) GHC.Base.<> (("disks" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Disks obj) GHC.Base.<> (("finished" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Finished obj) GHC.Base.<> (("id" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Id obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Label obj) GHC.Base.<> (("status" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Status obj) GHC.Base.<> (("type" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Type obj) GHC.Base.<> ("updated" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Updated obj)))))))))
+instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBody200Automatic'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupsResponseBody200Automatic'" (\obj -> ((((((((GHC.Base.pure GetBackupsResponseBody200Automatic' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "configs")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "created")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "disks")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "finished")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "id")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "status")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "type")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "updated"))
+-- | Create a new 'GetBackupsResponseBody200Automatic'' with all required fields.
+mkGetBackupsResponseBody200Automatic' :: GetBackupsResponseBody200Automatic'
+mkGetBackupsResponseBody200Automatic' = GetBackupsResponseBody200Automatic'{getBackupsResponseBody200Automatic'Configs = GHC.Maybe.Nothing,
+                                                                            getBackupsResponseBody200Automatic'Created = GHC.Maybe.Nothing,
+                                                                            getBackupsResponseBody200Automatic'Disks = GHC.Maybe.Nothing,
+                                                                            getBackupsResponseBody200Automatic'Finished = GHC.Maybe.Nothing,
+                                                                            getBackupsResponseBody200Automatic'Id = GHC.Maybe.Nothing,
+                                                                            getBackupsResponseBody200Automatic'Label = GHC.Maybe.Nothing,
+                                                                            getBackupsResponseBody200Automatic'Status = GHC.Maybe.Nothing,
+                                                                            getBackupsResponseBody200Automatic'Type = GHC.Maybe.Nothing,
+                                                                            getBackupsResponseBody200Automatic'Updated = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/backups.GET.responses.200.content.application\/json.schema.properties.automatic.items.allOf.properties.disks.items@ in the specification.
 -- 
 -- 
-data GetBackupsResponseBody200AutomaticDisks = GetBackupsResponseBody200AutomaticDisks {
-  -- | filesystem
-  getBackupsResponseBody200AutomaticDisksFilesystem :: (GHC.Base.Maybe Disk_properties_filesystem)
+data GetBackupsResponseBody200Automatic'Disks' = GetBackupsResponseBody200Automatic'Disks' {
+  -- | filesystem: The Disk filesystem can be one of:
+  -- 
+  --   * raw - No filesystem, just a raw binary stream.
+  --   * swap - Linux swap area.
+  --   * ext3 - The ext3 journaling filesystem for Linux.
+  --   * ext4 - The ext4 journaling filesystem for Linux.
+  --   * initrd - initrd (uncompressed initrd, ext2, max 32 MB).
+  getBackupsResponseBody200Automatic'Disks'Filesystem :: (GHC.Maybe.Maybe DiskPropertiesFilesystem)
   -- | label
-  , getBackupsResponseBody200AutomaticDisksLabel :: (GHC.Base.Maybe Data.Text.Internal.Text)
+  , getBackupsResponseBody200Automatic'Disks'Label :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | size
-  , getBackupsResponseBody200AutomaticDisksSize :: (GHC.Base.Maybe GHC.Integer.Type.Integer)
+  , getBackupsResponseBody200Automatic'Disks'Size :: (GHC.Maybe.Maybe GHC.Types.Int)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetBackupsResponseBody200AutomaticDisks
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "filesystem" (getBackupsResponseBody200AutomaticDisksFilesystem obj) : (Data.Aeson..=) "label" (getBackupsResponseBody200AutomaticDisksLabel obj) : (Data.Aeson..=) "size" (getBackupsResponseBody200AutomaticDisksSize obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "filesystem" (getBackupsResponseBody200AutomaticDisksFilesystem obj) GHC.Base.<> ((Data.Aeson..=) "label" (getBackupsResponseBody200AutomaticDisksLabel obj) GHC.Base.<> (Data.Aeson..=) "size" (getBackupsResponseBody200AutomaticDisksSize obj)))
-instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBody200AutomaticDisks
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupsResponseBody200AutomaticDisks" (\obj -> ((GHC.Base.pure GetBackupsResponseBody200AutomaticDisks GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "filesystem")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "size"))
--- | Defines the enum schema GetBackupsResponseBody200AutomaticStatus
+instance Data.Aeson.Types.ToJSON.ToJSON GetBackupsResponseBody200Automatic'Disks'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("filesystem" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Disks'Filesystem obj : "label" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Disks'Label obj : "size" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Disks'Size obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("filesystem" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Disks'Filesystem obj) GHC.Base.<> (("label" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Disks'Label obj) GHC.Base.<> ("size" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Automatic'Disks'Size obj)))
+instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBody200Automatic'Disks'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupsResponseBody200Automatic'Disks'" (\obj -> ((GHC.Base.pure GetBackupsResponseBody200Automatic'Disks' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "filesystem")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "label")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "size"))
+-- | Create a new 'GetBackupsResponseBody200Automatic'Disks'' with all required fields.
+mkGetBackupsResponseBody200Automatic'Disks' :: GetBackupsResponseBody200Automatic'Disks'
+mkGetBackupsResponseBody200Automatic'Disks' = GetBackupsResponseBody200Automatic'Disks'{getBackupsResponseBody200Automatic'Disks'Filesystem = GHC.Maybe.Nothing,
+                                                                                        getBackupsResponseBody200Automatic'Disks'Label = GHC.Maybe.Nothing,
+                                                                                        getBackupsResponseBody200Automatic'Disks'Size = GHC.Maybe.Nothing}
+-- | Defines the enum schema located at @paths.\/linode\/instances\/{linodeId}\/backups.GET.responses.200.content.application\/json.schema.properties.automatic.items.allOf.properties.status@ in the specification.
 -- 
 -- The current state of a specific Backup.
-data GetBackupsResponseBody200AutomaticStatus
-    = GetBackupsResponseBody200AutomaticStatusEnumOther Data.Aeson.Types.Internal.Value
-    | GetBackupsResponseBody200AutomaticStatusEnumTyped Data.Text.Internal.Text
-    | GetBackupsResponseBody200AutomaticStatusEnumString_failed
-    | GetBackupsResponseBody200AutomaticStatusEnumString_needsPostProcessing
-    | GetBackupsResponseBody200AutomaticStatusEnumString_paused
-    | GetBackupsResponseBody200AutomaticStatusEnumString_pending
-    | GetBackupsResponseBody200AutomaticStatusEnumString_running
-    | GetBackupsResponseBody200AutomaticStatusEnumString_successful
-    | GetBackupsResponseBody200AutomaticStatusEnumString_userAborted
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetBackupsResponseBody200AutomaticStatus
-    where toJSON (GetBackupsResponseBody200AutomaticStatusEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (GetBackupsResponseBody200AutomaticStatusEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (GetBackupsResponseBody200AutomaticStatusEnumString_failed) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "failed"
-          toJSON (GetBackupsResponseBody200AutomaticStatusEnumString_needsPostProcessing) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "needsPostProcessing"
-          toJSON (GetBackupsResponseBody200AutomaticStatusEnumString_paused) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "paused"
-          toJSON (GetBackupsResponseBody200AutomaticStatusEnumString_pending) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "pending"
-          toJSON (GetBackupsResponseBody200AutomaticStatusEnumString_running) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "running"
-          toJSON (GetBackupsResponseBody200AutomaticStatusEnumString_successful) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "successful"
-          toJSON (GetBackupsResponseBody200AutomaticStatusEnumString_userAborted) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "userAborted"
-instance Data.Aeson.FromJSON GetBackupsResponseBody200AutomaticStatus
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "failed")
-                                          then GetBackupsResponseBody200AutomaticStatusEnumString_failed
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "needsPostProcessing")
-                                                then GetBackupsResponseBody200AutomaticStatusEnumString_needsPostProcessing
-                                                else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "paused")
-                                                      then GetBackupsResponseBody200AutomaticStatusEnumString_paused
-                                                      else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "pending")
-                                                            then GetBackupsResponseBody200AutomaticStatusEnumString_pending
-                                                            else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "running")
-                                                                  then GetBackupsResponseBody200AutomaticStatusEnumString_running
-                                                                  else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "successful")
-                                                                        then GetBackupsResponseBody200AutomaticStatusEnumString_successful
-                                                                        else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "userAborted")
-                                                                              then GetBackupsResponseBody200AutomaticStatusEnumString_userAborted
-                                                                              else GetBackupsResponseBody200AutomaticStatusEnumOther val)
--- | Defines the enum schema GetBackupsResponseBody200AutomaticType
+data GetBackupsResponseBody200Automatic'Status' =
+   GetBackupsResponseBody200Automatic'Status'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | GetBackupsResponseBody200Automatic'Status'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | GetBackupsResponseBody200Automatic'Status'EnumPaused -- ^ Represents the JSON value @"paused"@
+  | GetBackupsResponseBody200Automatic'Status'EnumPending -- ^ Represents the JSON value @"pending"@
+  | GetBackupsResponseBody200Automatic'Status'EnumRunning -- ^ Represents the JSON value @"running"@
+  | GetBackupsResponseBody200Automatic'Status'EnumNeedsPostProcessing -- ^ Represents the JSON value @"needsPostProcessing"@
+  | GetBackupsResponseBody200Automatic'Status'EnumSuccessful -- ^ Represents the JSON value @"successful"@
+  | GetBackupsResponseBody200Automatic'Status'EnumFailed -- ^ Represents the JSON value @"failed"@
+  | GetBackupsResponseBody200Automatic'Status'EnumUserAborted -- ^ Represents the JSON value @"userAborted"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetBackupsResponseBody200Automatic'Status'
+    where toJSON (GetBackupsResponseBody200Automatic'Status'Other val) = val
+          toJSON (GetBackupsResponseBody200Automatic'Status'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (GetBackupsResponseBody200Automatic'Status'EnumPaused) = "paused"
+          toJSON (GetBackupsResponseBody200Automatic'Status'EnumPending) = "pending"
+          toJSON (GetBackupsResponseBody200Automatic'Status'EnumRunning) = "running"
+          toJSON (GetBackupsResponseBody200Automatic'Status'EnumNeedsPostProcessing) = "needsPostProcessing"
+          toJSON (GetBackupsResponseBody200Automatic'Status'EnumSuccessful) = "successful"
+          toJSON (GetBackupsResponseBody200Automatic'Status'EnumFailed) = "failed"
+          toJSON (GetBackupsResponseBody200Automatic'Status'EnumUserAborted) = "userAborted"
+instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBody200Automatic'Status'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "paused" -> GetBackupsResponseBody200Automatic'Status'EnumPaused
+                                            | val GHC.Classes.== "pending" -> GetBackupsResponseBody200Automatic'Status'EnumPending
+                                            | val GHC.Classes.== "running" -> GetBackupsResponseBody200Automatic'Status'EnumRunning
+                                            | val GHC.Classes.== "needsPostProcessing" -> GetBackupsResponseBody200Automatic'Status'EnumNeedsPostProcessing
+                                            | val GHC.Classes.== "successful" -> GetBackupsResponseBody200Automatic'Status'EnumSuccessful
+                                            | val GHC.Classes.== "failed" -> GetBackupsResponseBody200Automatic'Status'EnumFailed
+                                            | val GHC.Classes.== "userAborted" -> GetBackupsResponseBody200Automatic'Status'EnumUserAborted
+                                            | GHC.Base.otherwise -> GetBackupsResponseBody200Automatic'Status'Other val)
+-- | Defines the enum schema located at @paths.\/linode\/instances\/{linodeId}\/backups.GET.responses.200.content.application\/json.schema.properties.automatic.items.allOf.properties.type@ in the specification.
 -- 
 -- This indicates whether the Backup is an automatic Backup or manual snapshot taken by the User at a specific point in time.
-data GetBackupsResponseBody200AutomaticType
-    = GetBackupsResponseBody200AutomaticTypeEnumOther Data.Aeson.Types.Internal.Value
-    | GetBackupsResponseBody200AutomaticTypeEnumTyped Data.Text.Internal.Text
-    | GetBackupsResponseBody200AutomaticTypeEnumString_auto
-    | GetBackupsResponseBody200AutomaticTypeEnumString_snapshot
-    deriving (GHC.Show.Show, GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetBackupsResponseBody200AutomaticType
-    where toJSON (GetBackupsResponseBody200AutomaticTypeEnumOther patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (GetBackupsResponseBody200AutomaticTypeEnumTyped patternName) = Data.Aeson.Types.ToJSON.toJSON patternName
-          toJSON (GetBackupsResponseBody200AutomaticTypeEnumString_auto) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "auto"
-          toJSON (GetBackupsResponseBody200AutomaticTypeEnumString_snapshot) = Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "snapshot"
-instance Data.Aeson.FromJSON GetBackupsResponseBody200AutomaticType
-    where parseJSON val = GHC.Base.pure (if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "auto")
-                                          then GetBackupsResponseBody200AutomaticTypeEnumString_auto
-                                          else if val GHC.Classes.== (Data.Aeson.Types.Internal.String GHC.Base.$ Data.Text.pack "snapshot")
-                                                then GetBackupsResponseBody200AutomaticTypeEnumString_snapshot
-                                                else GetBackupsResponseBody200AutomaticTypeEnumOther val)
--- | Defines the data type for the schema GetBackupsResponseBody200Snapshot
+data GetBackupsResponseBody200Automatic'Type' =
+   GetBackupsResponseBody200Automatic'Type'Other Data.Aeson.Types.Internal.Value -- ^ This case is used if the value encountered during decoding does not match any of the provided cases in the specification.
+  | GetBackupsResponseBody200Automatic'Type'Typed Data.Text.Internal.Text -- ^ This constructor can be used to send values to the server which are not present in the specification yet.
+  | GetBackupsResponseBody200Automatic'Type'EnumAuto -- ^ Represents the JSON value @"auto"@
+  | GetBackupsResponseBody200Automatic'Type'EnumSnapshot -- ^ Represents the JSON value @"snapshot"@
+  deriving (GHC.Show.Show, GHC.Classes.Eq)
+instance Data.Aeson.Types.ToJSON.ToJSON GetBackupsResponseBody200Automatic'Type'
+    where toJSON (GetBackupsResponseBody200Automatic'Type'Other val) = val
+          toJSON (GetBackupsResponseBody200Automatic'Type'Typed val) = Data.Aeson.Types.ToJSON.toJSON val
+          toJSON (GetBackupsResponseBody200Automatic'Type'EnumAuto) = "auto"
+          toJSON (GetBackupsResponseBody200Automatic'Type'EnumSnapshot) = "snapshot"
+instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBody200Automatic'Type'
+    where parseJSON val = GHC.Base.pure (if | val GHC.Classes.== "auto" -> GetBackupsResponseBody200Automatic'Type'EnumAuto
+                                            | val GHC.Classes.== "snapshot" -> GetBackupsResponseBody200Automatic'Type'EnumSnapshot
+                                            | GHC.Base.otherwise -> GetBackupsResponseBody200Automatic'Type'Other val)
+-- | Defines the object schema located at @paths.\/linode\/instances\/{linodeId}\/backups.GET.responses.200.content.application\/json.schema.properties.snapshot@ in the specification.
 -- 
 -- 
-data GetBackupsResponseBody200Snapshot = GetBackupsResponseBody200Snapshot {
+data GetBackupsResponseBody200Snapshot' = GetBackupsResponseBody200Snapshot' {
   -- | current: An object representing a Backup or snapshot for a Linode with Backup service enabled.
-  getBackupsResponseBody200SnapshotCurrent :: (GHC.Base.Maybe Backup)
+  getBackupsResponseBody200Snapshot'Current :: (GHC.Maybe.Maybe Backup)
   -- | in_progress: An object representing a Backup or snapshot for a Linode with Backup service enabled.
-  , getBackupsResponseBody200SnapshotIn_progress :: (GHC.Base.Maybe Backup)
+  , getBackupsResponseBody200Snapshot'InProgress :: (GHC.Maybe.Maybe Backup)
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetBackupsResponseBody200Snapshot
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "current" (getBackupsResponseBody200SnapshotCurrent obj) : (Data.Aeson..=) "in_progress" (getBackupsResponseBody200SnapshotIn_progress obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "current" (getBackupsResponseBody200SnapshotCurrent obj) GHC.Base.<> (Data.Aeson..=) "in_progress" (getBackupsResponseBody200SnapshotIn_progress obj))
-instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBody200Snapshot
-    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupsResponseBody200Snapshot" (\obj -> (GHC.Base.pure GetBackupsResponseBody200Snapshot GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "current")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "in_progress"))
--- | Defines the data type for the schema GetBackupsResponseBodyDefault
+instance Data.Aeson.Types.ToJSON.ToJSON GetBackupsResponseBody200Snapshot'
+    where toJSON obj = Data.Aeson.Types.Internal.object ("current" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Snapshot'Current obj : "in_progress" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Snapshot'InProgress obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs (("current" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Snapshot'Current obj) GHC.Base.<> ("in_progress" Data.Aeson.Types.ToJSON..= getBackupsResponseBody200Snapshot'InProgress obj))
+instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBody200Snapshot'
+    where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupsResponseBody200Snapshot'" (\obj -> (GHC.Base.pure GetBackupsResponseBody200Snapshot' GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "current")) GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "in_progress"))
+-- | Create a new 'GetBackupsResponseBody200Snapshot'' with all required fields.
+mkGetBackupsResponseBody200Snapshot' :: GetBackupsResponseBody200Snapshot'
+mkGetBackupsResponseBody200Snapshot' = GetBackupsResponseBody200Snapshot'{getBackupsResponseBody200Snapshot'Current = GHC.Maybe.Nothing,
+                                                                          getBackupsResponseBody200Snapshot'InProgress = GHC.Maybe.Nothing}
+-- | Defines the object schema located at @components.responses.ErrorResponse.content.application\/json.schema@ in the specification.
 -- 
 -- 
 data GetBackupsResponseBodyDefault = GetBackupsResponseBodyDefault {
   -- | errors
-  getBackupsResponseBodyDefaultErrors :: (GHC.Base.Maybe ([] ErrorObject))
+  getBackupsResponseBodyDefaultErrors :: (GHC.Maybe.Maybe ([ErrorObject]))
   } deriving (GHC.Show.Show
   , GHC.Classes.Eq)
-instance Data.Aeson.ToJSON GetBackupsResponseBodyDefault
-    where toJSON obj = Data.Aeson.object ((Data.Aeson..=) "errors" (getBackupsResponseBodyDefaultErrors obj) : [])
-          toEncoding obj = Data.Aeson.pairs ((Data.Aeson..=) "errors" (getBackupsResponseBodyDefaultErrors obj))
+instance Data.Aeson.Types.ToJSON.ToJSON GetBackupsResponseBodyDefault
+    where toJSON obj = Data.Aeson.Types.Internal.object ("errors" Data.Aeson.Types.ToJSON..= getBackupsResponseBodyDefaultErrors obj : GHC.Base.mempty)
+          toEncoding obj = Data.Aeson.Encoding.Internal.pairs ("errors" Data.Aeson.Types.ToJSON..= getBackupsResponseBodyDefaultErrors obj)
 instance Data.Aeson.Types.FromJSON.FromJSON GetBackupsResponseBodyDefault
     where parseJSON = Data.Aeson.Types.FromJSON.withObject "GetBackupsResponseBodyDefault" (\obj -> GHC.Base.pure GetBackupsResponseBodyDefault GHC.Base.<*> (obj Data.Aeson.Types.FromJSON..:? "errors"))
+-- | Create a new 'GetBackupsResponseBodyDefault' with all required fields.
+mkGetBackupsResponseBodyDefault :: GetBackupsResponseBodyDefault
+mkGetBackupsResponseBodyDefault = GetBackupsResponseBodyDefault{getBackupsResponseBodyDefaultErrors = GHC.Maybe.Nothing}
