@@ -48,7 +48,7 @@ data Linode = Linode {
   -- | id: This Linode\'s ID which must be provided for all operations impacting this Linode.
   , linodeId :: (GHC.Maybe.Maybe GHC.Types.Int)
   -- | image
-  , linodeImage :: (GHC.Maybe.Maybe Data.Aeson.Types.Internal.Object)
+  , linodeImage :: (GHC.Maybe.Maybe Data.Text.Internal.Text)
   -- | ipv4: This Linode\'s IPv4 Addresses. Each Linode is assigned a single public IPv4 address
   -- upon creation, and may get a single private IPv4 address if needed. You may need to
   -- [open a support ticket](\/docs\/api\/support\/\#support-ticket-open)
