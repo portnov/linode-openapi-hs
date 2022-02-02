@@ -1,0 +1,25 @@
+name:                linode-openapi-cli
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/githubuser/linode-openapi-cli#readme
+license:             BSD3
+author:              portnov
+maintainer:          example@example.com
+copyright:           2022 portnov
+category:            Web
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - containers
+  - linode-openapi
+  - optparse-applicative
+  - text
+  - http-client
+
+executables:
+  linode-openapi-cli:
+    source-dirs:      src
+    main:             Main.hs

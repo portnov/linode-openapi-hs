@@ -1,0 +1,36 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 5639d5f472fb5280c6233aea337cd0d560accf5b4f7fd39383d334872cb0c472
+
+name:           linode-openapi-cli
+version:        0.1.0.0
+category:       Web
+homepage:       https://github.com/githubuser/linode-openapi-cli#readme
+author:         portnov
+maintainer:     example@example.com
+copyright:      2022 portnov
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+executable linode-openapi-cli
+  main-is: Main.hs
+  other-modules:
+      CmdLine
+      Paths_linode_openapi_cli
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , http-client
+    , linode-openapi
+    , optparse-applicative
+    , text
+  default-language: Haskell2010
